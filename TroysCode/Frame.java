@@ -21,7 +21,7 @@ public class Frame extends JFrame
 		/**
 		 * The width the program frame is initialised to
 		 */
-		public int startWidth = 800;
+		public int startWidth = 1200;
 		/**
 		 * The height the program frame is initialised to
 		 */
@@ -95,7 +95,7 @@ public class Frame extends JFrame
 				 * This means the user cannot re-size the window while the
 				 * program is running, change to boolean to true if you
 				 */
-				// setResizable(false);
+				setResizable(false);
 
 				/*
 				 * This is just the frame, to actually put something visual

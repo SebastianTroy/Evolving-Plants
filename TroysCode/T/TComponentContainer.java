@@ -13,7 +13,6 @@ import javax.swing.event.EventListenerList;
 
 import TroysCode.Tools;
 
-
 /**
  * This class allows any classes which extend it to have {@link TComponent}s
  * added to them.
@@ -133,6 +132,11 @@ public abstract class TComponentContainer implements Serializable, TScrollListen
 									component.addTScrollListener(this);
 							}
 						tComponents.add(component);
+						if (component.getClass() == TSlider.class)
+							{
+								TSlider s = (TSlider) component;
+								s.sliderAdded();
+							}
 					}
 			}
 

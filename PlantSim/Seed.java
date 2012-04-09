@@ -44,7 +44,7 @@ public class Seed extends PlantPart
 						s.render(g);
 
 				g.setColor(Color.LIGHT_GRAY);
-				int seedSize = (int) (energy / 20);
+				int seedSize = (int) (energy / 15);
 				g.fillOval(Math.round(x - (seedSize / 2)), Math.round(y - (seedSize / 2)), seedSize, seedSize);
 			}
 

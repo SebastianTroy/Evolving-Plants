@@ -12,7 +12,6 @@ import java.util.ArrayList;
 
 import TroysCode.RenderableObject;
 import TroysCode.Tools;
-import TroysCode.hub;
 import TroysCode.T.TButton;
 import TroysCode.T.TScrollEvent;
 import TroysCode.T.TSlider;
@@ -25,19 +24,75 @@ public class World extends RenderableObject
 		private ArrayList<LightBeam> lightBeams = new ArrayList<LightBeam>(100);
 		private ArrayList<Plant> plants = new ArrayList<Plant>(25);
 
+		// Left World options
+		private int lightIntensity = 4;
+		private int lightEnergy = 25;
+		private int plantSpacing = 12;
+		public float UVIntensity = 50;
+		public float UVDamage = 50;
+
+		private final TSlider lightIntensitySlider = new TSlider(1010, 70, TSlider.HORIZONTAL, 180, 1);
+		private final TSlider lightEnergySlider = new TSlider(1010, 110, TSlider.HORIZONTAL, 180, 1);
+		private final TSlider plantSpacingSlider = new TSlider(1010, 150, TSlider.HORIZONTAL, 180, 1);
+		private final TSlider UVIntensitySlider = new TSlider(1010, 190, TSlider.HORIZONTAL, 180, 1);
+		private final TSlider UVDamageSlider = new TSlider(1010, 230, TSlider.HORIZONTAL, 180, 1);
+
+		// Right World options
+		private int lightIntensity2 = 4;
+		private int lightEnergy2 = 25;
+		private int plantSpacing2 = 12;
+		public float UVIntensity2 = 50;
+		public float UVDamage2 = 50;
+
+		private final TSlider lightIntensitySlider2 = new TSlider(1010, 320, TSlider.HORIZONTAL, 180, 1);
+		private final TSlider lightEnergySlider2 = new TSlider(1010, 360, TSlider.HORIZONTAL, 180, 1);
+		private final TSlider plantSpacingSlider2 = new TSlider(1010, 400, TSlider.HORIZONTAL, 180, 1);
+		private final TSlider UVIntensitySlider2 = new TSlider(1010, 440, TSlider.HORIZONTAL, 180, 1);
+		private final TSlider UVDamageSlider2 = new TSlider(1010, 480, TSlider.HORIZONTAL, 180, 1);
+
+		// Universal options
 		private boolean viewLight = true;
 
-		private int lightIntensity = 8;
-		private int lightEnergy = 15;
-		private int plantSpacing = 12;
+		private final TButton viewLightButton = new TButton(390, 5, "View Light? on/off");
+		private final TButton randomiseColourButton = new TButton(220, 5, "Randomise plant Colours");
 
-		private final TButton viewLightButton = new TButton(850, 0, "View Light? on/off");
+		// Plant Options
+		private Plant selectedPlant;
 
-		private final TSlider lightIntensitySlider = new TSlider(810, 40, TSlider.HORIZONTAL, 180, 1);
-		private final TSlider lightEnergySlider = new TSlider(810, 80, TSlider.HORIZONTAL, 180, 1);
-		private final TSlider plantSpacingSlider = new TSlider(810, 120, TSlider.HORIZONTAL, 180, 1);
+		private final TButton reColourButton = new TButton(5, 30, "Re-Colour");
+		private final TButton reColourChildrenButton = new TButton(75, 30, "Re-Colour Children");
 
-		private Plant selectedPlant = new Plant(null, 0, 0, 0);
+		// Genes options
+		private Genes currentGenes = new Genes(null, null);
+
+		private final TButton getGenesButton = new TButton(65, 190, "Get Genes from Plant");
+
+		private final TSlider maxAgeSlider = new TSlider(10, 230, TSlider.HORIZONTAL, 180, 1);
+		private final TSlider stemLengthSlider = new TSlider(10, 270, TSlider.HORIZONTAL, 180, 1);
+		private final TSlider stemsPerSeedSlider = new TSlider(10, 310, TSlider.HORIZONTAL, 180, 1);
+		private final TSlider stemsPerLeafSlider = new TSlider(10, 350, TSlider.HORIZONTAL, 180, 1);
+		private final TSlider chanceGrowingStemsSlider = new TSlider(10, 390, TSlider.HORIZONTAL, 180, 1);
+		private final TSlider maxStemsSlider = new TSlider(10, 430, TSlider.HORIZONTAL, 180, 1);
+		private final TSlider stemAngleVarSlider = new TSlider(10, 470, TSlider.HORIZONTAL, 180, 1);
+		private final TSlider seedEnergySlider = new TSlider(10, 510, TSlider.HORIZONTAL, 180, 1);
+		private final TSlider seedSpreadSlider = new TSlider(10, 550, TSlider.HORIZONTAL, 180, 1);
+
+		// Mouse
+
+		private float mouseX = 0;
+		private float mouseY = 0;
+
+		private final byte SELECT = 0;
+		private final byte PLANT = 1;
+		private final byte KILL = 2;
+		private final byte GETGENES = 3;
+
+		private byte mouseState = SELECT;
+
+		private final TButton mouseSelectButton = new TButton(712, 5, "Select Plant");
+		private final TButton mousePlantButton = new TButton(789, 5, "Plant Seed");
+		private final TButton mouseKillButton = new TButton(860, 5, "Kill Plant");
+		private final TButton mouseGetGenesButton = new TButton(920, 5, "Get Genes");
 
 		public World()
 			{
@@ -46,11 +101,45 @@ public class World extends RenderableObject
 		@Override
 		protected void initiate()
 			{
-				addTComponent(viewLightButton);
-
+				// Left World components
 				addTComponent(lightIntensitySlider);
 				addTComponent(lightEnergySlider);
 				addTComponent(plantSpacingSlider);
+				addTComponent(UVIntensitySlider);
+				addTComponent(UVDamageSlider);
+
+				// Right World components
+				addTComponent(lightIntensitySlider2);
+				addTComponent(lightEnergySlider2);
+				addTComponent(plantSpacingSlider2);
+				addTComponent(UVIntensitySlider2);
+				addTComponent(UVDamageSlider2);
+
+				// Universal Options
+				addTComponent(viewLightButton);
+				addTComponent(randomiseColourButton);
+
+				// Plant components
+				addTComponent(reColourButton);
+				addTComponent(reColourChildrenButton);
+
+				// Genes Components
+				addTComponent(getGenesButton);
+				addTComponent(maxAgeSlider);
+				addTComponent(stemLengthSlider);
+				addTComponent(stemsPerSeedSlider);
+				addTComponent(stemsPerLeafSlider);
+				addTComponent(chanceGrowingStemsSlider);
+				addTComponent(maxStemsSlider);
+				addTComponent(stemAngleVarSlider);
+				addTComponent(seedEnergySlider);
+				addTComponent(seedSpreadSlider);
+
+				// Mouse Components
+				addTComponent(mouseSelectButton);
+				addTComponent(mousePlantButton);
+				addTComponent(mouseKillButton);
+				addTComponent(mouseGetGenesButton);
 			}
 
 		@Override
@@ -58,7 +147,9 @@ public class World extends RenderableObject
 			{
 				// add 10 equally spaced new plants
 				for (int i = 0; i < 10; i++)
-					plants.add(new Plant(null, (i * 80) + 40, 500, 250));
+					plants.add(new Plant(null, (i * 80) + 240, 500, 250));
+
+				setGeneSliders();
 			}
 
 		@Override
@@ -66,7 +157,12 @@ public class World extends RenderableObject
 			{
 				for (int i = 0; i < lightIntensity; i++)
 					{
-						lightBeams.add(new LightBeam(Tools.randInt(0, 800), lightEnergy));
+						lightBeams.add(new LightBeam(Tools.randInt(200, 600), lightEnergy));
+					}
+
+				for (int i = 0; i < lightIntensity2; i++)
+					{
+						lightBeams.add(new LightBeam(Tools.randInt(600, 1000), lightEnergy2));
 					}
 
 				// Remove dead lightBeams
@@ -109,9 +205,9 @@ public class World extends RenderableObject
 		protected void renderObject(Graphics g)
 			{
 				g.setColor(new Color(100, 100, 255));
-				g.fillRect(0, 0, 800, 600);
+				g.fillRect(200, 0, 800, 600);
 
-				if (viewLight)
+				if (viewLight || lightIntensitySlider.inUse || lightIntensitySlider2.inUse)
 					for (Entity e : lightBeams)
 						e.render(g);
 
@@ -119,33 +215,81 @@ public class World extends RenderableObject
 					p.render(g);
 
 				g.setColor(Color.GRAY);
-				g.fillRect(800, 0, 200, 400);
+				g.fillRect(1000, 0, 200, 600);
 
 				g.setColor(Color.BLACK);
-				g.drawString("Light Intensity: " + lightIntensity, 820, 40);
-				g.drawString("Light Energy: " + lightEnergy, 820, 80);
-				g.drawString("Plant Spacing: " + plantSpacing, 820, 120);
-				
-				g.setColor(Color.WHITE);
-				g.fillRect(800, 400, 200, 200);
-				
+				g.drawString("World Options:", 1008, 20);
+				g.drawString("LEFT SIDE:", 1008, 50);
+				g.drawString("Light Intensity: " + lightIntensity, 1020, 70);
+				g.drawString("Light Energy: " + lightEnergy, 1020, 110);
+				g.drawString("Plant Spacing: " + plantSpacing, 1020, 150);
+				g.drawString("Chance of mutation: " + UVIntensity, 1020, 190);
+				g.drawString("Size of mutation: " + UVDamage, 1020, 230);
+
+				g.drawString("RIGHT SIDE:", 1008, 300);
+				g.drawString("Light Intensity: " + lightIntensity2, 1020, 320);
+				g.drawString("Light Energy: " + lightEnergy2, 1020, 360);
+				g.drawString("Plant Spacing: " + plantSpacing2, 1020, 400);
+				g.drawString("Chance of mutation: " + UVIntensity2, 1020, 440);
+				g.drawString("Size of mutation: " + UVDamage2, 1020, 480);
+
+				g.setColor(Color.GRAY);
+				g.fillRect(0, 0, 200, 600);
+
 				g.setColor(Color.BLACK);
-				g.drawString("Selected Plant:", 810, 417);
-				g.drawString("Ticks left: " +  (selectedPlant.genes.maxAge - selectedPlant.age), 810, 440);
-				g.drawString("Stem height: " + selectedPlant.genes.maxStemLength, 810, 460);
-				g.drawString("Max stem Number: " + selectedPlant.genes.maxStems, 810, 480);
-				g.drawString("% chance of mutation: " + selectedPlant.genes.geneStability, 810, 500);
-				g.drawString("Variability: " + selectedPlant.genes.var, 810, 520);
-				g.drawString("Energy for seeds: " + selectedPlant.energy, 810, 540);
-				g.drawString("Energy per seed: " + selectedPlant.genes.seedEnergy, 810, 560);
+				g.drawString("Selected Plant:", 8, 20);
+
+				if (selectedPlant != null)
+					{
+						g.drawString("Age:           " + selectedPlant.age, 10, 80);
+						g.drawString("/ " + selectedPlant.genes.maxAge, 120, 80);
+
+						g.drawString("Stems:      " + (int) (selectedPlant.genes.maxStems - selectedPlant.numberOfStemsLeft), 10, 100);
+						g.drawString("/ " + selectedPlant.genes.maxStems, 120, 100);
+						g.drawString("Stem Length:            " + selectedPlant.genes.maxStemLength, 10, 120);
+
+						g.drawString("Stored Energy:          " + selectedPlant.energy, 10, 140);
+						g.drawString("Energy per Seed:     " + selectedPlant.genes.seedEnergy, 10, 160);
+						g.drawString("Seed Spread:            " + selectedPlant.genes.seedSpread, 10, 180);
+					}
+
+				g.drawString("GENES:", 6, 210);
+				g.drawString("Max Age: " + currentGenes.maxAge, 14, 230);
+				g.drawString("Stem Length: " + currentGenes.maxStemLength, 14, 270);
+				g.drawString("Stems per Seed: " + currentGenes.numberOfSeedStems, 14, 310);
+				g.drawString("Stems per Leaf: " + currentGenes.numberOfLeafStems, 14, 350);
+				g.drawString("Chance leaf has Stems: " + currentGenes.chanceOfGrowingStems, 14, 390);
+				g.drawString("Maximum stem Number: " + currentGenes.maxStems, 14, 430);
+				g.drawString("Stem Angle Variation: " + currentGenes.stemAngleVariation, 14, 470);
+				g.drawString("Energy to Seed: " + currentGenes.seedEnergy, 14, 510);
+				g.drawString("Seed spread: " + currentGenes.seedSpread, 14, 550);
+
+				if (mouseX > 200 && mouseY > 0 && mouseX < 1000 && mouseY < 600)
+					switch (mouseState)
+						{
+						case SELECT:
+							g.drawString("SELECT", Math.round(mouseX), Math.round(mouseY));
+							break;
+						case PLANT:
+							g.drawString("PLANT", Math.round(mouseX), Math.round(mouseY));
+							break;
+						case KILL:
+							g.drawString("KILL", Math.round(mouseX), Math.round(mouseY));
+							break;
+						case GETGENES:
+							g.drawString("GETGENES", Math.round(mouseX), Math.round(mouseY));
+							break;
+						}
 			}
 
 		public final void addPlant(Plant seedling)
 			{
+				int spacing = seedling.x < 600 ? plantSpacing : plantSpacing2;
+
 				for (Plant plant : plants)
-					if (seedling.x < plant.x + plantSpacing && seedling.x > plant.x - plantSpacing)
+					if (seedling.x < plant.x + spacing && seedling.x > plant.x - spacing)
 						return;
-					else if (seedling.x < 0 || seedling.x > 800)
+					else if (seedling.x < 200 || seedling.x > 1000)
 						return;
 
 				plantsToAdd.add(seedling);
@@ -154,15 +298,31 @@ public class World extends RenderableObject
 		@Override
 		protected void mousePressed(MouseEvent event)
 			{
-				if (event.getButton() == MouseEvent.BUTTON1)
+				switch (mouseState)
 					{
+					case SELECT:
 						for (Plant p : plants)
 							for (Leaf l : p.leaves)
 								if (l.containsPoint(event.getX(), event.getY()))
 									selectedPlant = p;
+						break;
+					case PLANT:
+						addPlant(new Plant(null, event.getX(), event.getY(), currentGenes.seedEnergy, currentGenes));
+						break;
+					case KILL:
+						for (Plant p : plants)
+							for (Leaf l : p.leaves)
+								if (l.containsPoint(event.getX(), event.getY()))
+									p.alive = false;
+						break;
+					case GETGENES:
+						for (Plant p : plants)
+							for (Leaf l : p.leaves)
+								if (l.containsPoint(event.getX(), event.getY()))
+									currentGenes = p.genes;
+						setGeneSliders();
+						break;
 					}
-				else
-					addPlant(new Plant(null, event.getX(), event.getY(), 250));
 			}
 
 		@Override
@@ -173,11 +333,15 @@ public class World extends RenderableObject
 		@Override
 		protected void mouseDragged(MouseEvent event)
 			{
+				mouseX = event.getX();
+				mouseY = event.getY();
 			}
 
 		@Override
 		protected void mouseMoved(MouseEvent event)
 			{
+				mouseX = event.getX();
+				mouseY = event.getY();
 			}
 
 		@Override
@@ -190,6 +354,55 @@ public class World extends RenderableObject
 			{
 				if (event.getSource() == viewLightButton)
 					viewLight = !viewLight;
+				else if (event.getSource() == reColourButton)
+					{
+						if (selectedPlant != null)
+							selectedPlant.genes.colour = Tools.randColour();
+					}
+				else if (event.getSource() == reColourChildrenButton)
+					{
+						if (selectedPlant != null)
+							{
+								selectedPlant.genes.colour = Tools.randColour();
+								for (Plant p : plants)
+									if (p.parent == selectedPlant)
+										p.genes.colour = selectedPlant.genes.colour;
+							}
+					}
+				else if (event.getSource() == randomiseColourButton)
+					for (Plant p : plants)
+						p.genes.colour = Tools.randColour();
+				else if (event.getSource() == getGenesButton)
+					{
+						if (selectedPlant != null)
+							{
+								currentGenes = selectedPlant.genes;
+								setGeneSliders();
+							}
+					}
+				else if (event.getSource() == mouseSelectButton)
+					mouseState = SELECT;
+				else if (event.getSource() == mousePlantButton)
+					mouseState = PLANT;
+				else if (event.getSource() == mouseKillButton)
+					mouseState = KILL;
+				else if (event.getSource() == mouseGetGenesButton)
+					mouseState = GETGENES;
+			}
+
+		private final void setGeneSliders()
+			{
+				Genes g = currentGenes;
+
+				maxAgeSlider.setSliderPercent(0, (g.maxAge - 3) / 79.97f);
+				stemLengthSlider.setSliderPercent(0, (g.maxStemLength - 10) / 1.9f);
+				stemsPerSeedSlider.setSliderPercent(0, (g.numberOfSeedStems - 1) / 0.14f);
+				stemsPerLeafSlider.setSliderPercent(0, g.numberOfLeafStems / 0.15f);
+				chanceGrowingStemsSlider.setSliderPercent(0, g.chanceOfGrowingStems);
+				maxStemsSlider.setSliderPercent(0, (g.maxStems - 1) / 0.29f);
+				stemAngleVarSlider.setSliderPercent(0, g.stemAngleVariation);
+				seedEnergySlider.setSliderPercent(0, g.seedEnergy / 5);
+				seedSpreadSlider.setSliderPercent(0, (g.seedSpread - 10) / 0.9f);
 			}
 
 		@Override
@@ -240,12 +453,47 @@ public class World extends RenderableObject
 		@Override
 		public void tScrollBarScrolled(TScrollEvent event)
 			{
+				// LEFT
 				if (event.getSource() == lightIntensitySlider)
-					lightIntensity = (int) ((lightIntensitySlider.getSliderPercent(0) * 0.14) + 1);
+					lightIntensity = (int) (lightIntensitySlider.getSliderPercent(0) * 0.08);
 				else if (event.getSource() == lightEnergySlider)
-					lightEnergy = (int) ((lightEnergySlider.getSliderPercent(0) * 0.28) + 2);
+					lightEnergy = (int) ((lightEnergySlider.getSliderPercent(0) * 0.49) + 1);
 				else if (event.getSource() == plantSpacingSlider)
 					plantSpacing = (int) ((plantSpacingSlider.getSliderPercent(0) * 0.15) + 5);
+				else if (event.getSource() == UVIntensitySlider)
+					UVIntensity = UVIntensitySlider.getSliderPercent(0);
+				else if (event.getSource() == UVDamageSlider)
+					UVDamage = UVDamageSlider.getSliderPercent(0);
+				// RIGHT
+				else if (event.getSource() == lightIntensitySlider2)
+					lightIntensity2 = (int) (lightIntensitySlider2.getSliderPercent(0) * 0.08);
+				else if (event.getSource() == lightEnergySlider2)
+					lightEnergy2 = (int) ((lightEnergySlider2.getSliderPercent(0) * 0.49) + 1);
+				else if (event.getSource() == plantSpacingSlider2)
+					plantSpacing2 = (int) ((plantSpacingSlider2.getSliderPercent(0) * 0.15) + 5);
+				else if (event.getSource() == UVIntensitySlider2)
+					UVIntensity2 = UVIntensitySlider2.getSliderPercent(0);
+				else if (event.getSource() == UVDamageSlider2)
+					UVDamage2 = UVDamageSlider2.getSliderPercent(0);
+				// GENES
+				else if (event.getSource() == maxAgeSlider)
+					currentGenes.maxAge = (int) (maxAgeSlider.getSliderPercent(0) * 79.97f) + 3;
+				else if (event.getSource() == stemLengthSlider)
+					currentGenes.maxStemLength = (stemLengthSlider.getSliderPercent(0) * 1.9f) + 10;
+				else if (event.getSource() == stemsPerSeedSlider)
+					currentGenes.numberOfSeedStems = (stemsPerSeedSlider.getSliderPercent(0) * 0.14f) + 1;
+				else if (event.getSource() == stemsPerLeafSlider)
+					currentGenes.numberOfLeafStems = stemsPerLeafSlider.getSliderPercent(0) * 0.15f;
+				else if (event.getSource() == chanceGrowingStemsSlider)
+					currentGenes.chanceOfGrowingStems = chanceGrowingStemsSlider.getSliderPercent(0);
+				else if (event.getSource() == maxStemsSlider)
+					currentGenes.maxStems = (maxStemsSlider.getSliderPercent(0) * 0.29f) + 1;
+				else if (event.getSource() == stemAngleVarSlider)
+					currentGenes.stemAngleVariation = stemAngleVarSlider.getSliderPercent(0);
+				else if (event.getSource() == seedEnergySlider)
+					currentGenes.seedEnergy = seedEnergySlider.getSliderPercent(0) * 5;
+				else if (event.getSource() == seedSpreadSlider)
+					currentGenes.seedSpread = (seedSpreadSlider.getSliderPercent(0) * 0.9f) + 10;
 			}
 
 	}

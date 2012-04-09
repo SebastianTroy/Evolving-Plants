@@ -3,8 +3,6 @@ package PlantSim;
 import java.awt.Color;
 import java.awt.Graphics;
 
-import TroysCode.hub;
-
 public class LightBeam extends Entity
 	{
 		public LightBeam(int x, int energy)

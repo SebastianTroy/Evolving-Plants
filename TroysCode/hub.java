@@ -34,7 +34,7 @@ public class hub
 		 * {@link Frame} Class. It can also be used to track compatability due
 		 * to version differences.
 		 */
-		public static final String versionNumber = "0.1_00";
+		public static final String versionNumber = "1.0_00";
 		/**
 		 * This is the name of the folder containing the images used by Troy's
 		 * Code. It must contain all of the default texture files, however their

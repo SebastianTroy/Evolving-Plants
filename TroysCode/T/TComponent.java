@@ -69,7 +69,7 @@ public abstract class TComponent implements Serializable
 		 * This variable allows the {@link TComponent} to keep track of whether
 		 * the user is currently interacting with it.
 		 */
-		protected boolean inUse = false;
+		public boolean inUse = false;
 
 		/**
 		 * This {@link EventListenerList} holds any {@link EventListener}s that

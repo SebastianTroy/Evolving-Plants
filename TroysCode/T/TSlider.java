@@ -128,6 +128,16 @@ public class TSlider extends TComponent implements Serializable, MouseListener, 
 					}
 			}
 
+		public final void sliderAdded()
+			{
+				int sliderIndex = 0;
+				for (TButton slider : sliders)
+					{
+						sendTScrollEvent(new TScrollEvent(this, TScrollEvent.TSCROLLBARSCROLLED, getSliderPercent(sliderIndex)));
+						sliderIndex++;
+					}
+			}
+
 		/**
 		 * This method tells the {@link TComponent} which
 		 * {@link TComponentContainer} it has been added to.
@@ -324,6 +334,8 @@ public class TSlider extends TComponent implements Serializable, MouseListener, 
 		@Override
 		public final void mousePressed(MouseEvent me)
 			{
+				if (this.containsPoint(me.getPoint()))
+					inUse = true;
 				if (me.getButton() == 1)
 					for (TButton slider : sliders)
 						slider.mousePressed(me);
@@ -374,6 +386,7 @@ public class TSlider extends TComponent implements Serializable, MouseListener, 
 			{
 				for (TButton slider : sliders)
 					slider.mouseReleased(me);
+				inUse = false;
 			}
 
 		public final float getSliderPercent(int sliderIndex)

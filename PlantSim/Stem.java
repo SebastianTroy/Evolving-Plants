@@ -47,6 +47,15 @@ public class Stem extends PlantPart
 				energyFrom.energy -= thisPlant.genes.stemGrowIncrement;
 			}
 
+		protected final void move(float xMod, float yMod)
+			{
+				tipX += xMod;
+				tipY -= yMod;
+				x += xMod;
+				y -= yMod;
+				leaf.grow(xMod, yMod);
+			}
+
 		@Override
 		public final void tick()
 			{
@@ -74,7 +83,7 @@ public class Stem extends PlantPart
 
 				leaf.render(g);
 
-				g.setColor(Color.GREEN);
-				g.fillOval(Math.round(tipX - 12.5f), Math.round(tipY - 12.5f), 25, 25);
+				g.setColor(thisPlant.genes.colour);
+				g.fillOval(Math.round(leaf.x - 12.5f), Math.round(leaf.y - 12.5f), 25, 25);
 			}
 	}

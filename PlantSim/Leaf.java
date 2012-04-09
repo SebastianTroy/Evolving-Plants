@@ -1,6 +1,5 @@
 package PlantSim;
 
-import java.awt.Color;
 import java.awt.Graphics;
 
 import TroysCode.Tools;
@@ -21,23 +20,19 @@ public class Leaf extends PlantPart
 
 				thisPlant.leaves.add(this);
 			}
-		
+
 		protected final void grow(float growX, float growY)
 			{
 				y -= growY;
 				x += growX;
 				if (stems != null)
 					for (Stem s : stems)
-						s.grow(s);
-
+						s.move(growX, growY);
 			}
 
 		@Override
 		public void tick()
 			{
-				if (!notGrowingStems && stems == null && energy > thisPlant.genes.leafEnergyThreshold && thisPlant.numberOfStemsLeft > 0)
-					growStems();
-
 				if (stems != null)
 					{
 						if (energy > stems.length)
@@ -51,18 +46,15 @@ public class Leaf extends PlantPart
 							s.tick();
 					}
 
-				if (stems == null && thisPlant.numberOfStemsLeft == 0 && energy > thisPlant.genes.leafEnergyThreshold)
+				else if (!notGrowingStems && energy > thisPlant.genes.leafEnergyThreshold && thisPlant.numberOfStemsLeft > 0)
+					growStems();
+
+				else if (energy > thisPlant.genes.leafEnergyThreshold)
 					{
 						if (energy > thisPlant.genes.leafEnergyToPlant)
 							{
 								thisPlant.sendEnergyToPlant(thisPlant.genes.leafEnergyToPlant, this);
 								energy -= thisPlant.genes.leafEnergyToPlant;
-							}
-
-						else if (energy > 0)
-							{
-								thisPlant.sendEnergyToPlant(energy, this);
-								energy = 0;
 							}
 					}
 			}
@@ -85,6 +77,11 @@ public class Leaf extends PlantPart
 				if (thisPlant.genes.chanceOfGrowingStems > Tools.randPercent())
 					{
 						int numStems = (int) Math.min(thisPlant.numberOfStemsLeft, thisPlant.genes.numberOfLeafStems);
+						if (numStems == 0)
+							{
+								notGrowingStems = true;
+								return;
+							}
 						stems = new Stem[numStems];
 						for (int i = 0; i < numStems; i++)
 							stems[i] = new Stem(thisPlant, x, y);

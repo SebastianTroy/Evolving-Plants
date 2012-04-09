@@ -1,17 +1,16 @@
 package PlantSim;
 
+import java.awt.Color;
+
 import TroysCode.Tools;
+import TroysCode.hub;
 
 public class Genes
 	{
 		private final int MINPERCENT = 0;
 		private final int MAXPERCENT = 100;
-		private final int PERCENTRANGE = 100;
-		
-		
-		public float geneStability = 50f;
-		// Gene variation 0 - 1
-		public float var = 0.5f;
+
+		public Color colour = Tools.randColour();
 
 		public int maxAge = 2000;
 		private final int ageVar = 300;
@@ -41,10 +40,12 @@ public class Genes
 		public int leafEnergyToPlant = 1;
 		private final float leafEnergyToPlantVar = 0.1f;
 
-		public Genes(Plant parent)
+		public Genes(Plant parent, Plant thisPlant)
 			{
 				if (parent != null)
 					{
+						colour = parent.genes.colour;
+
 						maxAge = parent.genes.maxAge;
 
 						seedEnergy = parent.genes.seedEnergy;
@@ -62,14 +63,27 @@ public class Genes
 						leafEnergyThreshold = parent.genes.leafEnergyThreshold;
 						leafEnergyToPlant = parent.genes.leafEnergyToPlant;
 					}
-				mutate();
+				mutate(thisPlant);
 				checkGenes();
 			}
 
-		private final void mutate()
+		private final void mutate(Plant thisPlant)
 			{
-				if (geneStability > Tools.randPercent())
+				float UVIntensity = 50f;
+				float variability = 50f;
+
+				if (thisPlant != null)
 					{
+						UVIntensity = thisPlant.x < 600 ? hub.world.UVIntensity : hub.world.UVIntensity2;
+						variability = thisPlant.x < 600 ? hub.world.UVDamage : hub.world.UVDamage2;
+					}
+				
+				if (UVIntensity > Tools.randFloat(MINPERCENT, MAXPERCENT))
+					{
+						float var = variability / 100f;
+
+						mutateColour(thisPlant);
+
 						maxAge += Tools.randFloat(-var * ageVar, var * ageVar);
 
 						seedEnergy += Tools.randFloat(-var * seedEnergyVar, var * seedEnergyVar);
@@ -79,16 +93,13 @@ public class Genes
 						numberOfLeafStems += Tools.randFloat(-var * numLeafStemsVar, var * numLeafStemsVar);
 
 						maxStems += Tools.randFloat(-var * maxStemsVar, var * maxStemsVar);
-						chanceOfGrowingStems += Tools.randFloat(-var * PERCENTRANGE, var * PERCENTRANGE);
+						chanceOfGrowingStems += Tools.randFloat(-var * chanceGrowingStemsVar, var * chanceGrowingStemsVar);
 						maxStemLength += Tools.randFloat(-var * maxStemLengthVar, var * maxStemLengthVar);
 						stemGrowIncrement += Tools.randFloat(-var * stemGrowIncrementVar, var * stemGrowIncrementVar);
-						stemAngleVariation += Tools.randFloat(-var * PERCENTRANGE, var * PERCENTRANGE);
+						stemAngleVariation += Tools.randFloat(-var * stamAngleVar, var * stamAngleVar);
 
 						leafEnergyThreshold += Tools.randFloat(-var * leafEnergyThresholdVar, var * leafEnergyThresholdVar);
 						leafEnergyToPlant += Tools.randFloat(-var * leafEnergyToPlantVar, var * leafEnergyToPlantVar);
-
-						geneStability += Tools.randFloat(-var * PERCENTRANGE, var * PERCENTRANGE);
-						var += Tools.randFloat(-var * var, var * var);
 					}
 			}
 
@@ -97,8 +108,8 @@ public class Genes
 				if (seedSpread < 10)
 					seedSpread = 10;
 
-				if (numberOfSeedStems < 1 || maxStems < 1)
-					maxAge = 120;
+				if (numberOfSeedStems < 1 || maxStems < 1 || leafEnergyToPlant < 1 || seedEnergy < 0.1f)
+					maxAge = 5;
 
 				if (numberOfLeafStems < 0)
 					numberOfLeafStems = 0;
@@ -120,17 +131,34 @@ public class Genes
 
 				if (leafEnergyToPlant > 30)
 					leafEnergyToPlant = 30;
+			}
 
-				if (geneStability < MINPERCENT)
-					geneStability = MINPERCENT;
+		private final void mutateColour(Plant thisPlant)
+			{
+				float var = 5f;
+				
+				if (thisPlant != null)
+					var = thisPlant.x < 600 ? hub.world.UVDamage / 10f : hub.world.UVDamage2 / 10f;
 
-				if (geneStability > MAXPERCENT)
-					geneStability = MAXPERCENT;
+				int red = (int) (colour.getRed() + Tools.randFloat(-var, var));
+				int green = (int) (colour.getGreen() + Tools.randFloat(-var, var));
+				int blue = (int) (colour.getBlue() + Tools.randFloat(-var, var));
 
-				if (var < 0)
-					var = 0;
+				if (red < 0)
+					red = 0;
+				else if (red > 255)
+					red = 255;
 
-				if (var > 0.5f)
-					var = 0.5f;
+				if (green < 0)
+					green = 0;
+				else if (green > 255)
+					green = 255;
+
+				if (blue < 0)
+					blue = 0;
+				else if (blue > 255)
+					blue = 255;
+
+				colour = new Color(red, green, blue);
 			}
 	}
