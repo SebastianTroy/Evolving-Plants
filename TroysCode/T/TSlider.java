@@ -46,7 +46,7 @@ public class TSlider extends TComponent implements Serializable, MouseListener, 
 		public static final byte VERTICAL = 1;
 
 		private Color background = Color.LIGHT_GRAY;
-		private boolean showIndex = true;
+		private boolean showIndex = hub.DEBUG ? true : false;
 
 		private ArrayList<TButton> sliders = new ArrayList<TButton>(5);
 

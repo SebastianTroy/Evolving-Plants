@@ -68,7 +68,7 @@ public class Plant extends PlantPart
 				seed.tick();
 				age++;
 				if (age >= genes.maxAge)
-					alive = false;
+					exists = false;
 			}
 
 		public void render(Graphics g)

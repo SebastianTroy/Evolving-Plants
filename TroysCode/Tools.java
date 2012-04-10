@@ -112,6 +112,22 @@ public class Tools
 				Color randomColour = new Color(red, green, blue);
 				return randomColour;
 			}
+		
+		/**
+		 * Returns a completely random {@link Color} with a random alpha value.
+		 * 
+		 * @return a {@link Color} object which holds a random colour.
+		 */
+		public static final Color randAlphaColour()
+			{
+				int alpha = (int) (Math.random() * 256);
+				int red = (int) (Math.random() * 256);
+				int green = (int) (Math.random() * 256);
+				int blue = (int) (Math.random() * 256);
+				Color randomColour = new Color(alpha, red, green, blue);
+				return randomColour;
+			}
+
 
 		/**
 		 * This method calculates the vector between two points.
@@ -278,5 +294,4 @@ public class Tools
 			{
 				JOptionPane.showMessageDialog(hub.frame, infoMessage, "InfoBox: " + titleBar, JOptionPane.INFORMATION_MESSAGE);
 			}
-
 	}

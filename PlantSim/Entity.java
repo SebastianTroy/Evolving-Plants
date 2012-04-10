@@ -8,7 +8,7 @@ public abstract class Entity
 		public float y;
 		
 		public float energy;
-		public boolean alive = true;
+		public boolean exists = true;
 		
 		public abstract void tick();
 		

@@ -10,7 +10,7 @@ public class Genes
 		private final int MINPERCENT = 0;
 		private final int MAXPERCENT = 100;
 
-		public Color colour = Tools.randColour();
+		public Color colour = Tools.randAlphaColour();
 
 		public int maxAge = 2000;
 		private final int ageVar = 300;
@@ -140,10 +140,16 @@ public class Genes
 				if (thisPlant != null)
 					var = thisPlant.x < 600 ? hub.world.UVDamage / 10f : hub.world.UVDamage2 / 10f;
 
+				int alpha = (int) (colour.getAlpha() + Tools.randFloat(-var, var));
 				int red = (int) (colour.getRed() + Tools.randFloat(-var, var));
 				int green = (int) (colour.getGreen() + Tools.randFloat(-var, var));
 				int blue = (int) (colour.getBlue() + Tools.randFloat(-var, var));
 
+				if (alpha < 0)
+					alpha = 0;
+				else if (alpha > 255)
+					alpha = 255;
+				
 				if (red < 0)
 					red = 0;
 				else if (red > 255)
@@ -159,6 +165,6 @@ public class Genes
 				else if (blue > 255)
 					blue = 255;
 
-				colour = new Color(red, green, blue);
+				colour = new Color(red, green, blue, alpha);
 			}
 	}

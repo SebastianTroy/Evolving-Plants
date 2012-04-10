@@ -85,5 +85,8 @@ public class Stem extends PlantPart
 
 				g.setColor(thisPlant.genes.colour);
 				g.fillOval(Math.round(leaf.x - 12.5f), Math.round(leaf.y - 12.5f), 25, 25);
+
+				g.setColor(Color.BLACK);
+				g.drawOval(Math.round(leaf.x - 12.5f), Math.round(leaf.y - 12.5f), 25, 25);
 			}
 	}

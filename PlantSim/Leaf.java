@@ -91,9 +91,13 @@ public class Leaf extends PlantPart
 					notGrowingStems = true;
 			}
 
-		public void containsLight(LightBeam light)
+		public void containsPhoton(Photon photon)
 			{
-				energy += light.energy;
-				light.alive = false;
+				float energyGainedFromLight = photon.energy * (thisPlant.genes.colour.getAlpha() / 255f);
+
+				energy += energyGainedFromLight;
+				photon.energy -= energyGainedFromLight;
+				if (photon.energy < 1)
+					photon.exists = false;
 			}
 	}
