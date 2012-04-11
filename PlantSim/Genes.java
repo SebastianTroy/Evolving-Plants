@@ -109,7 +109,7 @@ public class Genes
 					seedSpread = 10;
 
 				if (numberOfSeedStems < 1 || maxStems < 1 || leafEnergyToPlant < 1 || seedEnergy < 0.1f)
-					maxAge = 5;
+					maxAge = 10;
 
 				if (numberOfLeafStems < 0)
 					numberOfLeafStems = 0;

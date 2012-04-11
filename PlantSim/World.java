@@ -20,8 +20,10 @@ public class World extends RenderableObject
 	{
 		private static final long serialVersionUID = 1L;
 
+		private Pixel[][] photonGrid = new Pixel[800][600];
+
 		private ArrayList<Plant> plantsToAdd = new ArrayList<Plant>(20);
-		private ArrayList<Photon> lightBeams = new ArrayList<Photon>(100);
+		private ArrayList<Photon> photons = new ArrayList<Photon>(100);
 		private ArrayList<Plant> plants = new ArrayList<Plant>(25);
 
 		// Left World options
@@ -76,7 +78,7 @@ public class World extends RenderableObject
 		private final TSlider maxStemsSlider = new TSlider(10, 430, TSlider.HORIZONTAL, 180, 1);
 		private final TSlider stemAngleVarSlider = new TSlider(10, 470, TSlider.HORIZONTAL, 180, 1);
 		private final TSlider seedEnergySlider = new TSlider(10, 510, TSlider.HORIZONTAL, 180, 1);
-		private final TSlider seedSpreadSlider = new TSlider(10, 550, TSlider.HORIZONTAL, 180, 1);
+		private final TSlider alphaValueSlider = new TSlider(10, 550, TSlider.HORIZONTAL, 180, 1);
 
 		// Mouse
 
@@ -104,6 +106,10 @@ public class World extends RenderableObject
 		@Override
 		protected void initiate()
 			{
+				for (int x = 0; x < 800; x++)
+					for (int y = 0; y < 600; y++)
+						photonGrid[x][y] = new Pixel();
+
 				// Left World components
 				addTComponent(photonIntensitySlider);
 				addTComponent(photonEnergySlider);
@@ -137,7 +143,7 @@ public class World extends RenderableObject
 				addTComponent(maxStemsSlider);
 				addTComponent(stemAngleVarSlider);
 				addTComponent(seedEnergySlider);
-				addTComponent(seedSpreadSlider);
+				addTComponent(alphaValueSlider);
 
 				// Mouse Components
 				addTComponent(reColourSelectButton);
@@ -152,7 +158,7 @@ public class World extends RenderableObject
 			{
 				// add 10 equally spaced new plants
 				for (int i = 0; i < 10; i++)
-					for (int tries = 0; tries < 4; tries++)
+					for (int tries = 0; tries < 10; tries++)
 						addPlant(new Plant(new Plant(new Plant(null, (i * 80) + 240, 500, 250), (i * 80) + 240, 500, 250), (i * 80) + 240, 500, 250));
 
 				setGeneSliders();
@@ -163,20 +169,23 @@ public class World extends RenderableObject
 			{
 				for (int i = 0; i < lightIntensity; i++)
 					{
-						lightBeams.add(new Photon(Tools.randInt(200, 600), lightEnergy));
+						photons.add(new Photon(Tools.randInt(200, 599), lightEnergy));
 					}
 
 				for (int i = 0; i < lightIntensity2; i++)
 					{
-						lightBeams.add(new Photon(Tools.randInt(600, 1000), lightEnergy2));
+						photons.add(new Photon(Tools.randInt(600, 999), lightEnergy2));
 					}
 
 				// Remove dead lightBeams
-				Photon[] lightBeamsCopy = new Photon[lightBeams.size()];
-				lightBeams.toArray(lightBeamsCopy);
-				for (Photon e : lightBeamsCopy)
-					if (e.exists == false)
-						lightBeams.remove(e);
+				Photon[] photonsCopy = new Photon[photons.size()];
+				photons.toArray(photonsCopy);
+				for (Photon p : photonsCopy)
+					if (p.exists == false)
+						{
+							photonGrid[(int) (p.x - 200)][(int) p.y].photon = null;
+							photons.remove(p);
+						}
 
 				// Remove dead plants
 				Plant[] plantsCopy = new Plant[plants.size()];
@@ -191,17 +200,26 @@ public class World extends RenderableObject
 				plantsToAdd.clear();
 
 				// Process entities
-				for (Entity e : lightBeams)
+				for (Entity e : photons)
 					e.tick();
 				for (Entity e : plants)
 					e.tick();
 
+				// update photon positions
+				for (Photon p : photons)
+					{
+						photonGrid[(int) p.x - 200][(int) p.y].photon = null;
+						p.y++;
+						photonGrid[(int) p.x - 200][(int) p.y].photon = p;
+					}
+
 				// Check if leaves contain light beams
 				for (Plant plant : plants)
-					for (Photon light : lightBeams)
-						for (Leaf leaf : plant.leaves)
-							if (light.exists && leaf.containsPoint(light.x, light.y))
-								leaf.containsPhoton(light);
+					for (Leaf leaf : plant.leaves)
+						for (int x = (int) (leaf.x - 12); x < leaf.x + 12; x++)
+							for (int y = (int) (leaf.y - 12); y < leaf.y + 12; y++)
+								if (x - 200 > 0 && x < 1000 && photonGrid[x - 200][y].photon != null)
+									leaf.containsPhoton(photonGrid[x - 200][y].photon);
 			}
 
 		@Override
@@ -211,8 +229,8 @@ public class World extends RenderableObject
 				g.fillRect(200, 0, 800, 600);
 
 				if (viewLight || photonIntensitySlider.inUse || photonIntensitySlider2.inUse)
-					for (Entity e : lightBeams)
-						e.render(g);
+					for (Photon p : photons)
+						p.render(g);
 
 				for (Entity p : plants)
 					p.render(g);
@@ -253,7 +271,7 @@ public class World extends RenderableObject
 
 						g.drawString("Stored Energy:          " + selectedPlant.energy, 10, 140);
 						g.drawString("Energy per Seed:     " + selectedPlant.genes.seedEnergy, 10, 160);
-						g.drawString("Seed Spread:            " + selectedPlant.genes.seedSpread, 10, 180);
+						g.drawString("Leaf Transparency:      " + ((255f - selectedPlant.genes.colour.getAlpha()) / 2.55f) + " %", 10, 180);
 					}
 
 				g.drawString("GENES:", 6, 210);
@@ -265,7 +283,7 @@ public class World extends RenderableObject
 				g.drawString("Maximum stem Number: " + currentGenes.maxStems, 14, 430);
 				g.drawString("Stem Angle Variation: " + currentGenes.stemAngleVariation, 14, 470);
 				g.drawString("Energy to Seed: " + currentGenes.seedEnergy, 14, 510);
-				g.drawString("Seed spread: " + currentGenes.seedSpread, 14, 550);
+				g.drawString("Leaf Transparency: " + ((255f - currentGenes.colour.getAlpha()) / 2.55f) + " %", 14, 550);
 
 				if (mouseX > 200 && mouseY > 0 && mouseX < 1000 && mouseY < 600)
 					switch (mouseState)
@@ -298,6 +316,15 @@ public class World extends RenderableObject
 						return;
 					else if (seedling.x < 200 || seedling.x > 1000)
 						return;
+
+				for (Plant plant : plantsToAdd)
+					if (plant.genes.maxAge > 10)
+						{
+							if (seedling.x < plant.x + spacing && seedling.x > plant.x - spacing)
+								return;
+							else if (seedling.x < 200 || seedling.x > 1000)
+								return;
+						}
 
 				plantsToAdd.add(seedling);
 			}
@@ -334,7 +361,10 @@ public class World extends RenderableObject
 						for (Plant p : plants)
 							for (Leaf l : p.leaves)
 								if (l.containsPoint(event.getX(), event.getY()))
-									p.genes.colour = Tools.randAlphaColour();
+									{
+										Color c = Tools.randColour();
+										p.genes.colour = new Color(c.getRed(), c.getGreen(), c.getBlue(), p.genes.colour.getAlpha());
+									}
 						break;
 					}
 			}
@@ -388,7 +418,9 @@ public class World extends RenderableObject
 					{
 						if (selectedPlant != null)
 							{
-								selectedPlant.genes.colour = Tools.randAlphaColour();
+								Color c = Tools.randColour();
+								selectedPlant.genes.colour = new Color(c.getRed(), c.getGreen(), c.getBlue(), selectedPlant.genes.colour.getAlpha());
+
 								for (Plant p : plants)
 									if (isRelated(p))
 										p.genes.colour = selectedPlant.genes.colour;
@@ -450,7 +482,7 @@ public class World extends RenderableObject
 				maxStemsSlider.setSliderPercent(0, (g.maxStems - 1) / 0.29f);
 				stemAngleVarSlider.setSliderPercent(0, g.stemAngleVariation);
 				seedEnergySlider.setSliderPercent(0, g.seedEnergy / 5);
-				seedSpreadSlider.setSliderPercent(0, (g.seedSpread - 10) / 0.9f);
+				alphaValueSlider.setSliderPercent(0, (255 - g.colour.getAlpha()) / 2.55f);
 			}
 
 		@Override
@@ -540,8 +572,10 @@ public class World extends RenderableObject
 					currentGenes.stemAngleVariation = stemAngleVarSlider.getSliderPercent(0);
 				else if (event.getSource() == seedEnergySlider)
 					currentGenes.seedEnergy = seedEnergySlider.getSliderPercent(0) * 5;
-				else if (event.getSource() == seedSpreadSlider)
-					currentGenes.seedSpread = (seedSpreadSlider.getSliderPercent(0) * 0.9f) + 10;
+				else if (event.getSource() == alphaValueSlider)
+					{
+						Color c = currentGenes.colour;
+						currentGenes.colour = new Color(c.getRed(), c.getGreen(), c.getBlue(), (int) (255 - (alphaValueSlider.getSliderPercent(0) * 2.55f)));
+					}
 			}
-
 	}
