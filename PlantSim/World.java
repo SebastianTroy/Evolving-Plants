@@ -411,7 +411,10 @@ public class World extends RenderableObject
 				else if (event.getSource() == reColourButton)
 					{
 						if (selectedPlant != null)
-							selectedPlant.genes.colour = Tools.randAlphaColour();
+							{
+								Color c = Tools.randColour();
+								selectedPlant.genes.colour = new Color(c.getRed(), c.getGreen(), c.getBlue(), selectedPlant.genes.colour.getAlpha());
+							}
 					}
 
 				else if (event.getSource() == reColourRelativesButton)
@@ -429,7 +432,10 @@ public class World extends RenderableObject
 
 				else if (event.getSource() == randomiseColourButton)
 					for (Plant p : plants)
-						p.genes.colour = Tools.randAlphaColour();
+						{
+							Color c = Tools.randColour();
+							selectedPlant.genes.colour = new Color(c.getRed(), c.getGreen(), c.getBlue(), selectedPlant.genes.colour.getAlpha());
+						}
 
 				else if (event.getSource() == getGenesButton)
 					{
