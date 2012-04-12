@@ -93,7 +93,7 @@ public class Leaf extends PlantPart
 
 		public void containsPhoton(Photon photon)
 			{
-				float energyGainedFromLight = photon.energy * (thisPlant.genes.colour.getAlpha() / 255f);
+				float energyGainedFromLight = (photon.energy / 5) * (thisPlant.genes.colour.getAlpha() / 255f);
 
 				energy += energyGainedFromLight;
 				photon.energy -= energyGainedFromLight;

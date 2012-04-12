@@ -218,7 +218,7 @@ public class World extends RenderableObject
 					for (Leaf leaf : plant.leaves)
 						for (int x = (int) (leaf.x - 12); x < leaf.x + 12; x++)
 							for (int y = (int) (leaf.y - 12); y < leaf.y + 12; y++)
-								if (x - 200 > 0 && x < 1000 && photonGrid[x - 200][y].photon != null)
+								if (x - 200 > 0 && x < 1000 && y > 0 && y  < 600 && photonGrid[x - 200][y].photon != null)
 									leaf.containsPhoton(photonGrid[x - 200][y].photon);
 			}
 
