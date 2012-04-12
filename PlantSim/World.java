@@ -434,7 +434,7 @@ public class World extends RenderableObject
 					for (Plant p : plants)
 						{
 							Color c = Tools.randColour();
-							selectedPlant.genes.colour = new Color(c.getRed(), c.getGreen(), c.getBlue(), selectedPlant.genes.colour.getAlpha());
+							p.genes.colour = new Color(c.getRed(), c.getGreen(), c.getBlue(), p.genes.colour.getAlpha());
 						}
 
 				else if (event.getSource() == getGenesButton)
