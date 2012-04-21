@@ -3,18 +3,31 @@ package TroysCode.T;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelEvent;
-import java.awt.event.MouseWheelListener;
 import java.awt.image.BufferedImage;
 import java.io.Serializable;
 
+import javax.swing.event.EventListenerList;
+
 import TroysCode.hub;
 
-public class TScrollBar extends TComponent implements Serializable, MouseListener, MouseMotionListener, MouseWheelListener, ActionListener
+/**
+ * This class creates a simple scroll bar, the bar measures where it is on the
+ * scrollbar as a percentage, 0% meaning it is at the beginning of the
+ * scrollbar, 100% indicating it is at the end, 50% in the middle ect.
+ * <p>
+ * This scrollbar implementation does not need to be linked to a viewable area,
+ * in fact it can be used anywhere, however it is up to the programmer to decide
+ * what happens when the scrollbar is used.
+ * <p>
+ * This class throws a {@link TScrollEvent} which is picked up by the
+ * {@link TComponentContainer} it is in.
+ * 
+ * @author Sebastian Troy
+ */
+public class TScrollBar extends TComponent implements Serializable
 	{
 		private static final long serialVersionUID = 1L;
 
@@ -44,29 +57,28 @@ public class TScrollBar extends TComponent implements Serializable, MouseListene
 		 */
 		public static final byte SCROLLBUTTON = 4;
 
-		/*
-		 * This class creates a simple scroll bar. The look of it can be
-		 * modified by editing the the texture.png file located in the
-		 * images\default file.
+		/**
+		 * The length of the {@link TScrollBar} includes the arrow
+		 * {@link TButton}s at either end
 		 */
+		private double length = 0;
 
-		/*
-		 * The length of the TScrollBar includes the arrow TButtons at either
-		 * end
-		 */
-		private float length = 0;
-
-		/*
-		 * This byte is used to check if the TScrollbar is vertical or
-		 * horizontal. This difference is important for rendering and also for
-		 * making sure the correct arrow TButtons are used.
+		/**
+		 * This byte represents the orientation of the {@link TScrollBar}. It
+		 * can either be <code>VERTICAL</code> or <code>HORIZONTAL</code>.
 		 */
 		private byte orientation;
 
+		/**
+		 * This constant represents an orientation that a {@link TScrollBar} can
+		 * have.
+		 */
 		public static final byte HORIZONTAL = 0;
+		/**
+		 * This constant represents an orientation that a {@link TScrollBar} can
+		 * have.
+		 */
 		public static final byte VERTICAL = 1;
-
-		private Color background = Color.LIGHT_GRAY;
 
 		/*
 		 * Only three of these TButtons will ever be used for a particular
@@ -77,17 +89,30 @@ public class TScrollBar extends TComponent implements Serializable, MouseListene
 		private TButton down;
 		private TButton left;
 		private TButton right;
-		private TButton slider;
+		private TButton slider = null;
 
-		/*
+		/**
 		 * This Constructor allows you to set the position of the top left of
 		 * the TScrollBar, it also allows you to set the isVertical boolean and
 		 * the total length for the TScrollBar. Default texture images are used
 		 * for the TButtons unless the constructor below is used to specify an
 		 * array of images which can be used instead.
+		 * 
+		 * @param x
+		 *            - The {@link TScrollBar}'s x position within the program's
+		 *            frame.
+		 * @param y
+		 *            - The {@link TScrollBar}'s y position within the program's
+		 *            frame.
+		 * @param orientation
+		 *            - The orientation of the {@link TScrollBar}. Either
+		 *            <code>VERTICAL</code> or <code>HORIZONTAL</code>.
+		 * @param length
+		 *            - The total length of the {@link TScrollBar}.
 		 */
-		public TScrollBar(float x, float y, byte orientation, float length)
+		public TScrollBar(double x, double y, byte orientation, double length)
 			{
+				// width and height set later
 				super(x, y, 0, 0);
 				if (orientation == VERTICAL || orientation == HORIZONTAL)
 					this.orientation = orientation;
@@ -123,9 +148,10 @@ public class TScrollBar extends TComponent implements Serializable, MouseListene
 						right.addActionListener(this);
 						slider = new TButton(x + 25, y, hub.images.tScrollBarIcons[SCROLLBUTTON]);
 					}
+				backgroundColour = Color.LIGHT_GRAY;
 			}
 
-		public TScrollBar(float x, float y, byte orientation, float length, BufferedImage[] images)
+		public TScrollBar(double x, double y, byte orientation, double length, BufferedImage[] images)
 			{
 				super(x, y, 0, 0);
 
@@ -165,11 +191,12 @@ public class TScrollBar extends TComponent implements Serializable, MouseListene
 						right.addActionListener(this);
 						slider = new TButton(x + 25, y, images[SCROLLBUTTON]);
 					}
+				backgroundColour = Color.LIGHT_GRAY;
 			}
 
-		public final float getSliderPercent()
+		public final double getScrollPercent()
 			{
-				float scrollPercent = 0f;
+				double scrollPercent = 0f;
 
 				if (orientation == VERTICAL)
 					scrollPercent = ((slider.y - (y + 25)) / (length - 75f)) * 100f;
@@ -201,19 +228,43 @@ public class TScrollBar extends TComponent implements Serializable, MouseListene
 		 * This method tells the {@link TComponent} which
 		 * {@link TComponentContainer} it has been added to.
 		 * 
-		 * @param parent
+		 * @param componentContainer
 		 *            - the {@link TComponentContainer} to which this
 		 *            {@link TComponent} has been added.
 		 */
-		public final void setTComponentContainer(TComponentContainer parent)
+		protected final void setTComponentContainer(TComponentContainer componentContainer)
 			{
-				if (tComponentContainer == null)
+				if (tComponentContainer != componentContainer)
 					{
-						tComponentContainer = parent;
+						if (tComponentContainer != null)
+							{
+								tComponentContainer.getParent().removeMouseListener(this);
+								tComponentContainer.getParent().removeMouseMotionListener(this);
+								tComponentContainer.getParent().removeMouseWheelListener(this);
+							}
+						tComponentContainer = componentContainer;
 						tComponentContainer.getParent().addMouseListener(this);
 						tComponentContainer.getParent().addMouseMotionListener(this);
 						tComponentContainer.getParent().addMouseWheelListener(this);
 					}
+			}
+
+		/**
+		 * This method is called whenevet this {@link TComponent} is removed
+		 * from a {@link TComponentContainer}.
+		 */
+		@Override
+		protected final void removedFromTComponentContainer()
+			{
+				if (tComponentContainer.getParent() != null)
+					{
+						tComponentContainer.getParent().removeMouseListener(this);
+						tComponentContainer.getParent().removeMouseMotionListener(this);
+						tComponentContainer.getParent().removeMouseWheelListener(this);
+					}
+
+				listenerList = new EventListenerList();
+				tComponentContainer = null;
 			}
 
 		/*
@@ -226,16 +277,16 @@ public class TScrollBar extends TComponent implements Serializable, MouseListene
 			{
 				if (orientation == VERTICAL)
 					{
-						g.setColor(background);
-						g.fillRect(Math.round(x), Math.round(y), 25, Math.round(length));
+						g.setColor(backgroundColour);
+						g.fillRect((int) Math.round(x), (int) Math.round(y), 25, (int) Math.round(length));
 						up.render(g);
 						down.render(g);
 						slider.render(g);
 					}
 				else if (orientation == HORIZONTAL)
 					{
-						g.setColor(background);
-						g.fillRect(Math.round(x), Math.round(y), Math.round(length), 25);
+						g.setColor(backgroundColour);
+						g.fillRect((int) Math.round(x), (int) Math.round(y), (int) Math.round(length), 25);
 						left.render(g);
 						right.render(g);
 						slider.render(g);
@@ -248,29 +299,29 @@ public class TScrollBar extends TComponent implements Serializable, MouseListene
 		 * TButtons have to be updated too.
 		 */
 		@Override
-		public final void setX(float x)
+		public final void setX(double x)
 			{
-				float diffX = x - this.x;
+				double diffX = x - this.x;
 				this.moveX(diffX);
 			}
 
 		@Override
-		public final void setY(float y)
+		public final void setY(double y)
 			{
-				float diffY = y - this.y;
+				double diffY = y - this.y;
 				this.moveY(diffY);
 			}
 
 		@Override
-		public final void setPosition(float x, float y)
+		public final void setPosition(double x, double y)
 			{
-				float diffX = x - this.x;
-				float diffY = y - this.y;
+				double diffX = x - this.x;
+				double diffY = y - this.y;
 				this.movePosition(diffX, diffY);
 			}
 
 		@Override
-		public final void moveX(float x)
+		public final void moveX(double x)
 			{
 				this.x += x;
 
@@ -289,7 +340,7 @@ public class TScrollBar extends TComponent implements Serializable, MouseListene
 			}
 
 		@Override
-		public final void moveY(float y)
+		public final void moveY(double y)
 			{
 				this.y += y;
 
@@ -308,7 +359,7 @@ public class TScrollBar extends TComponent implements Serializable, MouseListene
 			}
 
 		@Override
-		public final void movePosition(float x, float y)
+		public final void movePosition(double x, double y)
 			{
 				this.x += x;
 				this.y += y;
@@ -330,26 +381,26 @@ public class TScrollBar extends TComponent implements Serializable, MouseListene
 		/*
 		 * This method allows the length of the TScrollBar to be changed.
 		 */
-		public final void setLength(float length)
+		public final void setLength(double length)
 			{
+				/*
+				 * If the length < 76 change this.length and length to 76.
+				 * (Lengths of 75 and less show unusual behavior)
+				 */
 				length = length < 76 ? length = 76 : length;
 
 				if (orientation == VERTICAL)
 					{
 						up.setPosition(x, y);
-						down.setPosition(x, y + (length - 25f));
-						slider.setY(y + (getSliderPercent() * length / 100f) - 12.5f);
+						down.setPosition(x, y + (length - 25));
+						slider.moveY((getScrollPercent() / 100.0) * (length - this.length));
 					}
 				else if (orientation == HORIZONTAL)
 					{
 						left.setPosition(x, y);
 						right.setPosition(x + (length - 25f), y);
-						slider.setX(x + (getSliderPercent() * length / 100f) - 12.5f);
+						slider.moveX((getScrollPercent() / 100.0) * (length - this.length));
 					}
-				/*
-				 * If the length < 76 change this.length and length to 76.
-				 * (Lengths of 75 and less show unusual behavior)
-				 */
 				this.length = length;
 			}
 
@@ -359,7 +410,7 @@ public class TScrollBar extends TComponent implements Serializable, MouseListene
 		 *             <code>setLength()</code> instead.
 		 */
 		@Override
-		public final void setWidth(float width)
+		public final void setWidth(double width)
 			{
 			}
 
@@ -369,7 +420,7 @@ public class TScrollBar extends TComponent implements Serializable, MouseListene
 		 *             <code>setLength()</code> instead.
 		 */
 		@Override
-		public final void setHeight(float height)
+		public final void setHeight(double height)
 			{
 			}
 
@@ -379,36 +430,28 @@ public class TScrollBar extends TComponent implements Serializable, MouseListene
 		 *             Use <code>setLength()</code> instead.
 		 */
 		@Override
-		public final void setDimensions(float width, float height)
+		public final void setDimensions(double width, double height)
 			{
 			}
 
 		/**
-		 * This method sets the colour of the {@link TSlider}s bar.
-		 * 
-		 * @param colour
-		 *            - the colour that the bar will be set to.
-		 */
-		public final void setBackgroundColour(Color colour)
-			{
-				background = colour;
-			}
-
-		/*
-		 * This method passes on any MouseEvents onto the TButtons so they can
-		 * process them.
+		 * This method passes on any {@link MouseEvent}s onto this scrollbar's
+		 * {@link TButton}s so they can process them.
 		 */
 		@Override
 		public final void mousePressed(MouseEvent me)
 			{
 				if (me.getButton() == 1)
 					{
+						if (containsPoint(me.getPoint()))
+							inUse = true;
+
 						if (orientation == VERTICAL)
 							{
 								up.mousePressed(me);
 								down.mousePressed(me);
 							}
-						else if (orientation == VERTICAL)
+						else if (orientation == HORIZONTAL)
 							{
 								left.mousePressed(me);
 								right.mousePressed(me);
@@ -417,54 +460,59 @@ public class TScrollBar extends TComponent implements Serializable, MouseListene
 					}
 			}
 
-		/*
-		 * If the slider is active (i.e. the mouse is being held down over it),
-		 * this method calculates the ""scrollPercent"" then moves the slider to
-		 * it's new position. It does it this way round (i.e. instead of moving
-		 * the slider and then calculating the scrollPercentage) so it can make
-		 * sure the slider is never moved outside it's range.
+		/**
+		 * If the slider button is <code>inUse</code> (i.e. the mouse is being
+		 * held down within its bounds), this method calculates the
+		 * <code>scrollPercent</code> then moves the slider to it's new
+		 * position.
 		 */
 		@Override
 		public final void mouseDragged(MouseEvent me)
 			{
 				if (slider.inUse)
-					if (slider.inUse)
-						if (orientation == VERTICAL)
-							{
-								slider.y = me.getY() - 12.5f;
-								checkSliderPosition();
-								sendTScrollEvent(new TScrollEvent(this, TScrollEvent.TSCROLLBARSCROLLED, getSliderPercent()));
-							}
-						else if (orientation == HORIZONTAL)
-							{
-								slider.x = me.getX() - 12.5f;
-								checkSliderPosition();
-								sendTScrollEvent(new TScrollEvent(this, TScrollEvent.TSCROLLBARSCROLLED, getSliderPercent()));
-							}
+					if (orientation == VERTICAL)
+						{
+							slider.y = me.getY() - 12.5;
+							checkSliderPosition();
+							sendTScrollEvent(new TScrollEvent(this, TScrollEvent.TSCROLLBARSCROLLED, getScrollPercent()));
+						}
+					else if (orientation == HORIZONTAL)
+						{
+							slider.x = me.getX() - 12.5;
+							checkSliderPosition();
+							sendTScrollEvent(new TScrollEvent(this, TScrollEvent.TSCROLLBARSCROLLED, getScrollPercent()));
+						}
 			}
 
-		/*
-		 * This method passes on any MouseEvents onto the TButtons so they can
-		 * process them.
+		/**
+		 * This method passes on any {@link MouseEvent}s onto this scrollbar's
+		 * {@link TButton}s so they can process them.
 		 */
 		@Override
 		public final void mouseReleased(MouseEvent me)
 			{
-				if (orientation == VERTICAL)
+				if (me.getButton() == 1)
 					{
-						up.mouseReleased(me);
-						down.mouseReleased(me);
+						inUse = false;
+
+						if (orientation == VERTICAL)
+							{
+								up.mouseReleased(me);
+								down.mouseReleased(me);
+							}
+						else if (orientation == HORIZONTAL)
+							{
+								left.mouseReleased(me);
+								right.mouseReleased(me);
+							}
+						slider.mouseReleased(me);
 					}
-				else if (orientation == HORIZONTAL)
-					{
-						left.mouseReleased(me);
-						right.mouseReleased(me);
-					}
-				slider.mouseReleased(me);
 			}
 
-		/*
-		 * This method allows scrolling using a mouse wheel.
+		/**
+		 * If this {@link TScrollBar} is the {@link TComponentContainer}
+		 * .mostAppropriateScrollBar(), this {@link TScrollBar} is scrolled
+		 * according to the distance the mouse wheel has been scrolled.
 		 */
 		@Override
 		public final void mouseWheelMoved(MouseWheelEvent event)
@@ -475,20 +523,21 @@ public class TScrollBar extends TComponent implements Serializable, MouseListene
 							{
 								slider.moveY(event.getWheelRotation());
 								checkSliderPosition();
-								sendTScrollEvent(new TScrollEvent(this, TScrollEvent.TSCROLLBARSCROLLED, getSliderPercent()));
+								sendTScrollEvent(new TScrollEvent(this, TScrollEvent.TSCROLLBARSCROLLED, getScrollPercent()));
 							}
 						else if (orientation == HORIZONTAL)
 							{
 								slider.moveX(event.getWheelRotation());
 								checkSliderPosition();
-								sendTScrollEvent(new TScrollEvent(this, TScrollEvent.TSCROLLBARSCROLLED, getSliderPercent()));
+								sendTScrollEvent(new TScrollEvent(this, TScrollEvent.TSCROLLBARSCROLLED, getScrollPercent()));
 							}
 					}
 			}
 
-		/*
-		 * This method picks up any ActionEvents produced by the arrow TButtons
-		 * and then adjusts the slider position.
+		/**
+		 * This method picks up any {@link ActionEvent}s produced by this
+		 * {@link TScrollBar}'s arrow buttons, and then adjusts the slider
+		 * position accordingly.
 		 */
 		@Override
 		public final void actionPerformed(ActionEvent event)
@@ -503,45 +552,82 @@ public class TScrollBar extends TComponent implements Serializable, MouseListene
 					slider.moveX((length - 75f) / 100f);
 
 				checkSliderPosition();
-				sendTScrollEvent(new TScrollEvent(this, TScrollEvent.TSCROLLBARSCROLLED, getSliderPercent()));
+				sendTScrollEvent(new TScrollEvent(this, TScrollEvent.TSCROLLBARSCROLLED, getScrollPercent()));
 			}
 
-		/*
-		 * This method can be used to set
+		/**
+		 * This method can be used to set the <code>scrollPercent</code> of this
+		 * {@link TScrollBar}.
 		 */
-		public final void setScrollPercent(float scrollPercent)
+		public final void setScrollPercent(double scrollPercent)
 			{
 				if (orientation == VERTICAL)
 					{
-						slider.setY(((scrollPercent * (length - 75f)) / 100f) + 12.5f);
+						slider.setY(((scrollPercent * (length - 75)) / 100f) + 12.5);
 						checkSliderPosition();
-						sendTScrollEvent(new TScrollEvent(this, TScrollEvent.TSCROLLBARSCROLLED, getSliderPercent()));
+						sendTScrollEvent(new TScrollEvent(this, TScrollEvent.TSCROLLBARSCROLLED, getScrollPercent()));
 					}
 				else if (orientation == HORIZONTAL)
 					{
-						slider.setX(((scrollPercent * (length - 75f)) / 100f) + 12.5f);
+						slider.setX(((scrollPercent * (length - 75)) / 100f) + 12.5);
 						checkSliderPosition();
-						sendTScrollEvent(new TScrollEvent(this, TScrollEvent.TSCROLLBARSCROLLED, getSliderPercent()));
+						sendTScrollEvent(new TScrollEvent(this, TScrollEvent.TSCROLLBARSCROLLED, getScrollPercent()));
 					}
 			}
 
+		/**
+		 * Not used by this class.
+		 */
 		@Override
 		public void mouseMoved(MouseEvent paramMouseEvent)
 			{
 			}
 
+		/**
+		 * Not used by this class.
+		 */
 		@Override
 		public void mouseClicked(MouseEvent paramMouseEvent)
 			{
 			}
 
+		/**
+		 * Not used by this class.
+		 */
 		@Override
 		public void mouseEntered(MouseEvent paramMouseEvent)
 			{
 			}
 
+		/**
+		 * Not used by this class.
+		 */
 		@Override
 		public void mouseExited(MouseEvent paramMouseEvent)
+			{
+			}
+
+		/**
+		 * Not used by this class.
+		 */
+		@Override
+		public void keyTyped(KeyEvent e)
+			{
+			}
+
+		/**
+		 * Not used by this class.
+		 */
+		@Override
+		public void keyPressed(KeyEvent e)
+			{
+			}
+
+		/**
+		 * Not used by this class.
+		 */
+		@Override
+		public void keyReleased(KeyEvent e)
 			{
 			}
 

@@ -5,6 +5,7 @@ import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -36,7 +37,7 @@ public abstract class TComponentContainer implements Serializable, TScrollListen
 		 * This {@link ArrayList} holds any {@link TComponent}'s added to the
 		 * {@link TComponentContainer}.
 		 */
-		private ArrayList<TComponent> tComponents = new ArrayList<TComponent>();
+		private volatile ArrayList<TComponent> tComponents = new ArrayList<TComponent>();
 
 		/**
 		 * This {@link EventListenerList} is used to hold
@@ -113,30 +114,28 @@ public abstract class TComponentContainer implements Serializable, TScrollListen
 		 */
 		protected synchronized final void addTComponent(TComponent component)
 			{
-				if (!tComponents.contains(component))
+				if (!tComponents.contains(component) && component != null)
 					{
 						/*
 						 * Only initiates the TComponent if it has not been
 						 * initiated already and this class has had it's own
 						 * parent set.
 						 */
-						if (component.tComponentContainer == null && parentComponent != null)
+						if (component.tComponentContainer != this && parentComponent != null)
 							{
-								component.setTComponentContainer(this);
+								if (component.tComponentContainer != null)
+									component.tComponentContainer.removeTComponent(component);
 
-								ActionListener[] listeners = eventListeners.getListeners(ActionListener.class);
+								ActionListener[] listeners = getEventListeners();
 								for (ActionListener listener : listeners)
 									component.addActionListener(listener);
 
 								if (component.getClass() == TScrollBar.class || component.getClass() == TSlider.class)
 									component.addTScrollListener(this);
+
+								component.setTComponentContainer(this);
 							}
 						tComponents.add(component);
-						if (component.getClass() == TSlider.class)
-							{
-								TSlider s = (TSlider) component;
-								s.sliderAdded();
-							}
 					}
 			}
 
@@ -148,7 +147,17 @@ public abstract class TComponentContainer implements Serializable, TScrollListen
 		 */
 		protected synchronized final void removeTComponent(TComponent component)
 			{
+				component.removedFromTComponentContainer();
 				tComponents.remove(component);
+			}
+
+		/**
+		 * @return an array of {@link ActionListener}s which are being used by
+		 *         this class.
+		 */
+		protected final ActionListener[] getEventListeners()
+			{
+				return eventListeners.getListeners(ActionListener.class);
 			}
 
 		/**
@@ -196,8 +205,9 @@ public abstract class TComponentContainer implements Serializable, TScrollListen
 								 * ""nearestTScrollBar"" to c.
 								 */
 								if (mostAppropriateScrollBar == null
-										|| Tools.getVectorLength(c.getNearestPoint(event.getPoint()), event.getPoint()) < Tools.getVectorLength(
-												mostAppropriateScrollBar.getNearestPoint(event.getPoint()), event.getPoint()))
+										|| Tools.getVectorLength(c.getNearestPoint(new TPoint(event.getPoint())), new TPoint(event.getPoint())) < Tools
+												.getVectorLength(mostAppropriateScrollBar.getNearestPoint(new TPoint(event.getPoint())),
+														new TPoint(event.getPoint())))
 									mostAppropriateScrollBar = c;
 							}
 						/*

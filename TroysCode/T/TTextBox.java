@@ -1,11 +1,15 @@
 package TroysCode.T;
 
 import java.awt.Graphics;
+import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.event.MouseWheelEvent;
 import java.io.Serializable;
+
+import javax.swing.event.EventListenerList;
 
 public class TTextBox extends TComponent implements Serializable, MouseListener, KeyListener
 	{
@@ -20,18 +24,40 @@ public class TTextBox extends TComponent implements Serializable, MouseListener,
 		 * This method tells the {@link TComponent} which
 		 * {@link TComponentContainer} it has been added to.
 		 * 
-		 * @param parent
+		 * @param componentContainer
 		 *            - the {@link TComponentContainer} to which this
 		 *            {@link TComponent} has been added.
 		 */
-		public final void setTComponentContainer(TComponentContainer parent)
+		protected final void setTComponentContainer(TComponentContainer componentContainer)
 			{
-				if (tComponentContainer == null)
+				if (tComponentContainer != componentContainer)
 					{
-						tComponentContainer = parent;
+						if (tComponentContainer != null)
+							{
+								tComponentContainer.getParent().removeMouseListener(this);
+								tComponentContainer.getParent().removeMouseMotionListener(this);
+								tComponentContainer.getParent().removeMouseWheelListener(this);
+							}
+						tComponentContainer = componentContainer;
 						tComponentContainer.getParent().addMouseListener(this);
 						tComponentContainer.getParent().addKeyListener(this);
 					}
+			}
+
+		/**
+		 * This method is called whenevet this {@link TComponent} is removed
+		 * from a {@link TComponentContainer}.
+		 */
+		@Override
+		protected final void removedFromTComponentContainer()
+			{
+				listenerList = new EventListenerList();
+				tComponentContainer = null;
+			}
+
+		@Override
+		public void render(Graphics g)
+			{
 			}
 
 		@Override
@@ -75,7 +101,22 @@ public class TTextBox extends TComponent implements Serializable, MouseListener,
 			}
 
 		@Override
-		public void render(Graphics g)
+		public void mouseDragged(MouseEvent e)
+			{
+			}
+
+		@Override
+		public void mouseMoved(MouseEvent e)
+			{
+			}
+
+		@Override
+		public void mouseWheelMoved(MouseWheelEvent e)
+			{
+			}
+
+		@Override
+		public void actionPerformed(ActionEvent e)
 			{
 			}
 	}

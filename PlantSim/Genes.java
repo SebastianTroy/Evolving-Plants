@@ -21,6 +21,8 @@ public class Genes
 		private final float seedSpreadVar = 15;
 		public float numberOfSeedStems = 1.5f;
 		private final float numSeedStemVar = 3;
+		public int germinationTime = 0;
+		private final float germinationTimeVar = 20;
 
 		public float maxStems = 1;
 		private final float maxStemsVar = 2;
@@ -40,6 +42,8 @@ public class Genes
 		public int leafEnergyToPlant = 1;
 		private final float leafEnergyToPlantVar = 0.1f;
 
+		protected boolean germinate = true;
+
 		public Genes(Plant parent, Plant thisPlant)
 			{
 				if (parent != null)
@@ -50,6 +54,7 @@ public class Genes
 
 						seedEnergy = parent.genes.seedEnergy;
 						seedSpread = parent.genes.seedSpread;
+						germinationTime = parent.genes.germinationTime;
 
 						numberOfSeedStems = parent.genes.numberOfSeedStems;
 						numberOfLeafStems = parent.genes.numberOfLeafStems;
@@ -77,7 +82,7 @@ public class Genes
 						UVIntensity = thisPlant.x < 600 ? hub.world.UVIntensity : hub.world.UVIntensity2;
 						variability = thisPlant.x < 600 ? hub.world.UVDamage : hub.world.UVDamage2;
 					}
-				
+
 				if (UVIntensity > Tools.randFloat(MINPERCENT, MAXPERCENT))
 					{
 						float var = variability / 100f;
@@ -88,6 +93,7 @@ public class Genes
 
 						seedEnergy += Tools.randFloat(-var * seedEnergyVar, var * seedEnergyVar);
 						seedSpread += Tools.randFloat(-var * seedSpreadVar, var * seedSpreadVar);
+						germinationTime += (int) (Tools.randFloat(-var * germinationTimeVar, var * germinationTimeVar));
 
 						numberOfSeedStems += Tools.randFloat(-var * numSeedStemVar, var * numSeedStemVar);
 						numberOfLeafStems += Tools.randFloat(-var * numLeafStemsVar, var * numLeafStemsVar);
@@ -105,11 +111,11 @@ public class Genes
 
 		private final void checkGenes()
 			{
-				if (seedSpread < 10)
-					seedSpread = 10;
+				if (germinationTime < 0)
+					seedSpread = 0;
 
 				if (numberOfSeedStems < 1 || maxStems < 1 || leafEnergyToPlant < 1 || seedEnergy < 0.1f)
-					maxAge = 10;
+					germinate = false;
 
 				if (numberOfLeafStems < 0)
 					numberOfLeafStems = 0;
@@ -136,9 +142,9 @@ public class Genes
 		private final void mutateColour(Plant thisPlant)
 			{
 				float var = 5f;
-				
+
 				if (thisPlant != null)
-					var = thisPlant.x < 600 ? hub.world.UVDamage / 10f : hub.world.UVDamage2 / 10f;
+					var = thisPlant.x < 600 ? hub.world.UVDamage / 5f : hub.world.UVDamage2 / 5f;
 
 				int alpha = (int) (colour.getAlpha() + Tools.randFloat(-var, var));
 				int red = (int) (colour.getRed() + Tools.randFloat(-var, var));
@@ -149,7 +155,7 @@ public class Genes
 					alpha = 0;
 				else if (alpha > 255)
 					alpha = 255;
-				
+
 				if (red < 0)
 					red = 0;
 				else if (red > 255)

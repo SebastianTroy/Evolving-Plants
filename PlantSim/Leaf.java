@@ -93,11 +93,14 @@ public class Leaf extends PlantPart
 
 		public void containsPhoton(Photon photon)
 			{
-				float energyGainedFromLight = (photon.energy / 5) * (thisPlant.genes.colour.getAlpha() / 255f);
+				if (Tools.getVectorLength(x, y, photon.x, photon.y) < 12.5)
+					{
+						float energyGainedFromLight = photon.energy * (thisPlant.genes.colour.getAlpha() / 255f);
 
-				energy += energyGainedFromLight;
-				photon.energy -= energyGainedFromLight;
-				if (photon.energy < 1)
-					photon.exists = false;
+						energy += energyGainedFromLight;
+						photon.energy -= energyGainedFromLight;
+						if (photon.energy < 1)
+							photon.exists = false;
+					}
 			}
 	}

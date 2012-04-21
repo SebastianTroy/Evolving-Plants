@@ -9,9 +9,12 @@ public class Seed extends PlantPart
 	{
 		private Stem[] stems = null;
 
-		public Seed(Plant thisPlant, float x, float y)
+		private int germinationTime;
+
+		public Seed(Plant thisPlant, float x, float y, int germinationTime)
 			{
 				super(thisPlant, x, y);
+				this.germinationTime = germinationTime;
 			}
 
 		@Override
@@ -22,18 +25,26 @@ public class Seed extends PlantPart
 						y += 2;
 						thisPlant.y += 2;
 					}
+				else if (germinationTime > 0)
+					{
+						germinationTime--;
+					}
 				else if (stems == null)
-					germinate();
+					{
+						germinate();
+					}
 				else
-					for (Stem s : stems)
-						{
-							s.tick();
-							if (energy > 0)
-								{
-									energy--;
-									s.energy++;
-								}
-						}
+					{
+						for (Stem s : stems)
+							{
+								s.tick();
+								if (energy > 0)
+									{
+										energy--;
+										s.energy++;
+									}
+							}
+					}
 			}
 
 		@Override
@@ -50,10 +61,15 @@ public class Seed extends PlantPart
 
 		public void germinate()
 			{
-				int numStems = (int) Math.min(thisPlant.numberOfStemsLeft, thisPlant.genes.numberOfSeedStems);
-				stems = new Stem[numStems];
-				for (int i = 0; i < numStems; i++)
-					stems[i] = new Stem(thisPlant, x, y);
-				thisPlant.numberOfStemsLeft -= numStems;
+				if (thisPlant.genes.germinate)
+					{
+						int numStems = (int) Math.min(thisPlant.numberOfStemsLeft, thisPlant.genes.numberOfSeedStems);
+						stems = new Stem[numStems];
+						for (int i = 0; i < numStems; i++)
+							stems[i] = new Stem(thisPlant, x, y);
+						thisPlant.numberOfStemsLeft -= numStems;
+					}
+				else
+					thisPlant.exists = false;
 			}
 	}

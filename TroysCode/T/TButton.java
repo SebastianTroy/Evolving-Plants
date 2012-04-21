@@ -5,11 +5,13 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
+import java.awt.event.MouseWheelEvent;
 import java.awt.image.BufferedImage;
 import java.io.Serializable;
+
+import javax.swing.event.EventListenerList;
 
 import TroysCode.InputListener;
 import TroysCode.RenderableObject;
@@ -28,7 +30,7 @@ import TroysCode.hub;
  * 
  * @author Sebastian Troy
  */
-public class TButton extends TComponent implements Serializable, MouseListener, MouseMotionListener
+public class TButton extends TComponent implements Serializable
 	{
 		private static final long serialVersionUID = 1L;
 
@@ -42,19 +44,6 @@ public class TButton extends TComponent implements Serializable, MouseListener, 
 		 * texture array
 		 */
 		public static final byte BUTTONDOWN = 1;
-
-		/**
-		 * This {@link String} can be used to display a message on the
-		 * {@link TButton}.
-		 * <p>
-		 * If the {@link String} is too big to fit inside the {@link TButton} it
-		 * is displayed to the side of the {@link TButton} instead. The
-		 * {@link TButton} can be set to change size to fit the message instead.
-		 * Use <code>setFitToLabel(true)</code>.
-		 * <p>
-		 * If the {@link TButton}'s image has been set, the mesage is not shown.
-		 */
-		private String label = "";
 
 		/**
 		 * This {@link SerializableBufferedImage} can be used to represet this
@@ -82,13 +71,26 @@ public class TButton extends TComponent implements Serializable, MouseListener, 
 		private Font font = setFont();
 
 		/**
+		 * This {@link String} can be used to display a message on the
+		 * {@link TButton}.
+		 * <p>
+		 * If the {@link String} is too big to fit inside the {@link TButton} it
+		 * is displayed to the side of the {@link TButton} instead. The
+		 * {@link TButton} can be set to change size to fit the message instead.
+		 * Use <code>setFitToLabel(true)</code>.
+		 * <p>
+		 * If the {@link TButton}'s image has been set, the mesage is not shown.
+		 */
+		private String label = "";
+
+		/**
 		 * The <code>label</code> can be bigger than the actual {@link TButton}.
 		 * If this happens the {@link TButton} can be re-sized, or the
 		 * <code>label</code> is rendered to the right of the {@link TButton}.
 		 * This {@link Dimension} is used to keep track of the size of the
 		 * <code>label</code>.
 		 */
-		private Dimension labelBounds = new Dimension(0, 0);
+		private TDimension labelBounds = new TDimension();
 
 		/**
 		 * The <code>label</code> can be bigger than the actual {@link TButton}.
@@ -112,7 +114,7 @@ public class TButton extends TComponent implements Serializable, MouseListener, 
 		 * @param height
 		 *            - the height of the {@link TCompoment} in pixels.
 		 */
-		public TButton(float x, float y, float width, float height)
+		public TButton(double x, double y, double width, double height)
 			{
 				super(x, y, width, height);
 			}
@@ -131,7 +133,7 @@ public class TButton extends TComponent implements Serializable, MouseListener, 
 		 *            - a {@link String} which is rendered onto the
 		 *            {@link TButton}.
 		 */
-		public TButton(float x, float y, String label)
+		public TButton(double x, double y, String label)
 			{
 				super(x, y, 0, 0);
 
@@ -162,7 +164,7 @@ public class TButton extends TComponent implements Serializable, MouseListener, 
 		 *            - a {@link String} which is rendered onto the
 		 *            {@link TButton}.
 		 */
-		public TButton(float x, float y, float width, float height, String label)
+		public TButton(double x, double y, double width, double height, String label)
 			{
 				super(x, y, width, height);
 
@@ -193,7 +195,7 @@ public class TButton extends TComponent implements Serializable, MouseListener, 
 		 *            - a {@link String} which is rendered onto the
 		 *            {@link TButton}.
 		 */
-		public TButton(float x, float y, float width, float height, String label, Font font)
+		public TButton(double x, double y, double width, double height, String label, Font font)
 			{
 				super(x, y, width, height);
 
@@ -217,7 +219,7 @@ public class TButton extends TComponent implements Serializable, MouseListener, 
 		 *            - the {@link BufferedImage} to be used as the
 		 *            {@link TButton}.
 		 */
-		public TButton(float x, float y, BufferedImage image)
+		public TButton(double x, double y, BufferedImage image)
 			{
 				super(x, y, image.getWidth(), image.getHeight());
 
@@ -228,18 +230,37 @@ public class TButton extends TComponent implements Serializable, MouseListener, 
 		 * This method tells the {@link TComponent} which
 		 * {@link TComponentContainer} it has been added to.
 		 * 
-		 * @param parent
+		 * @param componentContainer
 		 *            - the {@link TComponentContainer} to which this
 		 *            {@link TComponent} has been added.
 		 */
-		public final void setTComponentContainer(TComponentContainer parent)
+		protected final void setTComponentContainer(TComponentContainer componentContainer)
 			{
-				if (tComponentContainer == null)
+				if (tComponentContainer != componentContainer)
 					{
-						tComponentContainer = parent;
+						if (tComponentContainer != null)
+							{
+								tComponentContainer.getParent().removeMouseListener(this);
+								tComponentContainer.getParent().removeMouseMotionListener(this);
+							}
+						tComponentContainer = componentContainer;
 						tComponentContainer.getParent().addMouseListener(this);
 						tComponentContainer.getParent().addMouseMotionListener(this);
 					}
+			}
+
+		/**
+		 * This method is called whenevet this {@link TComponent} is removed
+		 * from a {@link TComponentContainer}.
+		 */
+		@Override
+		protected final void removedFromTComponentContainer()
+			{
+				tComponentContainer.getParent().removeMouseListener(this);
+				tComponentContainer.getParent().removeMouseMotionListener(this);
+
+				tComponentContainer = null;
+				listenerList = new EventListenerList();
 			}
 
 		/**
@@ -257,21 +278,23 @@ public class TButton extends TComponent implements Serializable, MouseListener, 
 						// The Image used to represent the TButton is selected
 						// depending on if the mouse is over the TButton
 						if (this.mouseOver)
-							g.drawImage(hub.images.tButtonIcons[BUTTONDOWN], Math.round(x), Math.round(y), Math.round(width), Math.round(height), hub.renderer);
+							g.drawImage(hub.images.tButtonIcons[BUTTONDOWN], (int) Math.round(x), (int) Math.round(y), (int) Math.round(width),
+									(int) Math.round(height), hub.renderer);
 						else
-							g.drawImage(hub.images.tButtonIcons[BUTTONUP], Math.round(x), Math.round(y), Math.round(width), Math.round(height), hub.renderer);
+							g.drawImage(hub.images.tButtonIcons[BUTTONUP], (int) Math.round(x), (int) Math.round(y), (int) Math.round(width),
+									(int) Math.round(height), hub.renderer);
 
 						// This code centers the label for the button, either
 						// centered or to the right of the button if the label
 						// does not fit inside the TButton.
 						g.setColor(Color.BLACK);
 						g.setFont(font);
-						if (labelBounds.width + 6 > width || labelBounds.height + 6 > height)
-							g.drawString(label, Math.round(x + width + 3),
-									Math.round(((y + height) - ((height - labelBounds.height) / 2)) - getBaselineModifier()));
+						if (labelBounds.getWidth() + 6 > width || labelBounds.getHeight() + 6 > height)
+							g.drawString(label, (int) Math.round(x + width + 3),
+									(int) Math.round(((y + height) - ((height - labelBounds.getHeight()) / 2)) - getFontDescent()));
 						else
-							g.drawString(label, Math.round(x + ((width - labelBounds.width) / 2)),
-									Math.round(((y + height) - ((height - labelBounds.height) / 2)) - getBaselineModifier()));
+							g.drawString(label, (int) Math.round(x + ((width - labelBounds.getWidth()) / 2)),
+									(int) Math.round(((y + height) - ((height - labelBounds.getHeight()) / 2)) - getFontDescent()));
 					}
 				else
 					{
@@ -280,13 +303,13 @@ public class TButton extends TComponent implements Serializable, MouseListener, 
 						// being clicked on
 						if (this.mouseOver)
 							{
-								g.drawImage(image.get(), Math.round(x), Math.round(y), hub.renderer);
+								g.drawImage(image.get(), (int) Math.round(x), (int) Math.round(y), (int) Math.round(width), (int) Math.round(height), hub.renderer);
 								g.setColor(new Color(50, 50, 50, 50));
-								g.fillRect(Math.round(x), Math.round(y), Math.round(width), Math.round(height));
+								g.fillRect((int) Math.round(x), (int) Math.round(y), (int) Math.round(width), (int) Math.round(height));
 							}
 						// This code just draws the image.
 						else
-							g.drawImage(image.get(), Math.round(x), Math.round(y), hub.renderer);
+							g.drawImage(image.get(), (int) Math.round(x), (int) Math.round(y), (int) Math.round(width), (int) Math.round(height), hub.renderer);
 					}
 			}
 
@@ -414,11 +437,9 @@ public class TButton extends TComponent implements Serializable, MouseListener, 
 		 */
 		public final void setFitToLabel(boolean fit)
 			{
-				if (this.image != null)
-					{
-						this.fitToLabel = fit;
-						sizeTButtonToLabel();
-					}
+				this.fitToLabel = fit;
+				if (this.image == null)
+					sizeTButtonToLabel();
 			}
 
 		/**
@@ -435,10 +456,14 @@ public class TButton extends TComponent implements Serializable, MouseListener, 
 				sizeTButtonToLabel();
 			}
 
-		/*
-		 * This method allows the user to set an Image instead of the current
-		 * label, it also resizes the TButton to the image size so that the
-		 * whole image can be used as the TButton.
+		/**
+		 * This method allows an image to be set for this {@link TButton}. The
+		 * {@link BufferedImage} will represent the {@link TButton} and the
+		 * {@link TButton} will be set to the size of the {@link BufferedImage}
+		 * used.
+		 * 
+		 * @param image
+		 *            - the image to be used to represent the {@link TButton}.
 		 */
 		public final void setImage(BufferedImage image)
 			{
@@ -447,20 +472,30 @@ public class TButton extends TComponent implements Serializable, MouseListener, 
 				this.height = image.getHeight();
 			}
 
-		/*
-		 * This method removes the image, allowing the label to show again. It
-		 * also sets the TButton to resize to it's current label size
+		/**
+		 * This method rmoves the image from this {@link TButton}. The
+		 * {@link TButton} is then re-sized to fit its label.
 		 */
 		public final void removeImage()
 			{
-				image = null;
-				setLabelBounds();
-				fitToLabel = true;
+				if (image != null)
+					{
+						image = null;
+						setLabelBounds();
+						fitToLabel = true;
+					}
 			}
 
-		/*
-		 * This method removes the image, and sets the TButton to the desired
-		 * size.
+		/**
+		 * This method rmoves the image from this {@link TButton}. The
+		 * {@link TButton} is then re-sized to the parameters passed into the
+		 * method.
+		 * 
+		 * 
+		 * @param width
+		 *            - the desired width of the {@link TButton}.
+		 * @param height
+		 *            - the desired height of the {@link TButton}.
 		 */
 		public final void removeImage(float width, float height)
 			{
@@ -469,29 +504,34 @@ public class TButton extends TComponent implements Serializable, MouseListener, 
 				setDimensions(width, height);
 			}
 
-		/*
+		/**
 		 * This method allows the computer to calculate the physical size of the
 		 * label, no matter what font is being used. The information is stored
-		 * in a ""Dimension"" because it allows two integers to be stored in one
-		 * variable.
+		 * in a {@link Dimension} called <code>labelBounds</code>.
 		 */
 		private final void setLabelBounds()
 			{
 				Graphics g = new BufferedImage(hub.frame.startWidth, hub.frame.startHeight, BufferedImage.TYPE_INT_ARGB).getGraphics();
 				g.setFont(font);
 
-				labelBounds.width = (int) g.getFontMetrics().getStringBounds(label, g).getWidth();
-				labelBounds.height = (int) g.getFontMetrics().getAscent() + g.getFontMetrics().getDescent();
+				labelBounds.setWidth(g.getFontMetrics().getStringBounds(label, g).getWidth());
+				labelBounds.setHeight(g.getFontMetrics().getAscent() + g.getFontMetrics().getDescent());
 
 				g.dispose();
 			}
 
-		/*
-		 * This method returns the distance between the bottom of the tails of
-		 * letters like ""j"" and the baseline of normal letters, this number is
-		 * needed to properly align text within the TButton.
+		/**
+		 * The baseline is the line on which text is written, however letters
+		 * often have tails below the line, and different {@link Font}s have
+		 * different tail lengths. This length is called the 'descent' and is
+		 * needed in order to calculate the physical {@link Dimension}s of the
+		 * <code>label</code>, and therefore used to position the
+		 * <code>label</code> in the center of the {@link TButton}.
+		 * 
+		 * @return - the distance from the baseline of a letter (e.g. 'j') to
+		 *         the tip of it's tail.
 		 */
-		private final int getBaselineModifier()
+		private final int getFontDescent()
 			{
 				Graphics g = new BufferedImage(hub.frame.startWidth, hub.frame.startHeight, BufferedImage.TYPE_INT_ARGB).getGraphics();
 				g.setFont(font);
@@ -499,7 +539,7 @@ public class TButton extends TComponent implements Serializable, MouseListener, 
 				return (int) g.getFontMetrics().getDescent();
 			}
 
-		/*
+		/**
 		 * This method is only called when an instance of the class is created,
 		 * it is needed because the only way I can find to get the computers
 		 * default font without performing lots of checks is to let Java do the
@@ -521,36 +561,88 @@ public class TButton extends TComponent implements Serializable, MouseListener, 
 				return font;
 			}
 
-		/*
-		 * This method sizes the TButton to the size of the label within it, but
-		 * only if it is appropriate.
+		/**
+		 * This method sizes the {@link TButton} to the size of its label, but
+		 * only <code>if (fitToLabel == true && image == null)</code>.
 		 */
 		private final void sizeTButtonToLabel()
 			{
-				if (fitToLabel == true)
+				if (fitToLabel == true && image == null)
 					{
-						this.width = labelBounds.width + 6;
-						this.height = labelBounds.height + 6;
+						this.width = labelBounds.getWidth() + 6;
+						this.height = labelBounds.getHeight() + 6;
 					}
 			}
 
+		/**
+		 * This method is not used by this class.
+		 */
 		@Override
 		public void mouseMoved(MouseEvent paramMouseEvent)
 			{
 			}
 
+		/**
+		 * This method is not used by this class.
+		 */
 		@Override
 		public void mouseClicked(MouseEvent paramMouseEvent)
 			{
 			}
 
+		/**
+		 * This method is not used by this class.
+		 */
 		@Override
 		public void mouseEntered(MouseEvent paramMouseEvent)
 			{
 			}
 
+		/**
+		 * This method is not used by this class.
+		 */
 		@Override
 		public void mouseExited(MouseEvent paramMouseEvent)
+			{
+			}
+
+		/**
+		 * This method is not used by this class.
+		 */
+		@Override
+		public void keyTyped(KeyEvent e)
+			{
+			}
+
+		/**
+		 * This method is not used by this class.
+		 */
+		@Override
+		public void keyPressed(KeyEvent e)
+			{
+			}
+
+		/**
+		 * This method is not used by this class.
+		 */
+		@Override
+		public void keyReleased(KeyEvent e)
+			{
+			}
+
+		/**
+		 * This method is not used by this class.
+		 */
+		@Override
+		public void mouseWheelMoved(MouseWheelEvent e)
+			{
+			}
+
+		/**
+		 * This method is not used by this class.
+		 */
+		@Override
+		public void actionPerformed(ActionEvent e)
 			{
 			}
 	}

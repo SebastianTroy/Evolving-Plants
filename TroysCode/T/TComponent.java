@@ -1,13 +1,22 @@
 package TroysCode.T;
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.LayoutManager;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.geom.Point2D;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
 import java.io.Serializable;
+import java.util.EventListener;
 
 import javax.swing.JComponent;
 import javax.swing.event.EventListenerList;
@@ -18,7 +27,7 @@ import javax.swing.event.EventListenerList;
  * 
  * @author Sebastian Troy
  */
-public abstract class TComponent implements Serializable
+public abstract class TComponent implements Serializable, MouseListener, MouseMotionListener, MouseWheelListener, KeyListener, ActionListener
 	{
 		private static final long serialVersionUID = 1L;
 
@@ -50,26 +59,33 @@ public abstract class TComponent implements Serializable
 		/**
 		 * The x coordinate of the {@link TComponent}.
 		 */
-		protected float x = 0;
+		protected double x = 0;
 		/**
 		 * The y coordinate of the {@link TComponent}.
 		 */
-		protected float y = 0;
+		protected double y = 0;
 
 		/**
 		 * The width, in pixels, of the {@link TComponent}.
 		 */
-		protected float width = 0;
+		protected double width = 0;
 		/**
 		 * The height, in pixels, of the {@link TComponent}.
 		 */
-		protected float height = 0;
+		protected double height = 0;
+
+		/**
+		 * This {@link Color} is used when the {@link TComponent} is rendered,
+		 * if it has been set. A {@link Rectangle} is filled with
+		 * <code>(x, y, width, height)</code> is filled with this {@link Color}.
+		 */
+		protected Color backgroundColour = null;
 
 		/**
 		 * This variable allows the {@link TComponent} to keep track of whether
 		 * the user is currently interacting with it.
 		 */
-		public boolean inUse = false;
+		protected boolean inUse = false;
 
 		/**
 		 * This {@link EventListenerList} holds any {@link EventListener}s that
@@ -103,7 +119,7 @@ public abstract class TComponent implements Serializable
 		 * @param height
 		 *            - The {@link TComponent}'s height, in pixels.
 		 */
-		public TComponent(float x, float y, float width, float height)
+		public TComponent(double x, double y, double width, double height)
 			{
 				this.x = x;
 				this.y = y;
@@ -119,7 +135,13 @@ public abstract class TComponent implements Serializable
 		 *            - the {@link TComponentContainer} to which this
 		 *            {@link TComponent} has been added.
 		 */
-		public abstract void setTComponentContainer(TComponentContainer parent);
+		protected abstract void setTComponentContainer(TComponentContainer parent);
+
+		/**
+		 * This method is called whenever this {@link TComponent} is removed
+		 * from its {@link TComponentContainer}.
+		 */
+		protected abstract void removedFromTComponentContainer();
 
 		/**
 		 * To be visible {@link TComponent}s must paint themselves, and unlike
@@ -221,6 +243,18 @@ public abstract class TComponent implements Serializable
 			}
 
 		/**
+		 * This method can be used to determine if a {@link TComponent} is
+		 * currently being intercated with by the user.
+		 * 
+		 * @return - a boolean which indicates if this {@link TComponent} is
+		 *         being interacted with.
+		 */
+		public final boolean getInUse()
+			{
+				return inUse;
+			}
+
+		/**
 		 * This method sets the x positon, within the program's frame, of the
 		 * {@link TComponent}.
 		 * 
@@ -228,7 +262,7 @@ public abstract class TComponent implements Serializable
 		 *            - the new x position, within the program's frame, for the
 		 *            {@link TComponent}.
 		 */
-		public void setX(float x)
+		public void setX(double x)
 			{
 				this.x = x;
 			}
@@ -241,7 +275,7 @@ public abstract class TComponent implements Serializable
 		 *            - the new y position, within the program's frame, for the
 		 *            {@link TComponent}.
 		 */
-		public void setY(float y)
+		public void setY(double y)
 			{
 				this.y = y;
 			}
@@ -257,7 +291,7 @@ public abstract class TComponent implements Serializable
 		 *            - the new y position, within the program's frame, for the
 		 *            {@link TComponent}.
 		 */
-		public void setPosition(float x, float y)
+		public void setPosition(double x, double y)
 			{
 				this.x = x;
 				this.y = y;
@@ -274,10 +308,9 @@ public abstract class TComponent implements Serializable
 		 *            - the new y position of the center of the
 		 *            {@link TComponent}, within the program's frame.
 		 */
-		public void setPositionOfCenter(float x, float y)
+		public void setPositionOfCenter(double x, double y)
 			{
-				this.x = x - (width / 2f);
-				this.y = y - (height / 2f);
+				setPosition(x - (width / 2f), y - (height / 2f));
 			}
 
 		/**
@@ -298,7 +331,7 @@ public abstract class TComponent implements Serializable
 		 *            {@link TComponent} by. Use
 		 *            <code>TComponent.CORNERCONSTANT</code>
 		 */
-		public void setPositionByCorner(float x, float y, byte corner)
+		public void setPositionByCorner(double x, double y, byte corner)
 			{
 				switch (corner)
 					{
@@ -306,16 +339,13 @@ public abstract class TComponent implements Serializable
 						setPosition(x, y);
 						break;
 					case TOPRIGHT:
-						this.x = x - width;
-						this.y = y;
+						setPosition(x - width, y);
 						break;
 					case BOTTOMLEFT:
-						this.x = x;
-						this.y = y - height;
+						setPosition(x, y - height);
 						break;
 					case BOTTOMRIGHT:
-						this.x = x - width;
-						this.y = y - height;
+						setPosition(x - width, y - height);
 						break;
 					}
 			}
@@ -339,7 +369,7 @@ public abstract class TComponent implements Serializable
 		 *            - the corner of the {@link TComponent} to have its
 		 *            position set. Use <code>TComponent.CORNERCONSTANT</code>
 		 */
-		public void setPositionOfCorner(float x, float y, byte corner)
+		public void setPositionOfCorner(double x, double y, byte corner)
 			{
 				switch (corner)
 					{
@@ -420,7 +450,7 @@ public abstract class TComponent implements Serializable
 		 * @param width
 		 *            - the new width, in pixels, for the {@link TComponent}.
 		 */
-		public void setWidth(float width)
+		public void setWidth(double width)
 			{
 				this.width = width;
 			}
@@ -431,7 +461,7 @@ public abstract class TComponent implements Serializable
 		 * @param height
 		 *            - the new height, in pixels, for the {@link TComponent}.
 		 */
-		public void setHeight(float height)
+		public void setHeight(double height)
 			{
 				this.height = height;
 			}
@@ -445,10 +475,21 @@ public abstract class TComponent implements Serializable
 		 * @param height
 		 *            - the new height, in pixels, for the {@link TComponent}.
 		 */
-		public void setDimensions(float width, float height)
+		public void setDimensions(double width, double height)
 			{
 				this.width = width;
 				this.height = height;
+			}
+
+		/**
+		 * This method sets the colour of the {@link TComponent}s background.
+		 * 
+		 * @param colour
+		 *            - the colour that the bar will be set to.
+		 */
+		public final void setBackgroundColour(Color colour)
+			{
+				backgroundColour = colour;
 			}
 
 		/**
@@ -459,7 +500,7 @@ public abstract class TComponent implements Serializable
 		 *            - the distance, in pixels to move the {@link TComponent}
 		 *            by on the x axis.
 		 */
-		public void moveX(float x)
+		public void moveX(double x)
 			{
 				this.x += x;
 			}
@@ -472,7 +513,7 @@ public abstract class TComponent implements Serializable
 		 *            - the distance, in pixels to move the {@link TComponent}
 		 *            by on the y axis.
 		 */
-		public void moveY(float y)
+		public void moveY(double y)
 			{
 				this.y += y;
 			}
@@ -488,7 +529,7 @@ public abstract class TComponent implements Serializable
 		 *            - the distance, in pixels to move the {@link TComponent}
 		 *            by on the y axis.
 		 */
-		public void movePosition(float x, float y)
+		public void movePosition(double x, double y)
 			{
 				this.x += x;
 				this.y += y;
@@ -498,7 +539,7 @@ public abstract class TComponent implements Serializable
 		 * @return The x coordinate of the {@link TComponent} within the
 		 *         program's frame.
 		 */
-		public float getX()
+		public double getX()
 			{
 				return x;
 			}
@@ -507,18 +548,29 @@ public abstract class TComponent implements Serializable
 		 * @return The y coordinate of the {@link TComponent} within the
 		 *         program's frame.
 		 */
-		public float getY()
+		public double getY()
 			{
 				return y;
 			}
 
 		/**
-		 * @return The x and y coordinates of the {@link TComponent} within the
-		 *         program's frame, as a {@link Point2D}.
+		 * @return The integer x and y coordinates of the {@link TComponent} within the
+		 *         program's frame, as a {@link Point}.
 		 */
-		public Point getPosition()
+		public Point getIntegerPosition()
 			{
 				Point point = new Point();
+				point.setLocation(x, y);
+				return point;
+			}
+		
+		/**
+		 * @return The exact x and y coordinates of the {@link TComponent} within the
+		 *         program's frame, as a {@link Point}.
+		 */
+		public TPoint getPosition()
+			{
+				TPoint point = new TPoint();
 				point.setLocation(x, y);
 				return point;
 			}
@@ -526,7 +578,7 @@ public abstract class TComponent implements Serializable
 		/**
 		 * @return The width of the {@link TComponent} in pixels.
 		 */
-		public float getWidth()
+		public double getWidth()
 			{
 				return width;
 			}
@@ -534,17 +586,27 @@ public abstract class TComponent implements Serializable
 		/**
 		 * @return The height of the {@link TComponent} in pixels.
 		 */
-		public float getHeight()
+		public double getHeight()
 			{
 				return height;
 			}
 
 		/**
-		 * @return The width and ehight of the {@link TComponent} in pixels.
+		 * @return The integer width and height of the {@link TComponent} in pixels.
 		 */
-		public Dimension getDimensions()
+		public Dimension getIntegerDimensions()
 			{
 				Dimension dim = new Dimension();
+				dim.setSize(width, height);
+				return dim;
+			}
+		
+		/**
+		 * @return The exact width and height of the {@link TComponent} in pixels.
+		 */
+		public TDimension getDimensions()
+			{
+				TDimension dim = new TDimension();
 				dim.setSize(width, height);
 				return dim;
 			}
@@ -570,6 +632,26 @@ public abstract class TComponent implements Serializable
 			}
 
 		/**
+		 * This method determines whether a {@link TPoint} lies within the
+		 * bounds of the {@link TComponent}.
+		 * 
+		 * @param point
+		 *            - the {@link TPoint} we are checking.
+		 * @return <code>true</code> if the point does lie within the bounds of
+		 *         the {@link TComponent}.
+		 */
+		public final boolean containsPoint(TPoint point)
+			{
+				if (point.getX() < x || point.getX() > x + width)
+					return false;
+
+				if (point.getY() < y || point.getY() > y + height)
+					return false;
+
+				return true;
+			}
+
+		/**
 		 * This method returns the point on the edge of the {@link TComponent}
 		 * which is closest to the {@link Point} passed into the method.
 		 * 
@@ -581,7 +663,7 @@ public abstract class TComponent implements Serializable
 		 *         which is the closest point to the {@link Point} passed into
 		 *         the method.
 		 */
-		public final Point getNearestPoint(Point point)
+		public final TPoint getNearestPoint(TPoint point)
 			{
 				double nearestX;
 				double nearestY;
@@ -600,9 +682,81 @@ public abstract class TComponent implements Serializable
 				else
 					nearestY = point.getY();
 
-				Point nearestPoint = new Point(0, 0);
+				TPoint nearestPoint = new TPoint();
 				nearestPoint.setLocation(nearestX, nearestY);
 
 				return nearestPoint;
 			}
+
+		/**
+		 * This methid is not used by this class.
+		 */
+		@Override
+		public abstract void keyTyped(KeyEvent e);
+
+		/**
+		 * This methid is not used by this class.
+		 */
+		@Override
+		public abstract void keyPressed(KeyEvent e);
+
+		/**
+		 * This methid is not used by this class.
+		 */
+		@Override
+		public abstract void keyReleased(KeyEvent e);
+
+		/**
+		 * This methid is not used by this class.
+		 */
+		@Override
+		public abstract void mouseDragged(MouseEvent e);
+
+		/**
+		 * This methid is not used by this class.
+		 */
+		@Override
+		public abstract void mouseMoved(MouseEvent e);
+
+		/**
+		 * This methid is not used by this class.
+		 */
+		@Override
+		public abstract void mouseClicked(MouseEvent e);
+		
+		/**
+		 * This methid is not used by this class.
+		 */
+		@Override
+		public abstract void mousePressed(MouseEvent e);
+
+		/**
+		 * This methid is not used by this class.
+		 */
+		@Override
+		public abstract void mouseReleased(MouseEvent e);
+		
+		/**
+		 * This methid is not used by this class.
+		 */
+		@Override
+		public abstract void mouseEntered(MouseEvent e);
+
+		/**
+		 * This methid is not used by this class.
+		 */
+		@Override
+		public abstract void mouseExited(MouseEvent e);
+
+		/**
+		 * This methid is not used by this class.
+		 */
+		@Override
+		public abstract void mouseWheelMoved(MouseWheelEvent e);
+
+		/**
+		 * This methid is not used by this class.
+		 */
+		@Override
+		public abstract void actionPerformed(ActionEvent e);
 	}

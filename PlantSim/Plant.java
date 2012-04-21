@@ -28,7 +28,7 @@ public class Plant extends PlantPart
 
 				genes = new Genes(parentPlant, this);
 
-				seed = new Seed(this, x, y);
+				seed = new Seed(this, x, y, genes.germinationTime);
 				seed.energy = energy;
 
 				numberOfStemsLeft = (int) genes.maxStems;
@@ -43,7 +43,7 @@ public class Plant extends PlantPart
 
 				this.genes = genes;;
 
-				seed = new Seed(this, x, y);
+				seed = new Seed(this, x, y, genes.germinationTime);
 				seed.energy = energy;
 
 				numberOfStemsLeft = (int) genes.maxStems;

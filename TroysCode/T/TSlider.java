@@ -3,17 +3,20 @@ package TroysCode.T;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
+import java.awt.event.MouseWheelEvent;
 import java.awt.image.BufferedImage;
 import java.io.Serializable;
 import java.util.ArrayList;
 
+import javax.swing.event.EventListenerList;
+
 import TroysCode.Tools;
 import TroysCode.hub;
 
-public class TSlider extends TComponent implements Serializable, MouseListener, MouseMotionListener
+public class TSlider extends TComponent implements Serializable
 	{
 		private static final long serialVersionUID = 1L;
 
@@ -33,7 +36,7 @@ public class TSlider extends TComponent implements Serializable, MouseListener, 
 		 * The length of the TScrollBar includes the arrow TButtons at either
 		 * end
 		 */
-		private float length = 0;
+		private double length = 0;
 
 		/*
 		 * This byte is used to check if the TScrollbar is vertical or
@@ -57,7 +60,7 @@ public class TSlider extends TComponent implements Serializable, MouseListener, 
 		 * for the TButtons unless the constructor below is used to specify an
 		 * array of images which can be used instead.
 		 */
-		public TSlider(float x, float y, byte orientation, float length, int numberOfSliders)
+		public TSlider(double x, double y, byte orientation, double length, int numberOfSliders)
 			{
 				super(x, y, 0, 0);
 				if (orientation == VERTICAL || orientation == HORIZONTAL)
@@ -90,7 +93,7 @@ public class TSlider extends TComponent implements Serializable, MouseListener, 
 					}
 			}
 
-		public TSlider(float x, float y, byte orientation, float length, int numberOfSliders, BufferedImage[] images)
+		public TSlider(double x, double y, byte orientation, double length, int numberOfSliders, BufferedImage[] images)
 			{
 				super(x, y, 0, 0);
 
@@ -128,32 +131,41 @@ public class TSlider extends TComponent implements Serializable, MouseListener, 
 					}
 			}
 
-		public final void sliderAdded()
-			{
-				int sliderIndex = 0;
-				for (TButton slider : sliders)
-					{
-						sendTScrollEvent(new TScrollEvent(this, TScrollEvent.TSCROLLBARSCROLLED, getSliderPercent(sliderIndex)));
-						sliderIndex++;
-					}
-			}
-
 		/**
 		 * This method tells the {@link TComponent} which
 		 * {@link TComponentContainer} it has been added to.
 		 * 
-		 * @param parent
+		 * @param componentContainer
 		 *            - the {@link TComponentContainer} to which this
 		 *            {@link TComponent} has been added.
 		 */
-		public final void setTComponentContainer(TComponentContainer parent)
+		protected final void setTComponentContainer(TComponentContainer componentContainer)
 			{
-				if (tComponentContainer == null)
+				if (tComponentContainer != componentContainer)
 					{
-						tComponentContainer = parent;
+						if (tComponentContainer != null)
+							{
+								tComponentContainer.getParent().removeMouseListener(this);
+								tComponentContainer.getParent().removeMouseMotionListener(this);
+							}
+						tComponentContainer = componentContainer;
 						tComponentContainer.getParent().addMouseListener(this);
 						tComponentContainer.getParent().addMouseMotionListener(this);
 					}
+			}
+
+		/**
+		 * This method is called whenevet this {@link TComponent} is removed
+		 * from a {@link TComponentContainer}.
+		 */
+		@Override
+		protected final void removedFromTComponentContainer()
+			{
+				tComponentContainer.getParent().removeMouseListener(this);
+				tComponentContainer.getParent().removeMouseMotionListener(this);
+
+				listenerList = new EventListenerList();
+				tComponentContainer = null;
 			}
 
 		/*
@@ -167,12 +179,12 @@ public class TSlider extends TComponent implements Serializable, MouseListener, 
 				if (orientation == VERTICAL)
 					{
 						g.setColor(background);
-						g.fillRect(Math.round(x + 11), Math.round(y), 3, Math.round(length));
+						g.fillRect((int) Math.round(x + 11), (int) Math.round(y), 3, (int) Math.round(length));
 					}
 				else if (orientation == HORIZONTAL)
 					{
 						g.setColor(background);
-						g.fillRect(Math.round(x), Math.round(y + 11), Math.round(length), 3);
+						g.fillRect((int) Math.round(x), (int) Math.round(y + 11), (int) Math.round(length), 3);
 					}
 				int sliderIndex = 0;
 				for (TButton slider : sliders)
@@ -182,7 +194,7 @@ public class TSlider extends TComponent implements Serializable, MouseListener, 
 							{
 								g.setColor(Color.BLACK);
 								g.setFont(new Font(g.getFont().toString(), Font.ITALIC, 12));
-								g.drawString("" + sliderIndex, Math.round(slider.x + 8), Math.round(slider.y + 17));
+								g.drawString("" + sliderIndex, (int) Math.round(slider.x + 8), (int) Math.round(slider.y + 17));
 								sliderIndex++;
 							}
 					}
@@ -194,29 +206,29 @@ public class TSlider extends TComponent implements Serializable, MouseListener, 
 		 * TButtons have to be updated too.
 		 */
 		@Override
-		public final void setX(float x)
+		public final void setX(double x)
 			{
-				float diffX = x - this.x;
+				double diffX = x - this.x;
 				this.moveX(diffX);
 			}
 
 		@Override
-		public final void setY(float y)
+		public final void setY(double y)
 			{
-				float diffY = y - this.y;
+				double diffY = y - this.y;
 				this.moveY(diffY);
 			}
 
 		@Override
-		public final void setPosition(float x, float y)
+		public final void setPosition(double x, double y)
 			{
-				float diffX = x - this.x;
-				float diffY = y - this.y;
+				double diffX = x - this.x;
+				double diffY = y - this.y;
 				this.movePosition(diffX, diffY);
 			}
 
 		@Override
-		public final void moveX(float x)
+		public final void moveX(double x)
 			{
 				this.x += x;
 
@@ -225,7 +237,7 @@ public class TSlider extends TComponent implements Serializable, MouseListener, 
 			}
 
 		@Override
-		public final void moveY(float y)
+		public final void moveY(double y)
 			{
 				this.y += y;
 				for (TButton slider : sliders)
@@ -233,7 +245,7 @@ public class TSlider extends TComponent implements Serializable, MouseListener, 
 			}
 
 		@Override
-		public final void movePosition(float x, float y)
+		public final void movePosition(double x, double y)
 			{
 				this.x += x;
 				this.y += y;
@@ -245,8 +257,12 @@ public class TSlider extends TComponent implements Serializable, MouseListener, 
 		/*
 		 * This method allows the length of the TScrollBar to be changed.
 		 */
-		public final void setLength(float length)
+		public final void setLength(double length)
 			{
+				/*
+				 * If the length < 26 change this.length and length to 26.
+				 * (Lengths of 26 and less show unusual behavior)
+				 */
 				length = length < 76 ? length = 76 : length;
 
 				int sliderIndex = 0;
@@ -254,39 +270,15 @@ public class TSlider extends TComponent implements Serializable, MouseListener, 
 					{
 						if (orientation == VERTICAL)
 							{
-								slider.setY((y + (getSliderPercent(sliderIndex) * length / 100f)) - 12.5f);
+								slider.moveY((getSliderPercent(sliderIndex) / 100.0) * (length - this.length));
 							}
 						else if (orientation == HORIZONTAL)
 							{
-								slider.setX((x + (getSliderPercent(sliderIndex) * length / 100f)) - 12.5f);
+								slider.moveX((getSliderPercent(sliderIndex) / 100.0) * (length - this.length));
 							}
 						sliderIndex++;
 					}
-				/*
-				 * If the length < 76 change this.length and length to 76.
-				 * (Lengths of 75 and less show unusual behavior)
-				 */
 				this.length = length;
-//
-//				for (TButton slider : sliders)
-//					if (orientation == VERTICAL)
-//						{
-//							float scrollPercent = ((y - slider.getY()) / this.length) * 100f;
-//
-//							slider.setPosition(x, y + (scrollPercent * length));
-//						}
-//					else if (orientation == HORIZONTAL)
-//						{
-//							float scrollPercent = ((x - slider.getX()) / this.length) * 100f;
-//
-//							slider.setPosition(x + (scrollPercent * length), y);
-//						}
-//
-//				/*
-//				 * If the length < 26 change this.length and length to 26.
-//				 * (Lengths of 26 and less show unusual behavior)
-//				 */
-//				this.length = length < 26 ? length = 26 : length;
 			}
 
 		/**
@@ -294,7 +286,7 @@ public class TSlider extends TComponent implements Serializable, MouseListener, 
 		 *             <code>length</code> and <code>orientation</code>.
 		 */
 		@Override
-		public final void setWidth(float width)
+		public final void setWidth(double width)
 			{
 			}
 
@@ -303,7 +295,7 @@ public class TSlider extends TComponent implements Serializable, MouseListener, 
 		 *             <code>length</code> and <code>orientation</code>.
 		 */
 		@Override
-		public final void setHeight(float height)
+		public final void setHeight(double height)
 			{
 			}
 
@@ -312,41 +304,32 @@ public class TSlider extends TComponent implements Serializable, MouseListener, 
 		 *             to its <code>length</code> and <code>orientation</code>.
 		 */
 		@Override
-		public final void setDimensions(float width, float height)
+		public final void setDimensions(double width, double height)
 			{
 			}
 
 		/**
-		 * This method sets the colour of the {@link TSlider}s bar.
-		 * 
-		 * @param colour
-		 *            - the colour that the bar will be set to.
-		 */
-		public final void setBackgroundColour(Color colour)
-			{
-				background = colour;
-			}
-
-		/*
-		 * This method passes on any MouseEvents onto the TButtons so they can
-		 * process them.
+		 * This method passes on any {@link MouseEvent}s onto this slider's
+		 * {@link TButton}s so they can process them.
 		 */
 		@Override
 		public final void mousePressed(MouseEvent me)
 			{
-				if (this.containsPoint(me.getPoint()))
-					inUse = true;
 				if (me.getButton() == 1)
-					for (TButton slider : sliders)
-						slider.mousePressed(me);
+					{
+						if (containsPoint(me.getPoint()))
+							inUse = true;
+
+						for (TButton slider : sliders)
+							slider.mousePressed(me);
+					}
 			}
 
-		/*
-		 * If the slider is active (i.e. the mouse is being held down over it),
-		 * this method calculates the ""scrollPercent"" then moves the slider to
-		 * it's new position. It does it this way round (i.e. instead of moving
-		 * the slider and then calculating the scrollPercentage) so it can make
-		 * sure the slider is never moved outside it's range.
+		/**
+		 * If the slider button is <code>inUse</code> (i.e. the mouse is being
+		 * held down within its bounds), this method calculates the
+		 * <code>scrollPercent</code> then moves the slider to it's new
+		 * position.
 		 */
 		@Override
 		public final void mouseDragged(MouseEvent me)
@@ -377,19 +360,23 @@ public class TSlider extends TComponent implements Serializable, MouseListener, 
 					}
 			}
 
-		/*
-		 * This method passes on any MouseEvents onto the TButtons so they can
-		 * process them.
+		/**
+		 * This method passes on any {@link MouseEvent}s onto this slider's
+		 * {@link TButton}s so they can process them.
 		 */
 		@Override
 		public final void mouseReleased(MouseEvent me)
 			{
-				for (TButton slider : sliders)
-					slider.mouseReleased(me);
-				inUse = false;
+				if (me.getButton() == 1)
+					{
+						inUse = false;
+
+						for (TButton slider : sliders)
+							slider.mouseReleased(me);
+					}
 			}
 
-		public final float getSliderPercent(int sliderIndex)
+		public final double getSliderPercent(int sliderIndex)
 			{
 				// Check sliderIndex is within array bounds,
 				// if not create exception.
@@ -401,7 +388,7 @@ public class TSlider extends TComponent implements Serializable, MouseListener, 
 						return 0f;
 					}
 
-				float scrollPercent = 0f;
+				double scrollPercent = 0f;
 
 				if (orientation == VERTICAL)
 					scrollPercent = ((sliders.get(sliderIndex).y - y) / (length - 25f)) * 100f;
@@ -411,7 +398,7 @@ public class TSlider extends TComponent implements Serializable, MouseListener, 
 				return scrollPercent;
 			}
 
-		public final void setSliderPercent(int sliderIndex, float sliderPercent)
+		public final void setSliderPercent(int sliderIndex, double sliderPercent)
 			{
 				// Check sliderIndex is within array bounds,
 				// if not create exception.
@@ -422,10 +409,17 @@ public class TSlider extends TComponent implements Serializable, MouseListener, 
 										+ ". The range is from 0 to " + (sliders.size() - 1)), "Exception thrown in TSlder Class");
 					}
 
+				if (sliderPercent < 0)
+					sliderPercent = 0;
+				else if (sliderPercent > 100)
+					sliderPercent = 100;
+
 				if (orientation == VERTICAL)
 					sliders.get(sliderIndex).setY(((length - 25f) * (sliderPercent / 100f)) + y);
 				else if (orientation == HORIZONTAL)
 					sliders.get(sliderIndex).setX(((length - 25f) * (sliderPercent / 100f)) + x);
+
+				sendTScrollEvent(new TScrollEvent(this, TScrollEvent.TSCROLLBARSCROLLED, getSliderPercent(sliderIndex)));
 			}
 
 		public final void setShowIndexNumbers(boolean show)
@@ -450,6 +444,31 @@ public class TSlider extends TComponent implements Serializable, MouseListener, 
 
 		@Override
 		public void mouseExited(MouseEvent paramMouseEvent)
+			{
+			}
+
+		@Override
+		public void keyTyped(KeyEvent e)
+			{
+			}
+
+		@Override
+		public void keyPressed(KeyEvent e)
+			{
+			}
+
+		@Override
+		public void keyReleased(KeyEvent e)
+			{
+			}
+
+		@Override
+		public void mouseWheelMoved(MouseWheelEvent e)
+			{
+			}
+
+		@Override
+		public void actionPerformed(ActionEvent e)
 			{
 			}
 	}

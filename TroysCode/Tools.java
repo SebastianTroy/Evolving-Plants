@@ -9,6 +9,8 @@ import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
+import TroysCode.T.TPoint;
+
 /**
  * This class holds static methods only. These methods are for convinience only,
  * it saves re-writing them in situ again and again.
@@ -112,22 +114,21 @@ public class Tools
 				Color randomColour = new Color(red, green, blue);
 				return randomColour;
 			}
-		
+
 		/**
-		 * Returns a completely random {@link Color} with a random alpha value.
+		 * Returns a completely random {@link Color} with an alpha value.
 		 * 
 		 * @return a {@link Color} object which holds a random colour.
 		 */
 		public static final Color randAlphaColour()
 			{
-				int alpha = (int) (Math.random() * 256);
 				int red = (int) (Math.random() * 256);
 				int green = (int) (Math.random() * 256);
 				int blue = (int) (Math.random() * 256);
-				Color randomColour = new Color(alpha, red, green, blue);
+				int alpha = (int) (Math.random() * 256);
+				Color randomColour = new Color(red, green, blue, alpha);
 				return randomColour;
 			}
-
 
 		/**
 		 * This method calculates the vector between two points.
@@ -153,7 +154,7 @@ public class Tools
 			}
 
 		/**
-		 * This method calculates the vector between two points.
+		 * This method calculates the vector between two {@link Point}s.
 		 * 
 		 * @param startX
 		 *            - X coordinate of the starting point.
@@ -174,9 +175,32 @@ public class Tools
 
 				return point;
 			}
+		
+		/**
+		 * This method calculates the vector between two {@link TPoint}s.
+		 * 
+		 * @param startX
+		 *            - X coordinate of the starting point.
+		 * @param startY
+		 *            - Y coordinate of the starting point.
+		 * @param endX
+		 *            - X coordinate of the end point.
+		 * @param endY
+		 *            - Y coordinate of the end point.
+		 * @return A {@link Point} Representing the vector between the two
+		 *         points.
+		 */
+		public static final TPoint getVector(TPoint startPoint, TPoint endPoint)
+			{
+				TPoint point = new TPoint();
+
+				point.setLocation(endPoint.getX() - startPoint.getX(), endPoint.getY() - startPoint.getY());
+
+				return point;
+			}
 
 		/**
-		 * This method returns the distance between two {@link Point}'s
+		 * This method returns the distance between two points
 		 * 
 		 * @param startX
 		 *            - X coordinate of the starting point.
@@ -203,6 +227,21 @@ public class Tools
 		 * @return The distance between the two points as a double.
 		 */
 		public static final double getVectorLength(Point start, Point end)
+			{
+
+				return Math.sqrt(Math.pow(start.getY() - end.getY(), 2) + Math.pow(start.getX() - end.getX(), 2));
+			}
+
+		/**
+		 * This method returns the distance between two {@link TPoint}'s
+		 * 
+		 * @param start
+		 *            - The first {@link TPoint}.
+		 * @param end
+		 *            - The second {@link TPoint}.
+		 * @return The distance between the two points as a double.
+		 */
+		public static final double getVectorLength(TPoint start, TPoint end)
 			{
 
 				return Math.sqrt(Math.pow(start.getY() - end.getY(), 2) + Math.pow(start.getX() - end.getX(), 2));
@@ -294,4 +333,5 @@ public class Tools
 			{
 				JOptionPane.showMessageDialog(hub.frame, infoMessage, "InfoBox: " + titleBar, JOptionPane.INFORMATION_MESSAGE);
 			}
+
 	}
