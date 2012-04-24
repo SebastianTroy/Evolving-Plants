@@ -15,6 +15,7 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
+import java.awt.geom.Point2D;
 import java.io.Serializable;
 import java.util.EventListener;
 
@@ -27,7 +28,7 @@ import javax.swing.event.EventListenerList;
  * 
  * @author Sebastian Troy
  */
-public abstract class TComponent implements Serializable, MouseListener, MouseMotionListener, MouseWheelListener, KeyListener, ActionListener
+public abstract class TComponent implements Serializable, MouseListener, MouseMotionListener, KeyListener, ActionListener
 	{
 		private static final long serialVersionUID = 1L;
 
@@ -663,6 +664,43 @@ public abstract class TComponent implements Serializable, MouseListener, MouseMo
 		 *         which is the closest point to the {@link Point} passed into
 		 *         the method.
 		 */
+		public final Point getNearestPoint(Point point)
+			{
+				double nearestX;
+				double nearestY;
+
+				if (point.getX() < x)
+					nearestX = x;
+				else if (point.getX() > x + width)
+					nearestX = x + width;
+				else
+					nearestX = point.getX();
+
+				if (point.getY() < y)
+					nearestY = y;
+				else if (point.getY() > y + height)
+					nearestY = y + height;
+				else
+					nearestY = point.getY();
+
+				Point nearestPoint = new Point();
+				nearestPoint.setLocation(nearestX, nearestY);
+
+				return nearestPoint;
+			}
+
+		/**
+		 * This method returns the point on the edge of the {@link TComponent}
+		 * which is closest to the {@link Point} passed into the method.
+		 * 
+		 * @param point
+		 *            - the point passed into the method, we want to find the
+		 *            point on the {@link TComponent} which is the closest to
+		 *            this one.
+		 * @return a point which lies on the edge of the {@link TComponent}
+		 *         which is the closest point to the {@link Point} passed into
+		 *         the method.
+		 */
 		public final TPoint getNearestPoint(TPoint point)
 			{
 				double nearestX;
@@ -752,11 +790,11 @@ public abstract class TComponent implements Serializable, MouseListener, MouseMo
 		 * This methid is not used by this class.
 		 */
 		@Override
-		public abstract void mouseWheelMoved(MouseWheelEvent e);
-
-		/**
-		 * This methid is not used by this class.
-		 */
-		@Override
 		public abstract void actionPerformed(ActionEvent e);
+
+		public void mouseWheelMoved(MouseWheelEvent e)
+			{
+				// TODO Auto-generated method stub
+				
+			}
 	}

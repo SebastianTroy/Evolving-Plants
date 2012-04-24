@@ -1,6 +1,6 @@
 package TroysCode;
 
-import PlantSim.World;
+import EvolvingPlants.World;
 
 /**
  * The {@link hub} Class Contains the main method.
@@ -47,7 +47,7 @@ public class hub
 		 * You can include code within <code> if (DEBUG) </code> blocks when
 		 * developing for testing purposes.
 		 */
-		public static final boolean DEBUG = false;
+		public static final boolean DEBUG = true;
 
 		/*
 		 * These classes are the "vital" classes, essential to the way the

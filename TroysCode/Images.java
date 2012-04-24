@@ -48,6 +48,18 @@ public class Images
 		 */
 
 		/**
+		 * This method loads images specified by you for the program, see the
+		 * tutorial on the wiki for more info:
+		 * <p>
+		 * https ://github.com/SebastianTroy/Troy-s-Code/wiki/_pages
+		 * 
+		 * @throws IOException
+		 */
+		private final void loadImages() throws IOException
+			{
+			}
+
+		/**
 		 * When an instance of the {@link Images} class is created, it
 		 * automatically loads all of the Images needed for the program
 		 */
@@ -60,7 +72,7 @@ public class Images
 		 * This method can be called to completely reload the images used for
 		 * the program.
 		 * <p>
-		 * This may be desirable if the <code>textureFolderName</code> in
+		 * This may be desirable if the <code> textureFolderName </code> in
 		 * {@link hub} is edited.
 		 */
 		public final void reLoadImages()
@@ -74,18 +86,6 @@ public class Images
 					{
 						Tools.errorWindow(IOe, "IO exception at loadImages");
 					}
-			}
-
-		/**
-		 * This method loads images specified by you for the program, see the
-		 * tutorial on the wiki for more info:
-		 * <p>
-		 * https ://github.com/SebastianTroy/Troy-s-Code/wiki/_pages
-		 * 
-		 * @throws IOException
-		 */
-		private final void loadImages() throws IOException
-			{
 			}
 
 		/*
@@ -107,8 +107,7 @@ public class Images
 
 				BufferedImage textureSheet = ImageIO.read(Images.class.getResource(textureDir + "/defaultTexture.png"));
 
-				tButtonIcons[TButton.BUTTONUP] = getCroppedImage(textureSheet, 100, 0, 100, 40);
-				tButtonIcons[TButton.BUTTONDOWN] = getCroppedImage(textureSheet, 200, 0, 100, 40);
+				tButtonIcons[TButton.TBUTTON] = getCroppedImage(textureSheet, 100, 0, 100, 40);
 
 				tScrollBarIcons[TScrollBar.UPBUTTON] = getCroppedImage(textureSheet, 50, 0, 25, 25);
 				tScrollBarIcons[TScrollBar.DOWNBUTTON] = getCroppedImage(textureSheet, 75, 0, 25, 25);

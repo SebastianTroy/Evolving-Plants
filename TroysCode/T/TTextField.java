@@ -50,7 +50,6 @@ public class TTextField extends TComponent implements Serializable
 							{
 								tComponentContainer.getParent().removeMouseListener(this);
 								tComponentContainer.getParent().removeMouseMotionListener(this);
-								tComponentContainer.getParent().removeMouseWheelListener(this);
 							}
 						tComponentContainer = componentContainer;
 						tComponentContainer.getParent().addMouseListener(this);
@@ -67,7 +66,6 @@ public class TTextField extends TComponent implements Serializable
 			{
 				tComponentContainer.getParent().removeMouseListener(this);
 				tComponentContainer.getParent().removeMouseMotionListener(this);
-				tComponentContainer.getParent().removeMouseWheelListener(this);
 
 				listenerList = new EventListenerList();
 				tComponentContainer = null;
@@ -258,11 +256,6 @@ public class TTextField extends TComponent implements Serializable
 
 		@Override
 		public void mouseMoved(MouseEvent e)
-			{
-			}
-
-		@Override
-		public void mouseWheelMoved(MouseWheelEvent e)
 			{
 			}
 

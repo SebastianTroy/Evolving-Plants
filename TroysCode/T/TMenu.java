@@ -38,7 +38,7 @@ public class TMenu extends TComponent implements TScrollListener
 
 		private SerializableBufferedImage image;
 
-		private TScrollBar scrollBar;
+		TScrollBar scrollBar;
 		private boolean usingScrollBar = false;
 		private int scrollModifier = 0;
 
@@ -85,7 +85,9 @@ public class TMenu extends TComponent implements TScrollListener
 							{
 								tComponentContainer.getParent().removeMouseListener(this);
 								tComponentContainer.getParent().removeMouseMotionListener(this);
-								tComponentContainer.getParent().removeMouseWheelListener(this);
+
+								if (usingScrollBar == true)
+									tComponentContainer.removeTComponent(scrollBar);
 
 								for (TButton b : tButtons)
 									b.listenerList = new EventListenerList();
@@ -93,24 +95,26 @@ public class TMenu extends TComponent implements TScrollListener
 						tComponentContainer = componentContainer;
 						tComponentContainer.getParent().addMouseListener(this);
 						tComponentContainer.getParent().addMouseMotionListener(this);
-						tComponentContainer.getParent().addMouseWheelListener(this);
 
 						ActionListener[] listeners = tComponentContainer.getEventListeners();
 						for (ActionListener listener : listeners)
 							for (TButton b : tButtons)
 								b.addActionListener(listener);
+
+						if (usingScrollBar == true)
+							tComponentContainer.addTComponent(scrollBar);
 					}
 			}
 
 		@Override
 		protected final void removedFromTComponentContainer()
 			{
-				tComponentContainer = null;
-
 				for (TButton b : tButtons)
 					b.listenerList = new EventListenerList();
 
 				tComponentContainer.removeTComponent(scrollBar);
+
+				tComponentContainer = null;
 			}
 
 		public synchronized final void addTButton(TButton button, boolean resizeButton)
@@ -174,6 +178,7 @@ public class TMenu extends TComponent implements TScrollListener
 									b.width = width - (2 * borderSize);
 								}
 					}
+				calculateTotalMenuLength();
 			}
 
 		private final void setMenuLayout()
@@ -277,9 +282,11 @@ public class TMenu extends TComponent implements TScrollListener
 
 						usingScrollBar = totalMenuLength > this.height;
 					}
+				scrollBar.setScrollDistance(totalMenuLength);
+
 				setMenuLayout();
-				
-				if (usingScrollBar == true)
+
+				if (usingScrollBar == true && tComponentContainer != null)
 					tComponentContainer.addTComponent(scrollBar);
 				if (usingScrollBar == false && scrollBar.tComponentContainer != null)
 					tComponentContainer.removeTComponent(scrollBar);
@@ -287,8 +294,6 @@ public class TMenu extends TComponent implements TScrollListener
 
 		private final void setButtonPositions()
 			{
-				calculateTotalMenuLength();
-
 				if (orientation == HORIZONTAL)
 					{
 						double cumulativeWidth = borderSize;
@@ -387,6 +392,13 @@ public class TMenu extends TComponent implements TScrollListener
 			{
 				this.width = width;
 
+				setMinimumButtonBounds();
+				setMenuLayout();
+				setButtonPositions();
+
+				if (usingScrollBar && orientation == HORIZONTAL)
+					scrollBar.setLength(width);
+
 				image = new SerializableBufferedImage(new BufferedImage((int) Math.round(width), (int) Math.round(height), BufferedImage.TYPE_INT_ARGB));
 			}
 
@@ -394,6 +406,13 @@ public class TMenu extends TComponent implements TScrollListener
 		public final void setHeight(double height)
 			{
 				this.height = height;
+
+				setMinimumButtonBounds();
+				setMenuLayout();
+				setButtonPositions();
+
+				if (usingScrollBar && orientation == VERTICAL)
+					scrollBar.setLength(height);
 
 				image = new SerializableBufferedImage(new BufferedImage((int) Math.round(width), (int) Math.round(height), BufferedImage.TYPE_INT_ARGB));
 			}
@@ -489,9 +508,10 @@ public class TMenu extends TComponent implements TScrollListener
 					}
 			}
 
-		@Override
-		public final void mouseWheelMoved(MouseWheelEvent m)
+		public final void mouseWheelMoved(MouseWheelEvent event)
 			{
+				if (usingScrollBar)
+					scrollBar.mouseWheelMoved(event);
 			}
 
 		@Override

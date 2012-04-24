@@ -1,4 +1,4 @@
-package PlantSim;
+package EvolvingPlants;
 
 public class Pixel
 	{

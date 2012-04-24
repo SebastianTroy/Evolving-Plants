@@ -7,11 +7,13 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
 import java.io.Serializable;
 import java.util.ArrayList;
 
 import javax.swing.event.EventListenerList;
 
+import TroysCode.InputListener;
 import TroysCode.Tools;
 
 /**
@@ -20,7 +22,7 @@ import TroysCode.Tools;
  * 
  * @author Sebastian Troy
  */
-public abstract class TComponentContainer implements Serializable, TScrollListener
+public abstract class TComponentContainer implements Serializable, MouseWheelListener, TScrollListener
 	{
 		private static final long serialVersionUID = 1L;
 
@@ -114,7 +116,7 @@ public abstract class TComponentContainer implements Serializable, TScrollListen
 		 */
 		protected synchronized final void addTComponent(TComponent component)
 			{
-				if (!tComponents.contains(component) && component != null)
+				if (component != null && !getTComponents().contains(component))
 					{
 						/*
 						 * Only initiates the TComponent if it has not been
@@ -130,7 +132,7 @@ public abstract class TComponentContainer implements Serializable, TScrollListen
 								for (ActionListener listener : listeners)
 									component.addActionListener(listener);
 
-								if (component.getClass() == TScrollBar.class || component.getClass() == TSlider.class)
+								if (component.getClass() == TScrollBar.class || component.getClass() == TSlider.class || component.getClass() == TMultiSlider.class)
 									component.addTScrollListener(this);
 
 								component.setTComponentContainer(this);
@@ -160,6 +162,16 @@ public abstract class TComponentContainer implements Serializable, TScrollListen
 				return eventListeners.getListeners(ActionListener.class);
 			}
 
+		private synchronized final ArrayList<TComponent> getTComponents()
+			{
+				TComponent[] components = new TComponent[tComponents.size()];
+				tComponents.toArray(components);
+				ArrayList<TComponent> components2 = new ArrayList<TComponent>();
+				for (TComponent c : components)
+					components2.add(c);
+				return components2;
+			}
+		
 		/**
 		 * This method draws all of the {@link TComponents} which have been
 		 * added to this {@link TComponentContainer}
@@ -171,13 +183,21 @@ public abstract class TComponentContainer implements Serializable, TScrollListen
 		protected synchronized final void renderTComponents(Graphics g)
 			{
 				for (TComponent tComponent : tComponents)
-					tComponent.render(g);
+					{
+						tComponent.render(g);
+					}
 			}
+
+		/**
+		 * This method is called whenever a {@link TScrollEvent} occours.
+		 */
+		@Override
+		public abstract void tScrollBarScrolled(TScrollEvent event);
 
 		/**
 		 * When there is a {@link MouseWheelEvent} this method searches through
 		 * the <code>tComponents</code> held by this {@link TComponentContainer}
-		 * and returns the {@link TScrollBar} it thinks the event should be sent
+		 * and finds the {@link TScrollBar} it thinks the event should be sent
 		 * to. This is either the closets one, or if the event is over a
 		 * {@link TComponent} which itself contains a {@link TScrollBar}.
 		 * 
@@ -188,10 +208,14 @@ public abstract class TComponentContainer implements Serializable, TScrollListen
 		 * @return The {@link TScrollBar} which the method has chosen to send
 		 *         the {@link MouseWheelEvent} to.
 		 */
-		public synchronized final TComponent mostAppropriateScrollBar(MouseWheelEvent event)
+		@Override
+		public final void mouseWheelMoved(MouseWheelEvent e)
 			{
+				mouseWheelScrolled(e);
+
 				// TODO make this mess better!
-				TComponent mostAppropriateScrollBar = null;
+				TScrollBar scrollBar = null;
+				double distanceToScrollBar = Double.MAX_VALUE;
 
 				for (TComponent c : tComponents)
 					{
@@ -204,32 +228,37 @@ public abstract class TComponentContainer implements Serializable, TScrollListen
 								 * ""nearestTScrollBar"" set
 								 * ""nearestTScrollBar"" to c.
 								 */
-								if (mostAppropriateScrollBar == null
-										|| Tools.getVectorLength(c.getNearestPoint(new TPoint(event.getPoint())), new TPoint(event.getPoint())) < Tools
-												.getVectorLength(mostAppropriateScrollBar.getNearestPoint(new TPoint(event.getPoint())),
-														new TPoint(event.getPoint())))
-									mostAppropriateScrollBar = c;
+								double distanceToC = Tools.getVectorLength(c.getNearestPoint(new TPoint(e.getPoint())), new TPoint(e.getPoint()));
+								if (distanceToC < distanceToScrollBar)
+									{
+										scrollBar = (TScrollBar) c;
+										distanceToScrollBar = distanceToC;
+									}
 							}
 						/*
 						 * If the mouse is over a TPanel send the event to the
 						 * TPanel and stop searching for the nearest TScrollBar
 						 */
-//						else if (c.getClass() == TPanel.class)
-//							{
-//								if (c.containsPoint(me.getPoint()))
-//									{
-//										nearestRelevantTComponent = c;
-//										break;
-//									}
-//							}
-
+						else if (c.getClass() == TMenu.class)
+							{
+								if (c.containsPoint(e.getPoint()))
+									{
+										distanceToScrollBar = 0;
+										TMenu m = (TMenu) c;
+										scrollBar = m.scrollBar;
+									}
+							}
 					}
-				return mostAppropriateScrollBar;
+				scrollBar.mouseWheelMoved(e);
 			}
 
 		/**
-		 * This method is called whenever a {@link TScrollEvent} occours.
+		 * This method is called whenever the {@link InputListener} Class
+		 * detects that the mouse wheel (if present) has been scrolled.
+		 * 
+		 * @param event
+		 *            - The {@link MouseEvent} detected by the
+		 *            {@link InputListener}
 		 */
-		@Override
-		public abstract void tScrollBarScrolled(TScrollEvent event);
+		protected abstract void mouseWheelScrolled(MouseWheelEvent event);
 	}

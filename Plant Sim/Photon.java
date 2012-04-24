@@ -1,4 +1,4 @@
-package PlantSim;
+package EvolvingPlants;
 
 import java.awt.Color;
 import java.awt.Graphics;
@@ -23,6 +23,6 @@ public class Photon extends Entity
 		public void render(Graphics g)
 			{
 				g.setColor(Color.YELLOW);
-				g.drawLine(Math.round(x), Math.round(y), Math.round(x), Math.round(y));
+				g.drawRect(Math.round(x), Math.round(y), 1, 1);
 			}
 	}

@@ -1,17 +1,21 @@
 package TroysCode.T;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.io.Serializable;
+import java.util.ArrayList;
+
 import javax.swing.event.EventListenerList;
 
+import TroysCode.Tools;
 import TroysCode.hub;
 
-public class TSlider extends TComponent implements Serializable
+public class TMultiSlider extends TComponent implements Serializable
 	{
 		private static final long serialVersionUID = 1L;
 
@@ -44,8 +48,9 @@ public class TSlider extends TComponent implements Serializable
 		public static final byte VERTICAL = 1;
 
 		private Color background = Color.LIGHT_GRAY;
+		private boolean showIndex = hub.DEBUG ? true : false;
 
-		TButton slider;
+		private ArrayList<TButton> sliders = new ArrayList<TButton>(5);
 
 		/*
 		 * This Constructor allows you to set the position of the top left of
@@ -54,7 +59,7 @@ public class TSlider extends TComponent implements Serializable
 		 * for the TButtons unless the constructor below is used to specify an
 		 * array of images which can be used instead.
 		 */
-		public TSlider(double x, double y, byte orientation, double length)
+		public TMultiSlider(double x, double y, byte orientation, double length, int numberOfSliders)
 			{
 				super(x, y, 0, 0);
 				if (orientation == VERTICAL || orientation == HORIZONTAL)
@@ -73,19 +78,21 @@ public class TSlider extends TComponent implements Serializable
 				 */
 				if (orientation == VERTICAL)
 					{
-						slider = new TButton(x, y + (length / 2) - 12.5, hub.images.tScrollBarIcons[SLIDERBUTTON]);
+						for (int i = 0; i < numberOfSliders; i++)
+							sliders.add(new TButton(x, y + ((length / (numberOfSliders + 1)) * (i + 1) - 12.5f), hub.images.tScrollBarIcons[SLIDERBUTTON]));
 						width = 25;
 						height = length;
 					}
 				else if (orientation == HORIZONTAL)
 					{
-						slider = new TButton(x + (length / 2) - 12.5, y, hub.images.tScrollBarIcons[SLIDERBUTTON]);
+						for (int i = 0; i < numberOfSliders; i++)
+							sliders.add(new TButton(x + ((length / (numberOfSliders + 1)) * (i + 1) - 12.5f), y, hub.images.tScrollBarIcons[SLIDERBUTTON]));
 						width = length;
 						height = 25;
 					}
 			}
 
-		public TSlider(double x, double y, byte orientation, double length, BufferedImage image)
+		public TMultiSlider(double x, double y, byte orientation, double length, int numberOfSliders, BufferedImage[] images)
 			{
 				super(x, y, 0, 0);
 
@@ -102,18 +109,22 @@ public class TSlider extends TComponent implements Serializable
 				 * the images are compatable first. If they are not it will
 				 * default to the default texture.
 				 */
-				if (image.getWidth() > 25 || image.getHeight() > 25)
-					image = hub.images.tScrollBarIcons[SLIDERBUTTON];
+				if (images == null || images.length != hub.images.tScrollBarIcons.length)
+					images = hub.images.tScrollBarIcons;
 
 				if (orientation == VERTICAL)
 					{
-						slider = new TButton(x, y + (length / 2) - 12.5, image);
+						for (int i = 0; i < numberOfSliders; i++)
+							{
+								sliders.add(new TButton(x, y + (i * (length / (numberOfSliders) + 1)), hub.images.tScrollBarIcons[SLIDERBUTTON]));
+							}
 						width = 25;
 						height = length;
 					}
 				else if (orientation == HORIZONTAL)
 					{
-						slider = new TButton(x + (length / 2) - 12.5, y, image);
+						for (int i = 0; i < numberOfSliders; i++)
+							sliders.add(new TButton(x + ((length / (numberOfSliders + 1)) * (i + 1) - 12.5f), y, hub.images.tScrollBarIcons[SLIDERBUTTON]));
 						width = length;
 						height = 25;
 					}
@@ -174,8 +185,18 @@ public class TSlider extends TComponent implements Serializable
 						g.setColor(background);
 						g.fillRect((int) Math.round(x), (int) Math.round(y + 11), (int) Math.round(length), 3);
 					}
-
-				slider.render(g);
+				int sliderIndex = 0;
+				for (TButton slider : sliders)
+					{
+						slider.render(g);
+						if (showIndex)
+							{
+								g.setColor(Color.BLACK);
+								g.setFont(new Font(g.getFont().toString(), Font.ITALIC, 12));
+								g.drawString("" + sliderIndex, (int) Math.round(slider.x + 8), (int) Math.round(slider.y + 17));
+								sliderIndex++;
+							}
+					}
 			}
 
 		/*
@@ -209,14 +230,17 @@ public class TSlider extends TComponent implements Serializable
 		public final void moveX(double x)
 			{
 				this.x += x;
-				slider.moveX(x);
+
+				for (TButton slider : sliders)
+					slider.moveX(x);
 			}
 
 		@Override
 		public final void moveY(double y)
 			{
 				this.y += y;
-				slider.moveY(y);
+				for (TButton slider : sliders)
+					slider.moveY(y);
 			}
 
 		@Override
@@ -225,7 +249,8 @@ public class TSlider extends TComponent implements Serializable
 				this.x += x;
 				this.y += y;
 
-				slider.movePosition(x, y);
+				for (TButton slider : sliders)
+					slider.movePosition(x, y);
 			}
 
 		/*
@@ -239,19 +264,24 @@ public class TSlider extends TComponent implements Serializable
 				 */
 				length = length < 76 ? length = 76 : length;
 
-				if (orientation == VERTICAL)
+				int sliderIndex = 0;
+				for (TButton slider : sliders)
 					{
-						slider.moveY((getSliderPercent() / 100.0) * (length - this.length));
-					}
-				else if (orientation == HORIZONTAL)
-					{
-						slider.moveX((getSliderPercent() / 100.0) * (length - this.length));
+						if (orientation == VERTICAL)
+							{
+								slider.moveY((getSliderPercent(sliderIndex) / 100.0) * (length - this.length));
+							}
+						else if (orientation == HORIZONTAL)
+							{
+								slider.moveX((getSliderPercent(sliderIndex) / 100.0) * (length - this.length));
+							}
+						sliderIndex++;
 					}
 				this.length = length;
 			}
 
 		/**
-		 * @deprecated The width of the {@link TSlider} is set according to its
+		 * @deprecated The width of the {@link TMultiSlider} is set according to its
 		 *             <code>length</code> and <code>orientation</code>.
 		 */
 		@Override
@@ -260,7 +290,7 @@ public class TSlider extends TComponent implements Serializable
 			}
 
 		/**
-		 * @deprecated The heigt of the {@link TSlider} is set according to its
+		 * @deprecated The heigt of the {@link TMultiSlider} is set according to its
 		 *             <code>length</code> and <code>orientation</code>.
 		 */
 		@Override
@@ -269,7 +299,7 @@ public class TSlider extends TComponent implements Serializable
 			}
 
 		/**
-		 * @deprecated The dimensions of the {@link TSlider} are set according
+		 * @deprecated The dimensions of the {@link TMultiSlider} are set according
 		 *             to its <code>length</code> and <code>orientation</code>.
 		 */
 		@Override
@@ -289,7 +319,8 @@ public class TSlider extends TComponent implements Serializable
 						if (containsPoint(me.getPoint()))
 							inUse = true;
 
-						slider.mousePressed(me);
+						for (TButton slider : sliders)
+							slider.mousePressed(me);
 					}
 			}
 
@@ -302,25 +333,30 @@ public class TSlider extends TComponent implements Serializable
 		@Override
 		public final void mouseDragged(MouseEvent me)
 			{
-				if (slider.inUse)
-					if (orientation == VERTICAL)
-						{
-							slider.y = me.getY() - 12.5f;
-							if (slider.y < y)
-								slider.y = y;
-							else if (slider.y > y + length - 25)
-								slider.y = y + length - 25;
-							sendTScrollEvent(new TScrollEvent(this, TScrollEvent.TSCROLLBARSCROLLED, getSliderPercent()));
-						}
-					else if (orientation == HORIZONTAL)
-						{
-							slider.x = me.getX() - 12.5f;
-							if (slider.x < x)
-								slider.x = x;
-							else if (slider.x > x + length - 25)
-								slider.x = x + length - 25;
-							sendTScrollEvent(new TScrollEvent(this, TScrollEvent.TSCROLLBARSCROLLED, getSliderPercent()));
-						}
+				int sliderIndex = 0;
+				for (TButton slider : sliders)
+					{
+						if (slider.inUse)
+							if (orientation == VERTICAL)
+								{
+									slider.y = me.getY() - 12.5f;
+									if (slider.y < y)
+										slider.y = y;
+									else if (slider.y > y + length - 25)
+										slider.y = y + length - 25;
+									sendTScrollEvent(new TScrollEvent(this, TScrollEvent.TSCROLLBARSCROLLED, getSliderPercent(sliderIndex)));
+								}
+							else if (orientation == HORIZONTAL)
+								{
+									slider.x = me.getX() - 12.5f;
+									if (slider.x < x)
+										slider.x = x;
+									else if (slider.x > x + length - 25)
+										slider.x = x + length - 25;
+									sendTScrollEvent(new TScrollEvent(this, TScrollEvent.TSCROLLBARSCROLLED, getSliderPercent(sliderIndex)));
+								}
+						sliderIndex++;
+					}
 			}
 
 		/**
@@ -334,35 +370,60 @@ public class TSlider extends TComponent implements Serializable
 					{
 						inUse = false;
 
-						slider.mouseReleased(me);
+						for (TButton slider : sliders)
+							slider.mouseReleased(me);
 					}
 			}
 
-		public final double getSliderPercent()
+		public final double getSliderPercent(int sliderIndex)
 			{
-					double scrollPercent = 0f;
+				// Check sliderIndex is within array bounds,
+				// if not create exception.
+				if (sliderIndex < 0 || sliderIndex >= sliders.size())
+					{
+						Tools.errorWindow(new IndexOutOfBoundsException(
+								"The index you passed into the 'getSliderPercent()' method is out of the bounds of the array! you passed in: " + sliderIndex
+										+ ". The range is from 0 to " + (sliders.size() - 1)), "Exception thrown in TSlder Class");
+						return 0f;
+					}
+
+				double scrollPercent = 0f;
 
 				if (orientation == VERTICAL)
-					scrollPercent = ((slider.y - y) / (length - 25f)) * 100f;
+					scrollPercent = ((sliders.get(sliderIndex).y - y) / (length - 25f)) * 100f;
 				else if (orientation == HORIZONTAL)
-					scrollPercent = ((slider.x - x) / (length - 25f)) * 100f;
+					scrollPercent = ((sliders.get(sliderIndex).x - x) / (length - 25f)) * 100f;
 
 				return scrollPercent;
 			}
 
-		public final void setSliderPercent(double sliderPercent)
+		public final void setSliderPercent(int sliderIndex, double sliderPercent)
 			{
+				// Check sliderIndex is within array bounds,
+				// if not create exception.
+				if (sliderIndex < 0 || sliderIndex >= sliders.size())
+					{
+						Tools.errorWindow(new IndexOutOfBoundsException(
+								"The index you passed into the 'getSliderPercent()' method is out of the bounds of the array! you passed in: " + sliderIndex
+										+ ". The range is from 0 to " + (sliders.size() - 1)), "Exception thrown in TSlder Class");
+					}
+
 				if (sliderPercent < 0)
 					sliderPercent = 0;
 				else if (sliderPercent > 100)
 					sliderPercent = 100;
 
 				if (orientation == VERTICAL)
-					slider.setY(((length - 25f) * (sliderPercent / 100f)) + y);
+					sliders.get(sliderIndex).setY(((length - 25f) * (sliderPercent / 100f)) + y);
 				else if (orientation == HORIZONTAL)
-					slider.setX(((length - 25f) * (sliderPercent / 100f)) + x);
+					sliders.get(sliderIndex).setX(((length - 25f) * (sliderPercent / 100f)) + x);
 
-				sendTScrollEvent(new TScrollEvent(this, TScrollEvent.TSCROLLBARSCROLLED, getSliderPercent()));
+				sendTScrollEvent(new TScrollEvent(this, TScrollEvent.TSCROLLBARSCROLLED, getSliderPercent(sliderIndex)));
+			}
+
+		public final void setShowIndexNumbers(boolean show)
+			{
+				showIndex = show;
 			}
 
 		@Override

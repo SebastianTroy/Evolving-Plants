@@ -7,9 +7,9 @@ import java.io.Serializable;
  * This class holds a {@link BufferedImage}, when the {@link BufferedImage} is
  * Serialized it is saved as a multi-dimensional Array of ARBG pixel integers.
  * <p>
- * The <code>get()</code> method returns the {@link BufferedImage}, if
- * it has been Serialized, it re-creates the {@link BufferedImage} from the
- * pixel data Array and then returns it.
+ * The <code>get()</code> method returns the {@link BufferedImage}, if it has
+ * been Serialized, it re-creates the {@link BufferedImage} from the pixel data
+ * Array and then returns it.
  * 
  * @author Sebastian Troy
  * 
@@ -25,11 +25,21 @@ public class SerializableBufferedImage implements Serializable
 		private int[][] pixelArray;
 
 		/**
-		 * This constructor takes
-		 * 
-		 * @param image - the {@link BufferedImage} which needs to be {@link Serializable}
+		 * @param image
+		 *            - the {@link BufferedImage} which needs to be
+		 *            {@link Serializable}
 		 */
 		public SerializableBufferedImage(BufferedImage image)
+			{
+				set(image);
+			}
+
+		/**
+		 * @param image
+		 *            - the {@link BufferedImage} you wish this class to
+		 *            represent.
+		 */
+		public void set(BufferedImage image)
 			{
 				this.image = image;
 
@@ -38,9 +48,7 @@ public class SerializableBufferedImage implements Serializable
 
 				pixelArray = new int[imageWidth][imageHeight];
 
-				for (int x = 0; x < imageWidth; x++)
-					for (int y = 0; y < imageHeight; y++)
-						pixelArray[x][y] = image.getRGB(x, y);
+				setPixelArray();
 			}
 
 		/**
@@ -62,6 +70,13 @@ public class SerializableBufferedImage implements Serializable
 								image.setRGB(x, y, pixelArray[x][y]);
 					}
 				return image;
+			}
+
+		private void setPixelArray()
+			{
+				for (int x = 0; x < imageWidth; x++)
+					for (int y = 0; y < imageHeight; y++)
+						pixelArray[x][y] = image.getRGB(x, y);
 			}
 
 	}

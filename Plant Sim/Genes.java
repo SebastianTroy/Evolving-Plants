@@ -1,4 +1,4 @@
-package PlantSim;
+package EvolvingPlants;
 
 import java.awt.Color;
 
@@ -11,14 +11,15 @@ public class Genes
 		private final int MAXPERCENT = 100;
 
 		public Color colour = Tools.randAlphaColour();
+		public Color seedColour = new Color(255 - colour.getRed(), 255 - colour.getGreen(), 255 - colour.getBlue());
 
 		public int maxAge = 2000;
 		private final int ageVar = 300;
 
 		public float seedEnergy = 250;
 		private final float seedEnergyVar = 30;
-		public float seedSpread = 50;
-		private final float seedSpreadVar = 15;
+		public float seedSpread = 1.25f;
+		private final float seedSpreadVar = 0.25f;
 		public float numberOfSeedStems = 1.5f;
 		private final float numSeedStemVar = 3;
 		public int germinationTime = 0;
@@ -49,6 +50,7 @@ public class Genes
 				if (parent != null)
 					{
 						colour = parent.genes.colour;
+						seedColour = parent.genes.seedColour;
 
 						maxAge = parent.genes.maxAge;
 
@@ -172,5 +174,6 @@ public class Genes
 					blue = 255;
 
 				colour = new Color(red, green, blue, alpha);
+				seedColour = new Color(255 - red, 255 - green, 255 - blue);
 			}
 	}

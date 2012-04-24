@@ -144,7 +144,7 @@ public abstract class RenderableObject extends TComponentContainer
 		 *            - The {@link MouseEvent} detected by the
 		 *            {@link InputListener}
 		 */
-		protected abstract void mouseWheelMoved(MouseWheelEvent event);
+		protected abstract void mouseWheelScrolled(MouseWheelEvent event);
 
 		/**
 		 * This method is called whenever the {@link InputListener} Class

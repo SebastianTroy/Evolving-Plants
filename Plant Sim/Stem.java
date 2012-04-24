@@ -1,4 +1,4 @@
-package PlantSim;
+package EvolvingPlants;
 
 import java.awt.Color;
 import java.awt.Graphics;
@@ -78,15 +78,9 @@ public class Stem extends PlantPart
 		@Override
 		public final void render(Graphics g)
 			{
-				g.setColor(Color.BLACK);
+				g.setColor(thisPlant.selected ? Color.WHITE : Color.BLACK);
 				g.drawLine(Math.round(x), Math.round(y), Math.round(tipX), Math.round(tipY));
 
 				leaf.render(g);
-
-				g.setColor(thisPlant.genes.colour);
-				g.fillOval(Math.round(leaf.x - 12.5f), Math.round(leaf.y - 12.5f), 25, 25);
-
-				g.setColor(Color.BLACK);
-				g.drawOval(Math.round(leaf.x - 12.5f), Math.round(leaf.y - 12.5f), 25, 25);
 			}
 	}

@@ -1,14 +1,18 @@
-package PlantSim;
+package EvolvingPlants;
 
+import java.awt.Color;
 import java.awt.Graphics;
 
 import TroysCode.Tools;
+import TroysCode.hub;
 
 public class Leaf extends PlantPart
 	{
 		private Stem[] stems;
 
 		private boolean notGrowingStems = false;
+
+		private double seedEnergy = 0;
 
 		public Leaf(Plant thisPlant, float tipX, float tipY)
 			{
@@ -34,29 +38,24 @@ public class Leaf extends PlantPart
 		public void tick()
 			{
 				if (stems != null)
-					{
-						if (energy > stems.length)
-							for (Stem s : stems)
-								{
-									s.energy++;
-									energy--;
-								}
-
-						for (Stem s : stems)
-							s.tick();
-					}
+					for (Stem s : stems)
+						s.tick();
 
 				else if (!notGrowingStems && energy > thisPlant.genes.leafEnergyThreshold && thisPlant.numberOfStemsLeft > 0)
 					growStems();
 
-				else if (energy > thisPlant.genes.leafEnergyThreshold)
-					{
-						if (energy > thisPlant.genes.leafEnergyToPlant)
-							{
-								thisPlant.sendEnergyToPlant(thisPlant.genes.leafEnergyToPlant, this);
-								energy -= thisPlant.genes.leafEnergyToPlant;
-							}
-					}
+				if (energy > thisPlant.genes.leafEnergyThreshold)
+					if (energy > thisPlant.genes.leafEnergyToPlant)
+						{
+							seedEnergy += thisPlant.genes.leafEnergyToPlant;
+							energy -= 2 * thisPlant.genes.leafEnergyToPlant;
+							if (seedEnergy > thisPlant.genes.seedEnergy)
+								{
+									hub.world.addPlant(new Plant(thisPlant, x, y, thisPlant.genes.seedEnergy));
+									energy -= thisPlant.genes.seedEnergy;
+									seedEnergy = 0;
+								}
+						}
 			}
 
 		@Override
@@ -65,6 +64,19 @@ public class Leaf extends PlantPart
 				if (stems != null)
 					for (Stem s : stems)
 						s.render(g);
+
+				g.setColor(thisPlant.genes.colour);
+				g.fillOval(Math.round(x - 12.5f), Math.round(y - 12.5f), 25, 25);
+
+				g.setColor(thisPlant.selected ? Color.WHITE : Color.BLACK);
+				g.drawOval(Math.round(x - 12.5f), Math.round(y - 12.5f), 25, 25);
+
+				if (hub.world.viewSeeds)
+					{
+						g.setColor(thisPlant.genes.seedColour);
+						int seedSize = (int) (seedEnergy / 15);
+						g.fillOval(Math.round(x - (seedSize / 2)), Math.round(y - (seedSize / 2)), seedSize, seedSize);
+					}
 			}
 
 		public final boolean containsPoint(float x, float y)

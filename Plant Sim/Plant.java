@@ -1,4 +1,4 @@
-package PlantSim;
+package EvolvingPlants;
 
 import java.awt.Graphics;
 import java.util.ArrayList;
@@ -13,7 +13,10 @@ public class Plant extends PlantPart
 		public int age = 0;
 
 		protected Genes genes;
-		private Seed seed;
+		protected Seed seed;
+		
+		public boolean selected = false;
+		public int numGerminatedOffspring = 0;
 
 		protected int numberOfStemsLeft;
 
@@ -47,20 +50,6 @@ public class Plant extends PlantPart
 				seed.energy = energy;
 
 				numberOfStemsLeft = (int) genes.maxStems;
-			}
-
-		protected final void sendEnergyToPlant(float energy, Leaf leaf)
-			{
-				this.energy += energy;
-				if (this.energy > genes.seedEnergy)
-					seed(leaf);
-			}
-
-		private final void seed(Leaf leaf)
-			{
-				float seedX = leaf.x + (Tools.randFloat(-genes.seedSpread, genes.seedSpread));
-				hub.world.addPlant(new Plant(this, seedX, leaf.y, genes.seedEnergy));
-				energy -= genes.seedEnergy;
 			}
 
 		public final void tick()
