@@ -146,7 +146,7 @@ public class Genes
 				float var = 5f;
 
 				if (thisPlant != null)
-					var = thisPlant.x < 600 ? hub.world.UVDamage / 5f : hub.world.UVDamage2 / 5f;
+					var = thisPlant.x < 600 ? hub.world.UVDamage / 2.5f : hub.world.UVDamage2 / 2.5f;
 
 				int alpha = (int) (colour.getAlpha() + Tools.randFloat(-var, var));
 				int red = (int) (colour.getRed() + Tools.randFloat(-var, var));
@@ -155,7 +155,7 @@ public class Genes
 
 				colour = checkColour(red, green, blue, alpha);
 
-				var *= 3;
+				var *= 2;
 				
 				alpha = 255;
 				red = (int) (seedColour.getRed() + Tools.randFloat(-var, var));
