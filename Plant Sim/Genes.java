@@ -13,34 +13,34 @@ public class Genes
 		public Color colour = Tools.randAlphaColour();
 		public Color seedColour = Tools.randColour();
 
-		public int maxAge = 2000;
+		public int maxAge = Tools.randInt(1500, 2500);
 		private final int ageVar = 300;
 
-		public float seedEnergy = 250;
+		public float seedEnergy = Tools.randInt(200, 300);
 		private final float seedEnergyVar = 30;
-		public float seedSpread = 1.25f;
+		public float seedSpread = Tools.randFloat(1.0f, 1.7f);
 		private final float seedSpreadVar = 0.25f;
-		public float numberOfSeedStems = 1.5f;
+		public float numberOfSeedStems = Tools.randFloat(1.0f, 2.0f);
 		private final float numSeedStemVar = 3;
-		public int germinationTime = 0;
+		public int germinationTime = Tools.randInt(0, 40);
 		private final float germinationTimeVar = 20;
 
-		public float maxStems = 1;
+		public float maxStems = Tools.randInt(1, 3);
 		private final float maxStemsVar = 2;
-		public float numberOfLeafStems = 3;
+		public float numberOfLeafStems = Tools.randInt(1, 2);
 		private final float numLeafStemsVar = 2;
-		public float chanceOfGrowingStems = 100f;
+		public float chanceOfGrowingStems = (float) Tools.randPercent();
 		private final float chanceGrowingStemsVar = 10;
-		public float maxStemLength = 40;
+		public float maxStemLength = Tools.randInt(25, 50);
 		private final float maxStemLengthVar = 8;
 		public float stemGrowIncrement = 2f;
 		private final float stemGrowIncrementVar = 0.1f;
-		public float stemAngleVariation = 0f;
+		public float stemAngleVariation = Tools.randFloat(0, 30);
 		private final float stamAngleVar = 15;
 
-		public int leafEnergyThreshold = 50;
+		public int leafEnergyThreshold = Tools.randInt(50, 150);
 		private final float leafEnergyThresholdVar = 20;
-		public int leafEnergyToPlant = 1;
+		public float leafEnergyToPlant = Tools.randFloat(0.5f, 3.5f);
 		private final float leafEnergyToPlantVar = 0.1f;
 
 		protected boolean germinate = true;

@@ -47,7 +47,7 @@ public class hub
 		 * You can include code within <code> if (DEBUG) </code> blocks when
 		 * developing for testing purposes.
 		 */
-		public static final boolean DEBUG = true;
+		public static final boolean DEBUG = false;
 
 		/*
 		 * These classes are the "vital" classes, essential to the way the

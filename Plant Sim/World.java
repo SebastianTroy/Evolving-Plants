@@ -120,7 +120,9 @@ public class World extends RenderableObject
 				addTComponent(photonIntensitySlider);
 				photonIntensitySlider.setSliderPercent(20);
 				addTComponent(photonEnergySlider);
+				photonEnergySlider.setSliderPercent(70);
 				addTComponent(plantSpacingSlider);
+				plantSpacingSlider.setSliderPercent(30);
 				addTComponent(UVIntensitySlider);
 				addTComponent(UVDamageSlider);
 
@@ -128,7 +130,9 @@ public class World extends RenderableObject
 				addTComponent(photonIntensitySlider2);
 				photonIntensitySlider2.setSliderPercent(20);
 				addTComponent(photonEnergySlider2);
+				photonEnergySlider2.setSliderPercent(70);
 				addTComponent(plantSpacingSlider2);
+				plantSpacingSlider2.setSliderPercent(30);
 				addTComponent(UVIntensitySlider2);
 				addTComponent(UVDamageSlider2);
 
@@ -175,11 +179,10 @@ public class World extends RenderableObject
 
 				// add 10 equally spaced new plants
 				for (int i = 0; i < 10; i++)
-					for (int tries = 0; tries < 8; tries++)
+					for (int tries = 0; tries < 5; tries++)
 						{
 							Plant p = new Plant(new Plant(new Plant(null, (i * 80) + 240, 500, 250), (i * 80) + 240, 500, 250), (i * 80) + 240, 500, 250);
-							if (p.genes.germinate)
-								addPlant(p);
+							addPlant(p);
 						}
 
 				setGeneSliders();
@@ -414,6 +417,16 @@ public class World extends RenderableObject
 			{
 				mouseX = event.getX();
 				mouseY = event.getY();
+
+				if (event.getY() > 70)
+					if (mouseState == KILL)
+						for (Plant p : plants)
+							for (Leaf l : p.leaves)
+								if (l.containsPoint(event.getX(), event.getY()))
+									{
+										p.exists = false;
+										break;
+									}
 			}
 
 		@Override
