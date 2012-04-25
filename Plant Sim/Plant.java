@@ -3,9 +3,6 @@ package EvolvingPlants;
 import java.awt.Graphics;
 import java.util.ArrayList;
 
-import TroysCode.Tools;
-import TroysCode.hub;
-
 public class Plant extends PlantPart
 	{
 		public Plant parent;

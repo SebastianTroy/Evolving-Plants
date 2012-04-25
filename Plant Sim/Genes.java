@@ -11,7 +11,7 @@ public class Genes
 		private final int MAXPERCENT = 100;
 
 		public Color colour = Tools.randAlphaColour();
-		public Color seedColour = new Color(255 - colour.getRed(), 255 - colour.getGreen(), 255 - colour.getBlue());
+		public Color seedColour = Tools.randColour();
 
 		public int maxAge = 2000;
 		private final int ageVar = 300;
@@ -38,7 +38,7 @@ public class Genes
 		public float stemAngleVariation = 0f;
 		private final float stamAngleVar = 15;
 
-		public int leafEnergyThreshold = 100;
+		public int leafEnergyThreshold = 50;
 		private final float leafEnergyThresholdVar = 20;
 		public int leafEnergyToPlant = 1;
 		private final float leafEnergyToPlantVar = 0.1f;
@@ -153,6 +153,20 @@ public class Genes
 				int green = (int) (colour.getGreen() + Tools.randFloat(-var, var));
 				int blue = (int) (colour.getBlue() + Tools.randFloat(-var, var));
 
+				colour = checkColour(red, green, blue, alpha);
+
+				var *= 3;
+				
+				alpha = 255;
+				red = (int) (seedColour.getRed() + Tools.randFloat(-var, var));
+				green = (int) (seedColour.getGreen() + Tools.randFloat(-var, var));
+				blue = (int) (seedColour.getBlue() + Tools.randFloat(-var, var));
+
+				seedColour = checkColour(red, green, blue, alpha);
+			}
+		
+		private final Color checkColour(int red, int green, int blue, int alpha)
+			{				
 				if (alpha < 0)
 					alpha = 0;
 				else if (alpha > 255)
@@ -172,8 +186,7 @@ public class Genes
 					blue = 0;
 				else if (blue > 255)
 					blue = 255;
-
-				colour = new Color(red, green, blue, alpha);
-				seedColour = new Color(255 - red, 255 - green, 255 - blue);
+				
+				return new Color(red, green, blue, alpha);
 			}
 	}

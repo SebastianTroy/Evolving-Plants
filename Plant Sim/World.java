@@ -60,7 +60,7 @@ public class World extends RenderableObject
 		private final TMenu universalMenu = new TMenu(200, 0, 800, 70, TMenu.HORIZONTAL);
 
 		private final TButton viewPhotonsButton = new TButton(0, 0, "View Light? on/off");
-		private final TButton viewSeedsButton = new TButton(0, 0, "View Seeds? on/off");		
+		private final TButton viewSeedsButton = new TButton(0, 0, "View Seeds? on/off");
 		private final TButton reColourAllButton = new TButton(0, 0, "Re-Colour All");
 		private final TButton getMostProliferous = new TButton(0, 0, "Select Most Proliferous");
 		private final TButton resetButton = new TButton(1010, 520, 175, 40, "RESET");
@@ -186,7 +186,7 @@ public class World extends RenderableObject
 			}
 
 		@Override
-		protected void tick()
+		protected synchronized void tick()
 			{
 				for (int i = 0; i < lightIntensity; i++)
 					{
@@ -244,7 +244,7 @@ public class World extends RenderableObject
 			}
 
 		@Override
-		protected void renderObject(Graphics g)
+		protected synchronized void renderObject(Graphics g)
 			{
 				g.setColor(new Color(100, 100, 255));
 				g.fillRect(200, 0, 800, 600);
@@ -356,42 +356,52 @@ public class World extends RenderableObject
 		@Override
 		protected void mousePressed(MouseEvent event)
 			{
-				switch (mouseState)
-					{
-					case SELECT:
-						for (Plant p : plants)
-							for (Leaf l : p.leaves)
-								if (l.containsPoint(event.getX(), event.getY()))
-									setSelectedPlant(p);
-						break;
-					case PLANT:
-						addPlant(new Plant(new Plant(new Plant(null, event.getX(), event.getY(), currentGenes.seedEnergy, currentGenes), event.getX(),
-								event.getY(), currentGenes.seedEnergy, currentGenes), event.getX(), event.getY(), currentGenes.seedEnergy, currentGenes));
-						break;
-					case KILL:
-						for (Plant p : plants)
-							for (Leaf l : p.leaves)
-								if (l.containsPoint(event.getX(), event.getY()))
-									p.exists = false;
-						break;
-					case GETGENES:
-						for (Plant p : plants)
-							for (Leaf l : p.leaves)
-								if (l.containsPoint(event.getX(), event.getY()))
-									currentGenes = p.genes;
-						setGeneSliders();
-						break;
-					case RECOLOUR:
-						for (Plant p : plants)
-							for (Leaf l : p.leaves)
-								if (l.containsPoint(event.getX(), event.getY()))
-									{
-										Color c = Tools.randColour();
-										p.genes.colour = new Color(c.getRed(), c.getGreen(), c.getBlue(), p.genes.colour.getAlpha());
-										p.genes.seedColour = new Color(255 - c.getRed(), 255 - c.getGreen(), 255 - c.getBlue());
-									}
-						break;
-					}
+				if (event.getY() > 70)
+					switch (mouseState)
+						{
+						case SELECT:
+							for (Plant p : plants)
+								for (Leaf l : p.leaves)
+									if (l.containsPoint(event.getX(), event.getY()))
+										{
+											setSelectedPlant(p);
+											break;
+										}
+							break;
+						case PLANT:
+							addPlant(new Plant(new Plant(new Plant(null, event.getX(), event.getY(), currentGenes.seedEnergy, currentGenes), event.getX(),
+									event.getY(), currentGenes.seedEnergy, currentGenes), event.getX(), event.getY(), currentGenes.seedEnergy, currentGenes));
+							break;
+						case KILL:
+							for (Plant p : plants)
+								for (Leaf l : p.leaves)
+									if (l.containsPoint(event.getX(), event.getY()))
+										{
+											p.exists = false;
+											break;
+										}
+							break;
+						case GETGENES:
+							for (Plant p : plants)
+								for (Leaf l : p.leaves)
+									if (l.containsPoint(event.getX(), event.getY()))
+										{
+											currentGenes = p.genes;
+											break;
+										}
+							setGeneSliders();
+							break;
+						case RECOLOUR:
+							for (Plant p : plants)
+								for (Leaf l : p.leaves)
+									if (l.containsPoint(event.getX(), event.getY()))
+										{
+											Color c = Tools.randColour();
+											p.genes.colour = new Color(c.getRed(), c.getGreen(), c.getBlue(), p.genes.colour.getAlpha());
+											p.genes.seedColour = new Color(255 - c.getRed(), 255 - c.getGreen(), 255 - c.getBlue());
+										}
+							break;
+						}
 			}
 
 		@Override
@@ -414,11 +424,11 @@ public class World extends RenderableObject
 			}
 
 		@Override
-		protected void actionPerformed(ActionEvent event)
+		protected synchronized void actionPerformed(ActionEvent event)
 			{
 				if (event.getSource() == viewPhotonsButton)
 					viewLight = !viewLight;
-			
+
 				else if (event.getSource() == viewSeedsButton)
 					viewSeeds = !viewSeeds;
 
