@@ -26,6 +26,7 @@ public class World extends RenderableObject
 		private ArrayList<Plant> plantsToAdd = new ArrayList<Plant>(20);
 		private ArrayList<Photon> photons = new ArrayList<Photon>(100);
 		private ArrayList<Plant> plants = new ArrayList<Plant>(25);
+		private ArrayList<Dust> dust = new ArrayList<Dust>(25);
 
 		// Left World options
 		private int lightIntensity = 4;
@@ -34,11 +35,11 @@ public class World extends RenderableObject
 		public float UVIntensity = 50;
 		public float UVDamage = 50;
 
-		private final TSlider photonIntensitySlider = new TSlider(1010, 70, TSlider.HORIZONTAL, 180);
-		private final TSlider photonEnergySlider = new TSlider(1010, 110, TSlider.HORIZONTAL, 180);
-		private final TSlider plantSpacingSlider = new TSlider(1010, 150, TSlider.HORIZONTAL, 180);
-		private final TSlider UVIntensitySlider = new TSlider(1010, 190, TSlider.HORIZONTAL, 180);
-		private final TSlider UVDamageSlider = new TSlider(1010, 230, TSlider.HORIZONTAL, 180);
+		private final TSlider photonIntensitySlider = new TSlider(1010, 90, TSlider.HORIZONTAL, 180);
+		private final TSlider photonEnergySlider = new TSlider(1010, 130, TSlider.HORIZONTAL, 180);
+		private final TSlider plantSpacingSlider = new TSlider(1010, 170, TSlider.HORIZONTAL, 180);
+		private final TSlider UVIntensitySlider = new TSlider(1010, 210, TSlider.HORIZONTAL, 180);
+		private final TSlider UVDamageSlider = new TSlider(1010, 250, TSlider.HORIZONTAL, 180);
 
 		// Right World options
 		private int lightIntensity2 = 4;
@@ -56,14 +57,22 @@ public class World extends RenderableObject
 		// Universal options
 		private boolean viewLight = false;
 		protected boolean viewSeeds = true;
+		protected boolean viewDeathAnimation = true;
+		protected boolean viewWind = false;
+
+		public double windFactor = 0;
+
+		private final TSlider windSlider = new TSlider(1010, 35, TSlider.HORIZONTAL, 180);
 
 		private final TMenu universalMenu = new TMenu(200, 0, 800, 70, TMenu.HORIZONTAL);
 
-		private final TButton viewPhotonsButton = new TButton(0, 0, "View Light? on/off");
-		private final TButton viewSeedsButton = new TButton(0, 0, "View Seeds? on/off");
+		private final TButton viewPhotonsButton = new TButton(0, 0, "View Light?   [" + (viewLight ? "on]" : "off]"));
+		private final TButton viewSeedsButton = new TButton(0, 0, "View Seeds?   [" + (viewSeeds ? "on]" : "off]"));
+		private final TButton viewDeathAnimationButton = new TButton(0, 0, "View Dead Plants?   [" + (viewDeathAnimation ? "on]" : "off]"));
+		private final TButton viewWindButton = new TButton(0, 0, "View Wind?   [" + (viewWind ? "on]" : "off]"));
 		private final TButton reColourAllButton = new TButton(0, 0, "Re-Colour All");
 		private final TButton getMostProliferous = new TButton(0, 0, "Select Most Proliferous");
-		private final TButton resetButton = new TButton(1010, 520, 175, 40, "RESET");
+		private final TButton resetButton = new TButton(1010, 520, 175, 40, "RESET PLANTS");
 
 		// Plant Options
 		private Plant selectedPlant;
@@ -122,7 +131,7 @@ public class World extends RenderableObject
 				addTComponent(photonEnergySlider);
 				photonEnergySlider.setSliderPercent(70);
 				addTComponent(plantSpacingSlider);
-				plantSpacingSlider.setSliderPercent(30);
+				plantSpacingSlider.setSliderPercent(60);
 				addTComponent(UVIntensitySlider);
 				addTComponent(UVDamageSlider);
 
@@ -132,17 +141,22 @@ public class World extends RenderableObject
 				addTComponent(photonEnergySlider2);
 				photonEnergySlider2.setSliderPercent(70);
 				addTComponent(plantSpacingSlider2);
-				plantSpacingSlider2.setSliderPercent(30);
+				plantSpacingSlider2.setSliderPercent(60);
 				addTComponent(UVIntensitySlider2);
 				addTComponent(UVDamageSlider2);
 
 				// Universal Options
+				addTComponent(windSlider);
+
 				addTComponent(universalMenu);
 				universalMenu.setBorderSize(2);
 				universalMenu.setButtonSpacing(2);
+				universalMenu.setBackgroundColour(new Color(100, 100, 255));
 				universalMenu.addTButton(reColourAllButton, true);
 				universalMenu.addTButton(viewPhotonsButton, true);
 				universalMenu.addTButton(viewSeedsButton, true);
+				universalMenu.addTButton(viewDeathAnimationButton, true);
+				universalMenu.addTButton(viewWindButton, true);
 				addTComponent(resetButton);
 
 				// Plant components
@@ -181,7 +195,7 @@ public class World extends RenderableObject
 				for (int i = 0; i < 10; i++)
 					for (int tries = 0; tries < 5; tries++)
 						{
-							Plant p = new Plant(new Plant(new Plant(null, (i * 80) + 240, 500, 250), (i * 80) + 240, 500, 250), (i * 80) + 240, 500, 250);
+							Plant p = new Plant(new Plant(new Plant(null, (i * 80) + 240, 500), (i * 80) + 240, 500), (i * 80) + 240, 500);
 							addPlant(p);
 						}
 
@@ -191,6 +205,8 @@ public class World extends RenderableObject
 		@Override
 		protected synchronized void tick()
 			{
+				dust.add(new Dust(Tools.randInt(0, 1200), 70));
+
 				for (int i = 0; i < lightIntensity; i++)
 					{
 						photons.add(new Photon(Tools.randInt(200, 599), lightEnergy));
@@ -218,6 +234,13 @@ public class World extends RenderableObject
 					if (e.exists == false)
 						plants.remove(e);
 
+				// Remove old dust
+				Dust[] dustCopy = new Dust[dust.size()];
+				dust.toArray(dustCopy);
+				for (Dust e : dustCopy)
+					if (e.exists == false)
+						dust.remove(e);
+
 				// Add new seedlings to Array
 				for (Plant p : plantsToAdd)
 					plants.add(p);
@@ -227,6 +250,8 @@ public class World extends RenderableObject
 				for (Entity e : photons)
 					e.tick();
 				for (Entity e : plants)
+					e.tick();
+				for (Entity e : dust)
 					e.tick();
 
 				// update photon positions
@@ -252,6 +277,10 @@ public class World extends RenderableObject
 				g.setColor(new Color(100, 100, 255));
 				g.fillRect(200, 0, 800, 600);
 
+				if (viewWind)
+					for (Entity e : dust)
+						e.render(g);
+
 				if (viewLight || photonIntensitySlider.getInUse() || photonIntensitySlider2.getInUse())
 					for (Photon p : photons)
 						p.render(g);
@@ -267,12 +296,13 @@ public class World extends RenderableObject
 
 				g.setColor(Color.BLACK);
 				g.drawString("World Options:", 1008, 20);
-				g.drawString("LEFT SIDE:", 1008, 50);
-				g.drawString("Light Intensity: " + lightIntensity, 1020, 70);
-				g.drawString("Light Energy: " + lightEnergy, 1020, 110);
-				g.drawString("Plant Spacing: " + plantSpacing, 1020, 150);
-				g.drawString("Chance of mutation: " + UVIntensity, 1020, 190);
-				g.drawString("Size of mutation: " + UVDamage, 1020, 230);
+				g.drawString("Wind Factor: " + (float) windFactor, 1020, 35);
+				g.drawString("LEFT SIDE:", 1008, 70);
+				g.drawString("Light Intensity: " + lightIntensity, 1020, 90);
+				g.drawString("Light Energy: " + lightEnergy, 1020, 130);
+				g.drawString("Plant Spacing: " + plantSpacing, 1020, 170);
+				g.drawString("Chance of mutation: " + UVIntensity, 1020, 210);
+				g.drawString("Size of mutation: " + UVDamage, 1020, 250);
 
 				g.drawString("RIGHT SIDE:", 1008, 300);
 				g.drawString("Light Intensity: " + lightIntensity2, 1020, 320);
@@ -295,7 +325,7 @@ public class World extends RenderableObject
 
 						g.drawString("Germinated Seeds:      " + selectedPlant.numGerminatedOffspring, 10, 140);
 						g.drawString("Energy per Seed:     " + selectedPlant.genes.seedEnergy, 10, 160);
-						g.drawString("Leaf Transparency:      " + ((255f - selectedPlant.genes.colour.getAlpha()) / 2.55f) + " %", 10, 180);
+						g.drawString("Leaf Transparency:      " + ((255f - selectedPlant.genes.leafColour.getAlpha()) / 2.55f) + " %", 10, 180);
 					}
 
 				g.drawString("GENES:", 6, 210);
@@ -307,7 +337,7 @@ public class World extends RenderableObject
 				g.drawString("Maximum stem Number: " + currentGenes.maxStems, 14, 430);
 				g.drawString("Stem Angle Variation: " + currentGenes.stemAngleVariation, 14, 470);
 				g.drawString("Energy to Seed: " + currentGenes.seedEnergy, 14, 510);
-				g.drawString("Leaf Transparency: " + ((255f - currentGenes.colour.getAlpha()) / 2.55f) + " %", 14, 550);
+				g.drawString("Leaf Transparency: " + ((255f - currentGenes.leafColour.getAlpha()) / 2.55f) + " %", 14, 550);
 
 				if (mouseX > 200 && mouseY > 0 && mouseX < 1000 && mouseY < 600)
 					switch (mouseState)
@@ -372,15 +402,15 @@ public class World extends RenderableObject
 										}
 							break;
 						case PLANT:
-							addPlant(new Plant(new Plant(new Plant(null, event.getX(), event.getY(), currentGenes.seedEnergy, currentGenes), event.getX(),
-									event.getY(), currentGenes.seedEnergy, currentGenes), event.getX(), event.getY(), currentGenes.seedEnergy, currentGenes));
+							addPlant(new Plant(new Plant(new Plant(null, event.getX(), event.getY(), currentGenes), event.getX(), event.getY(), currentGenes),
+									event.getX(), event.getY(), currentGenes));
 							break;
 						case KILL:
 							for (Plant p : plants)
 								for (Leaf l : p.leaves)
 									if (l.containsPoint(event.getX(), event.getY()))
 										{
-											p.exists = false;
+											p.age = p.genes.maxAge;
 											break;
 										}
 							break;
@@ -400,7 +430,7 @@ public class World extends RenderableObject
 									if (l.containsPoint(event.getX(), event.getY()))
 										{
 											Color c = Tools.randColour();
-											p.genes.colour = new Color(c.getRed(), c.getGreen(), c.getBlue(), p.genes.colour.getAlpha());
+											p.genes.leafColour = new Color(c.getRed(), c.getGreen(), c.getBlue(), p.genes.leafColour.getAlpha());
 											p.genes.seedColour = new Color(255 - c.getRed(), 255 - c.getGreen(), 255 - c.getBlue());
 										}
 							break;
@@ -424,7 +454,7 @@ public class World extends RenderableObject
 							for (Leaf l : p.leaves)
 								if (l.containsPoint(event.getX(), event.getY()))
 									{
-										p.exists = false;
+										p.age = p.genes.maxAge;
 										break;
 									}
 			}
@@ -440,10 +470,28 @@ public class World extends RenderableObject
 		protected synchronized void actionPerformed(ActionEvent event)
 			{
 				if (event.getSource() == viewPhotonsButton)
-					viewLight = !viewLight;
+					{
+						viewLight = !viewLight;
+						viewPhotonsButton.setLabel("View Light?   [" + (viewLight ? "on]" : "off]"));
+					}
 
 				else if (event.getSource() == viewSeedsButton)
-					viewSeeds = !viewSeeds;
+					{
+						viewSeeds = !viewSeeds;
+						viewSeedsButton.setLabel("View Seeds?   [" + (viewSeeds ? "on]" : "off]"));
+					}
+
+				else if (event.getSource() == viewDeathAnimationButton)
+					{
+						viewDeathAnimation = !viewDeathAnimation;
+						viewDeathAnimationButton.setLabel("View Dead Plants?   [" + (viewDeathAnimation ? "on]" : "off]"));
+					}
+
+				else if (event.getSource() == viewWindButton)
+					{
+						viewWind = !viewWind;
+						viewWindButton.setLabel("View Wind?   [" + (viewWind ? "on]" : "off]"));
+					}
 
 				else if (event.getSource() == resetButton)
 					{
@@ -459,7 +507,8 @@ public class World extends RenderableObject
 						if (selectedPlant != null)
 							{
 								Color c = Tools.randColour();
-								selectedPlant.genes.colour = new Color(c.getRed(), c.getGreen(), c.getBlue(), selectedPlant.genes.colour.getAlpha());
+								selectedPlant.genes.leafColour = new Color(c.getRed(), c.getGreen(), c.getBlue(), selectedPlant.genes.leafColour.getAlpha());
+								selectedPlant.leafColour = new Color(c.getRed(), c.getGreen(), c.getBlue(), selectedPlant.genes.leafColour.getAlpha());
 							}
 					}
 
@@ -468,11 +517,14 @@ public class World extends RenderableObject
 						if (selectedPlant != null)
 							{
 								Color c = Tools.randColour();
-								selectedPlant.genes.colour = new Color(c.getRed(), c.getGreen(), c.getBlue(), selectedPlant.genes.colour.getAlpha());
+								selectedPlant.genes.leafColour = new Color(c.getRed(), c.getGreen(), c.getBlue(), selectedPlant.genes.leafColour.getAlpha());
 
 								for (Plant p : plants)
 									if (isRelated(p))
-										p.genes.colour = selectedPlant.genes.colour;
+										{
+											p.genes.leafColour = selectedPlant.genes.leafColour;
+											p.leafColour = selectedPlant.genes.leafColour;
+										}
 							}
 					}
 
@@ -480,7 +532,8 @@ public class World extends RenderableObject
 					for (Plant p : plants)
 						{
 							Color c = Tools.randColour();
-							p.genes.colour = new Color(c.getRed(), c.getGreen(), c.getBlue(), p.genes.colour.getAlpha());
+							p.genes.leafColour = new Color(c.getRed(), c.getGreen(), c.getBlue(), p.genes.leafColour.getAlpha());
+							p.leafColour = new Color(c.getRed(), c.getGreen(), c.getBlue(), p.genes.leafColour.getAlpha());
 						}
 
 				else if (event.getSource() == getGenesButton)
@@ -553,7 +606,7 @@ public class World extends RenderableObject
 				maxStemsSlider.setSliderPercent((g.maxStems - 1) / 0.29f);
 				stemAngleVarSlider.setSliderPercent(g.stemAngleVariation);
 				seedEnergySlider.setSliderPercent(g.seedEnergy / 5);
-				alphaValueSlider.setSliderPercent((255 - g.colour.getAlpha()) / 2.55f);
+				alphaValueSlider.setSliderPercent((255 - g.leafColour.getAlpha()) / 2.55f);
 			}
 
 		@Override
@@ -609,8 +662,12 @@ public class World extends RenderableObject
 		@Override
 		public void tScrollBarScrolled(TScrollEvent event)
 			{
+				// Universal
+				if (event.getSource() == windSlider)
+					windFactor = (windSlider.getSliderPercent() - 50.0) * 0.05;
+
 				// LEFT
-				if (event.getSource() == photonIntensitySlider)
+				else if (event.getSource() == photonIntensitySlider)
 					lightIntensity = (int) (photonIntensitySlider.getSliderPercent() * 0.08);
 				else if (event.getSource() == photonEnergySlider)
 					lightEnergy = (int) ((photonEnergySlider.getSliderPercent() * 0.49) + 1);
@@ -620,6 +677,7 @@ public class World extends RenderableObject
 					UVIntensity = (float) UVIntensitySlider.getSliderPercent();
 				else if (event.getSource() == UVDamageSlider)
 					UVDamage = (float) UVDamageSlider.getSliderPercent();
+
 				// RIGHT
 				else if (event.getSource() == photonIntensitySlider2)
 					lightIntensity2 = (int) (photonIntensitySlider2.getSliderPercent() * 0.08);
@@ -631,6 +689,7 @@ public class World extends RenderableObject
 					UVIntensity2 = (float) UVIntensitySlider2.getSliderPercent();
 				else if (event.getSource() == UVDamageSlider2)
 					UVDamage2 = (float) UVDamageSlider2.getSliderPercent();
+
 				// GENES
 				else if (event.getSource() == maxAgeSlider)
 					currentGenes.maxAge = (int) (maxAgeSlider.getSliderPercent() * 79.97f) + 3;
@@ -645,13 +704,19 @@ public class World extends RenderableObject
 				else if (event.getSource() == maxStemsSlider)
 					currentGenes.maxStems = (float) ((maxStemsSlider.getSliderPercent() * 0.29f) + 1);
 				else if (event.getSource() == stemAngleVarSlider)
-					currentGenes.stemAngleVariation = (float) stemAngleVarSlider.getSliderPercent();
+					currentGenes.stemAngleVariation = (float) (stemAngleVarSlider.getSliderPercent() * 0.9f);
 				else if (event.getSource() == seedEnergySlider)
 					currentGenes.seedEnergy = (float) (seedEnergySlider.getSliderPercent() * 5);
 				else if (event.getSource() == alphaValueSlider)
 					{
-						Color c = currentGenes.colour;
-						currentGenes.colour = new Color(c.getRed(), c.getGreen(), c.getBlue(), (int) (255 - (alphaValueSlider.getSliderPercent() * 2.55f)));
+						Color c = currentGenes.leafColour;
+						currentGenes.leafColour = new Color(c.getRed(), c.getGreen(), c.getBlue(), (int) (255 - (alphaValueSlider.getSliderPercent() * 2.55f)));
+						for (Plant p : plants)
+							if (p.genes == currentGenes)
+								p.leafColour = c;
+						for (Plant p : plantsToAdd)
+							if (p.genes == currentGenes)
+								p.leafColour = c;
 					}
 			}
 	}

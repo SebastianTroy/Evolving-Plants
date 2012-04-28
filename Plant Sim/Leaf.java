@@ -14,6 +14,8 @@ public class Leaf extends PlantPart
 
 		private double seedEnergy = 0;
 
+		private final int ENERGY_THRESHOLD = 25;
+
 		public Leaf(Plant thisPlant, float tipX, float tipY)
 			{
 				super(thisPlant, tipX, tipY);
@@ -25,7 +27,7 @@ public class Leaf extends PlantPart
 				thisPlant.leaves.add(this);
 			}
 
-		protected final void grow(float growX, float growY)
+		protected final void grow(double growX, double growY)
 			{
 				y -= growY;
 				x += growX;
@@ -41,21 +43,20 @@ public class Leaf extends PlantPart
 					for (Stem s : stems)
 						s.tick();
 
-				else if (!notGrowingStems && energy > thisPlant.genes.leafEnergyThreshold && thisPlant.numberOfStemsLeft > 0)
+				else if (!notGrowingStems && energy > ENERGY_THRESHOLD && thisPlant.numberOfStemsLeft > 0)
 					growStems();
 
-				if (energy > thisPlant.genes.leafEnergyThreshold)
-					if (energy > thisPlant.genes.leafEnergyToPlant)
-						{
-							seedEnergy += thisPlant.genes.leafEnergyToPlant;
-							energy -= 2 * thisPlant.genes.leafEnergyToPlant;
-							if (seedEnergy > thisPlant.genes.seedEnergy)
-								{
-									hub.world.addPlant(new Plant(thisPlant, x, y, thisPlant.genes.seedEnergy));
-									energy -= thisPlant.genes.seedEnergy;
-									seedEnergy = 0;
-								}
-						}
+				if (energy > ENERGY_THRESHOLD)
+					{
+						seedEnergy += 3;
+						energy -= 3;
+						if (seedEnergy > thisPlant.genes.seedEnergy)
+							{
+								hub.world.addPlant(new Plant(thisPlant, x, y));
+								energy -= thisPlant.genes.seedEnergy;
+								seedEnergy = 0;
+							}
+					}
 			}
 
 		@Override
@@ -65,7 +66,7 @@ public class Leaf extends PlantPart
 					for (Stem s : stems)
 						s.render(g);
 
-				g.setColor(thisPlant.genes.colour);
+				g.setColor(thisPlant.leafColour);
 				g.fillOval(Math.round(x - 12.5f), Math.round(y - 12.5f), 25, 25);
 
 				g.setColor(thisPlant.selected ? Color.WHITE : Color.BLACK);
@@ -73,7 +74,7 @@ public class Leaf extends PlantPart
 
 				if (hub.world.viewSeeds)
 					{
-						g.setColor(thisPlant.genes.seedColour);
+						g.setColor(thisPlant.seedColour);
 						int seedSize = (int) (seedEnergy / 15);
 						g.fillOval(Math.round(x - (seedSize / 2)), Math.round(y - (seedSize / 2)), seedSize, seedSize);
 					}
@@ -107,7 +108,7 @@ public class Leaf extends PlantPart
 			{
 				if (Tools.getVectorLength(x, y, photon.x, photon.y) < 12.5)
 					{
-						float energyGainedFromLight = photon.energy * (thisPlant.genes.colour.getAlpha() / 255f);
+						float energyGainedFromLight = photon.energy * (thisPlant.genes.leafColour.getAlpha() / 255f);
 
 						energy += energyGainedFromLight;
 						photon.energy -= energyGainedFromLight;

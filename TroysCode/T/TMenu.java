@@ -463,11 +463,14 @@ public class TMenu extends TComponent implements TScrollListener
 		@Override
 		public final void mousePressed(MouseEvent m)
 			{
-				MouseEvent m2 = new MouseEvent(m.getComponent(), m.getID(), m.getWhen(), m.getModifiers(), (int) (m.getX() - Math.round(x)),
-						(int) (m.getY() - Math.round(y)), m.getClickCount(), m.isPopupTrigger());
+				if (containsPoint(m.getPoint()))
+					{
+						MouseEvent m2 = new MouseEvent(m.getComponent(), m.getID(), m.getWhen(), m.getModifiers(), (int) (m.getX() - Math.round(x)),
+								(int) (m.getY() - Math.round(y)), m.getClickCount(), m.isPopupTrigger());
 
-				for (TButton tc : getTButtons())
-					tc.mousePressed(m2);
+						for (TButton tc : getTButtons())
+							tc.mousePressed(m2);
+					}
 			}
 
 		/**

@@ -49,7 +49,7 @@ public class Tools
 		 */
 		public static final double randPercent()
 			{
-				double rnd = (Math.random() * 100.01);
+				double rnd = (Math.random() * 100.001);
 				return rnd > 100 ? 100 : rnd;
 			}
 
@@ -65,8 +65,7 @@ public class Tools
 		 */
 		public static final int randInt(int low, int high)
 			{
-				int rnd = (int) (Math.random() * (high - low + 1)) + low;
-				return rnd;
+				return (int) (Math.random() * (high - low + 1)) + low;
 			}
 
 		/**
@@ -81,7 +80,7 @@ public class Tools
 		 */
 		public static final float randFloat(float low, float high)
 			{
-				float rnd = (float) (Math.random() * (high - low + 0.01)) + low;
+				float rnd = (float) (Math.random() * (high - low + 0.001)) + low;
 				return rnd > high ? high : rnd;
 			}
 
@@ -97,8 +96,23 @@ public class Tools
 		 */
 		public static final double randDouble(double low, double high)
 			{
-				double rnd = (Math.random() * (high - low + 0.01)) + low;
+				double rnd = (Math.random() * (high - low + 0.001)) + low;
 				return rnd > high ? high : rnd;
+			}
+
+		/**
+		 * Returns a random {@link long} within a specified range.
+		 * 
+		 * @param low
+		 *            - the lower end of the return range
+		 * @param high
+		 *            - the upper end of the return range
+		 * @return A long greater than or equal to the low parameter, and
+		 *         less than or equal to the high parameter.
+		 */
+		public static final long randLong(long low, long high)
+			{
+				return (long) ((Math.random() * (high - low + 1)) + low);
 			}
 
 		/**
@@ -131,6 +145,78 @@ public class Tools
 			}
 
 		/**
+		 * This method takes three integer values and checks that they are
+		 * within 0 - 255 before returning a {@link Color} composed of these
+		 * values.
+		 * 
+		 * @param red
+		 *            - the red component to be checked.
+		 * @param green
+		 *            - the green component to be checked.
+		 * @param blue
+		 *            - the blue component to be checked.
+		 * @return - A RGB {@link Color}, composed of the above integers.
+		 */
+		public static final Color checkColour(int red, int green, int blue)
+			{
+				if (red < 0)
+					red = 0;
+				else if (red > 255)
+					red = 255;
+
+				if (green < 0)
+					green = 0;
+				else if (green > 255)
+					green = 255;
+
+				if (blue < 0)
+					blue = 0;
+				else if (blue > 255)
+					blue = 255;
+
+				return new Color(red, green, blue);
+			}
+
+		/**
+		 * This method takes four integer values and checks that they are within
+		 * 0 - 255 before returning a {@link Color} composed of these values.
+		 * 
+		 * @param red
+		 *            - the red component to be checked.
+		 * @param green
+		 *            - the green component to be checked.
+		 * @param blue
+		 *            - the blue component to be checked.
+		 * @param alpha
+		 *            - the alpha component to be checked.
+		 * @return - A RGBA {@link Color}, composed of the above integers.
+		 */
+		public static final Color checkAlphaColour(int red, int green, int blue, int alpha)
+			{
+				if (red < 0)
+					red = 0;
+				else if (red > 255)
+					red = 255;
+
+				if (green < 0)
+					green = 0;
+				else if (green > 255)
+					green = 255;
+
+				if (blue < 0)
+					blue = 0;
+				else if (blue > 255)
+					blue = 255;
+
+				if (alpha < 0)
+					alpha = 0;
+				else if (alpha > 255)
+					alpha = 255;
+
+				return new Color(red, green, blue, alpha);
+			}
+
+		/**
 		 * This method calculates the vector between two points.
 		 * 
 		 * @param startX
@@ -149,6 +235,62 @@ public class Tools
 				Point point = new Point(0, 0);
 
 				point.setLocation(endX - startX, endY - startY);
+
+				return point;
+			}
+
+		/**
+		 * This method calculates a vector when only the angle of the vector and
+		 * it's length are known, the vector returned is in {@link Integer}
+		 * accuracy.
+		 * 
+		 * @param vectorAngle
+		 *            - The angle in which the line is pointing, 0 is North, 90
+		 *            is East, 180 is South and 360 is North again.
+		 * @param vectorLength
+		 *            - The.
+		 * @return A {@link Point} Representing a vector of length
+		 *         <code>vectorLength</code> and at an angle of
+		 *         <code>vectorAngle</code>
+		 */
+		public static final Point getVector(int vectorAngle, int vectorLength)
+			{
+				Point point = new Point(0, 0);
+
+				double vectorAngleRadians = Math.toRadians(vectorAngle);
+
+				int x = (int) Math.round(Math.sin(vectorAngleRadians) * vectorLength);
+				int y = (int) Math.round(Math.cos(vectorAngleRadians) * vectorLength);
+
+				point.setLocation(x, y);
+
+				return point;
+			}
+
+		/**
+		 * This method calculates a vector when only the angle of the vector and
+		 * it's length are known. The vector returned is in {@link Double}
+		 * accuracy.
+		 * 
+		 * @param vectorAngle
+		 *            - The angle in degrees, which the line is pointing, 0 is North, 90
+		 *            is East, 180 is South and 360 is North again.
+		 * @param vectorLength
+		 *            - The.
+		 * @return A {@link TPoint} Representing a vector of length
+		 *         <code>vectorLength</code> and at an angle of
+		 *         <code>vectorAngle</code>
+		 */
+		public static final TPoint getVector(double vectorAngle, double vectorLength)
+			{
+				TPoint point = new TPoint(0, 0);
+				
+				double vectorAngleRadians = Math.toRadians(vectorAngle);
+
+				double x = Math.sin(vectorAngleRadians) * vectorLength;
+				double y = Math.cos(vectorAngleRadians) * vectorLength;
+
+				point.setLocation(x, y);
 
 				return point;
 			}
@@ -175,7 +317,7 @@ public class Tools
 
 				return point;
 			}
-		
+
 		/**
 		 * This method calculates the vector between two {@link TPoint}s.
 		 * 

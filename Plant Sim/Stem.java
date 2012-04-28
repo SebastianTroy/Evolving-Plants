@@ -4,6 +4,8 @@ import java.awt.Color;
 import java.awt.Graphics;
 
 import TroysCode.Tools;
+import TroysCode.hub;
+import TroysCode.T.TPoint;
 
 public class Stem extends PlantPart
 	{
@@ -12,8 +14,10 @@ public class Stem extends PlantPart
 		private float tipX;
 		private float tipY;
 
-		private float growX;
-		private float growY;
+		private double growX;
+		private double growY;
+		
+		private double energyPerGrow;
 
 		public Stem(Plant thisPlant, float x, float y)
 			{
@@ -21,6 +25,7 @@ public class Stem extends PlantPart
 				tipX = x;
 				tipY = y;
 
+				energyPerGrow = thisPlant.genes.stemGrowSpeed * Math.pow(thisPlant.genes.stemGrowSpeed + 0.2, 1.25);
 				calculateGrowthPath();
 
 				leaf = new Leaf(thisPlant, tipX, tipY);
@@ -28,10 +33,14 @@ public class Stem extends PlantPart
 
 		private final void calculateGrowthPath()
 			{
-				float maxGrowAngle = thisPlant.genes.stemGrowIncrement * (thisPlant.genes.stemAngleVariation / 100f);
-				growX = Tools.randFloat(-maxGrowAngle, maxGrowAngle);
-				while (Tools.getVectorLength(0, 0, growX, growY) < thisPlant.genes.stemGrowIncrement)
-					growY += 0.05f;
+				float stemAngleVar = thisPlant.genes.stemAngleVariation;
+				double growAngle = Tools.randFloat(-stemAngleVar, stemAngleVar);
+				growAngle += (hub.world.windFactor * 10.0) / (y / 200);
+				
+				TPoint growVector = Tools.getVector(growAngle, thisPlant.genes.stemGrowSpeed);
+				
+				growX = growVector.getX();
+				growY = growVector.getY();
 			}
 
 		private final int totatStemLength()
@@ -39,15 +48,15 @@ public class Stem extends PlantPart
 				return (int) Tools.getVectorLength(x, y, tipX, tipY);
 			}
 
-		protected final void grow(PlantPart energyFrom)
+		private final void grow(PlantPart energyFrom)
 			{
 				tipY -= growY;
 				tipX += growX;
 				leaf.grow(growX, growY);
-				energyFrom.energy -= thisPlant.genes.stemGrowIncrement;
+				energyFrom.energy -= energyPerGrow;
 			}
 
-		protected final void move(float xMod, float yMod)
+		protected final void move(double xMod, double yMod)
 			{
 				tipX += xMod;
 				tipY -= yMod;
@@ -61,12 +70,12 @@ public class Stem extends PlantPart
 			{
 				if (totatStemLength() < thisPlant.genes.maxStemLength)
 					{
-						if (energy > thisPlant.genes.stemGrowIncrement)
+						if (energy > energyPerGrow)
 							grow(this);
-						else if (leaf.energy > thisPlant.genes.stemGrowIncrement)
+						else if (leaf.energy > energyPerGrow)
 							grow(leaf);
 					}
-				else if (energy > thisPlant.genes.stemGrowIncrement)
+				else if (energy > 1)
 					{
 						leaf.energy++;
 						energy--;

@@ -9,16 +9,18 @@ public class Seed extends PlantPart
 	{
 		private Stem[] stems = null;
 
-		private int germinationTime;
 		public boolean germinated = false;
 
 		double xMod = 0;
+		
+		private double energyPerGrow;
 
-		public Seed(Plant thisPlant, float x, float y, int germinationTime)
+		public Seed(Plant thisPlant, float x, float y)
 			{
 				super(thisPlant, x, y);
-				this.germinationTime = germinationTime;
 
+				energyPerGrow = thisPlant.genes.stemGrowSpeed * Math.pow(thisPlant.genes.stemGrowSpeed + 0.2, 1.25);
+				
 				xMod = Tools.randDouble(-thisPlant.genes.seedSpread, thisPlant.genes.seedSpread);
 			}
 
@@ -32,14 +34,12 @@ public class Seed extends PlantPart
 								y += 2;
 								thisPlant.y += 2;
 
-								double var = Tools.randDouble(-xMod, xMod) / 2;
+								double var = (Tools.randDouble(-xMod, xMod) / 2) + (hub.world.windFactor / (y / 200));
 								x += xMod + var;
 								thisPlant.x += xMod + var;
 							}
-						else if (germinationTime > 0)
-							{
-								germinationTime--;
-							}
+						else if (!thisPlant.genes.germinate)
+							thisPlant.exists = false;
 						else if (stems == null)
 							{
 								germinate();
@@ -52,8 +52,8 @@ public class Seed extends PlantPart
 								s.tick();
 								if (energy > 0)
 									{
-										energy--;
-										s.energy++;
+										energy -= energyPerGrow;
+										s.energy += energyPerGrow;
 									}
 							}
 					}
@@ -66,23 +66,30 @@ public class Seed extends PlantPart
 					for (Stem s : stems)
 						s.render(g);
 
-				g.setColor(thisPlant.genes.seedColour);
-				int seedSize = (int) (energy / 15);
-				g.fillOval(Math.round(x - (seedSize / 2)), Math.round(y - (seedSize / 2)), seedSize, seedSize);
+				if (hub.world.viewSeeds)
+					{
+						g.setColor(thisPlant.seedColour);
+						int seedSize = (int) (energy / 15);
+						g.fillOval(Math.round(x - (seedSize / 2)), Math.round(y - (seedSize / 2)), seedSize, seedSize);
+					}
 			}
 
 		public void germinate()
 			{
-				if (thisPlant.genes.germinate && hub.world.isSpaceToGerminate(thisPlant))
+				if (energy > thisPlant.genes.seedEnergy / 2)
 					{
-						germinated = true;
-						thisPlant.parent.numGerminatedOffspring++;
+						energy -= 0.5;
+						if (thisPlant.genes.germinate && hub.world.isSpaceToGerminate(thisPlant))
+							{
+								germinated = true;
+								thisPlant.parent.numGerminatedOffspring++;
 
-						int numStems = (int) Math.min(thisPlant.numberOfStemsLeft, thisPlant.genes.numberOfSeedStems);
-						stems = new Stem[numStems];
-						for (int i = 0; i < numStems; i++)
-							stems[i] = new Stem(thisPlant, x, y);
-						thisPlant.numberOfStemsLeft -= numStems;
+								int numStems = (int) Math.min(thisPlant.numberOfStemsLeft, thisPlant.genes.numberOfSeedStems);
+								stems = new Stem[numStems];
+								for (int i = 0; i < numStems; i++)
+									stems[i] = new Stem(thisPlant, x, y);
+								thisPlant.numberOfStemsLeft -= numStems;
+							}
 					}
 				else
 					thisPlant.exists = false;

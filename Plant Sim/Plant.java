@@ -1,17 +1,21 @@
 package EvolvingPlants;
 
+import java.awt.Color;
 import java.awt.Graphics;
 import java.util.ArrayList;
+
+import TroysCode.Tools;
+import TroysCode.hub;
 
 public class Plant extends PlantPart
 	{
 		public Plant parent;
-		
+
 		public int age = 0;
 
 		protected Genes genes;
 		protected Seed seed;
-		
+
 		public boolean selected = false;
 		public int numGerminatedOffspring = 0;
 
@@ -19,7 +23,10 @@ public class Plant extends PlantPart
 
 		public ArrayList<Leaf> leaves = new ArrayList<Leaf>();
 
-		public Plant(Plant parentPlant, float x, float y, float energy)
+		Color leafColour;
+		Color seedColour;
+
+		public Plant(Plant parentPlant, float x, float y)
 			{
 				// null because thisPlant != parentPlant (it's == this)
 				super(null, x, y);
@@ -28,39 +35,81 @@ public class Plant extends PlantPart
 
 				genes = new Genes(parentPlant, this);
 
-				seed = new Seed(this, x, y, genes.germinationTime);
-				seed.energy = energy;
+				leafColour = genes.leafColour;
+				seedColour = genes.seedColour;
+
+				seed = new Seed(this, x, y);
+				seed.energy = genes.seedEnergy;
 
 				numberOfStemsLeft = (int) genes.maxStems;
 			}
-		
-		public Plant(Plant parentPlant, float x, float y, float energy, Genes genes)
+
+		public Plant(Plant parentPlant, float x, float y, Genes genes)
 			{
 				// null because thisPlant != parentPlant (it's == this)
 				super(null, x, y);
 				parent = parentPlant;
 				thisPlant = this;
 
-				this.genes = genes;;
+				this.genes = genes;
 
-				seed = new Seed(this, x, y, genes.germinationTime);
-				seed.energy = energy;
+				leafColour = genes.leafColour;
+				seedColour = genes.seedColour;
+
+				seed = new Seed(this, x, y);
+				seed.energy = genes.seedEnergy;
 
 				numberOfStemsLeft = (int) genes.maxStems;
 			}
 
 		public final void tick()
 			{
-				seed.tick();
-				age++;
 				if (age >= genes.maxAge)
-					exists = false;
+					{
+						if (hub.world.viewDeathAnimation)
+							{
+								seed.germinated = false;
+								if (getDarker())
+									{
+										boolean leavesFallen = true;
+										for (Leaf l : leaves)
+											if (l.y < 612)
+												{
+													l.y += 1.5;
+													l.x += Tools.randDouble(-1.75, 1.75) + (hub.world.windFactor / (l.y / 400));
+													leavesFallen = false;
+												}
+
+										if (leavesFallen)
+											exists = false;
+									}
+							}
+						else
+							exists = false;
+					}
+				else
+					{
+						if (seed.germinated)
+							age++;
+						seed.tick();
+					}
 			}
 
 		public void render(Graphics g)
 			{
 				seed.render(g);
-//				g.setColor(Color.BLACK);
-//				g.drawString("" + energy, Math.round(x), Math.round(y));
+			}
+
+		private final boolean getDarker()
+			{
+				int red = leafColour.getRed();
+				int green = leafColour.getGreen();
+				int blue = leafColour.getBlue();
+				int alpha = leafColour.getAlpha();
+
+				leafColour = Tools.checkAlphaColour(red - 3, green - 3, blue - 3, alpha + 3);
+				seedColour = Tools.checkAlphaColour(red - 3, green - 3, blue - 3, alpha + 3);
+
+				return (red == 0 && green == 0 && blue == 0);
 			}
 	}
