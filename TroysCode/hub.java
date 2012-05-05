@@ -28,13 +28,13 @@ public class hub
 		 * This is added to the title of the program's frame in the
 		 * {@link Frame} Class.
 		 */
-		public static final String programName = "Evolving Plants";
+		public static final String programName = "Evolving Plants - A-Sexual Reproduction";
 		/**
 		 * This is added to the title of the program's frame in the
 		 * {@link Frame} Class. It can also be used to track compatability due
 		 * to version differences.
 		 */
-		public static final String versionNumber = "1.0_00";
+		public static final String versionNumber = "1.1_00";
 		/**
 		 * This is the name of the folder containing the images used by Troy's
 		 * Code. It must contain all of the default texture files, however their

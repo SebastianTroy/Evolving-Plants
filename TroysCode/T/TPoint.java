@@ -127,4 +127,18 @@ public class TPoint implements Serializable
 			{
 				return y;
 			}
+
+		/**
+		 * Returns a string representation of this {@link TPoint} and its location in the
+		 * {@code (x,y)} coordinate space. This method is intended to be used
+		 * only for debugging purposes, and the content and format of the
+		 * returned string may vary between implementations. The returned string
+		 * may be empty but may not be <code>null</code>.
+		 * 
+		 * @return a {@link String} representation of this point
+		 */
+		public String toString()
+			{
+				return getClass().getName() + "[x=" + x + ",y=" + y + "]";
+			}
 	}

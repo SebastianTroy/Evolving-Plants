@@ -344,7 +344,7 @@ public class TMultiSlider extends TComponent implements Serializable
 										slider.y = y;
 									else if (slider.y > y + length - 25)
 										slider.y = y + length - 25;
-									sendTScrollEvent(new TScrollEvent(this, TScrollEvent.TSCROLLBARSCROLLED, getSliderPercent(sliderIndex)));
+									sendTScrollEvent(new TScrollEvent(this, TScrollEvent.TSCROLLBARSCROLLED, getSliderPercent(sliderIndex), sliderIndex));
 								}
 							else if (orientation == HORIZONTAL)
 								{
@@ -353,7 +353,7 @@ public class TMultiSlider extends TComponent implements Serializable
 										slider.x = x;
 									else if (slider.x > x + length - 25)
 										slider.x = x + length - 25;
-									sendTScrollEvent(new TScrollEvent(this, TScrollEvent.TSCROLLBARSCROLLED, getSliderPercent(sliderIndex)));
+									sendTScrollEvent(new TScrollEvent(this, TScrollEvent.TSCROLLBARSCROLLED, getSliderPercent(sliderIndex), sliderIndex));
 								}
 						sliderIndex++;
 					}
@@ -418,7 +418,7 @@ public class TMultiSlider extends TComponent implements Serializable
 				else if (orientation == HORIZONTAL)
 					sliders.get(sliderIndex).setX(((length - 25f) * (sliderPercent / 100f)) + x);
 
-				sendTScrollEvent(new TScrollEvent(this, TScrollEvent.TSCROLLBARSCROLLED, getSliderPercent(sliderIndex)));
+				sendTScrollEvent(new TScrollEvent(this, TScrollEvent.TSCROLLBARSCROLLED, getSliderPercent(sliderIndex), sliderIndex));
 			}
 
 		public final void setShowIndexNumbers(boolean show)

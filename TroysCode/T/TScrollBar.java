@@ -515,14 +515,14 @@ public class TScrollBar extends TComponent implements Serializable
 							slider.moveY(me.getY() - lastMouseLocation.getY());
 							lastMouseLocation = me.getPoint();
 							checkSliderPosition();
-							sendTScrollEvent(new TScrollEvent(this, TScrollEvent.TSCROLLBARSCROLLED, getScrollPercent()));
+							sendTScrollEvent(new TScrollEvent(this, TScrollEvent.TSCROLLBARSCROLLED, getScrollPercent(), 0));
 						}
 					else if (orientation == HORIZONTAL)
 						{
 							slider.moveX(me.getX() - lastMouseLocation.getX());
 							lastMouseLocation = me.getPoint();
 							checkSliderPosition();
-							sendTScrollEvent(new TScrollEvent(this, TScrollEvent.TSCROLLBARSCROLLED, getScrollPercent()));
+							sendTScrollEvent(new TScrollEvent(this, TScrollEvent.TSCROLLBARSCROLLED, getScrollPercent(), 0));
 						}
 			}
 
@@ -562,13 +562,13 @@ public class TScrollBar extends TComponent implements Serializable
 					{
 						slider.moveY((event.getWheelRotation() * 2.0) * (((length - 50) - sliderSize) / 100.0));
 						checkSliderPosition();
-						sendTScrollEvent(new TScrollEvent(this, TScrollEvent.TSCROLLBARSCROLLED, getScrollPercent()));
+						sendTScrollEvent(new TScrollEvent(this, TScrollEvent.TSCROLLBARSCROLLED, getScrollPercent(), 0));
 					}
 				else if (orientation == HORIZONTAL)
 					{
 						slider.moveX((event.getWheelRotation() * 2.0) * (((length - 50) - sliderSize) / 100.0));
 						checkSliderPosition();
-						sendTScrollEvent(new TScrollEvent(this, TScrollEvent.TSCROLLBARSCROLLED, getScrollPercent()));
+						sendTScrollEvent(new TScrollEvent(this, TScrollEvent.TSCROLLBARSCROLLED, getScrollPercent(), 0));
 					}
 			}
 
@@ -590,7 +590,7 @@ public class TScrollBar extends TComponent implements Serializable
 					slider.moveX(((length - 50) - sliderSize) / 100.0);
 
 				checkSliderPosition();
-				sendTScrollEvent(new TScrollEvent(this, TScrollEvent.TSCROLLBARSCROLLED, getScrollPercent()));
+				sendTScrollEvent(new TScrollEvent(this, TScrollEvent.TSCROLLBARSCROLLED, getScrollPercent(), 0));
 			}
 
 		/**
@@ -603,13 +603,13 @@ public class TScrollBar extends TComponent implements Serializable
 					{
 						slider.setY((y + 25) + ((scrollPercent / 100.0) * ((length - 50.0) - sliderSize)));
 						checkSliderPosition();
-						sendTScrollEvent(new TScrollEvent(this, TScrollEvent.TSCROLLBARSCROLLED, getScrollPercent()));
+						sendTScrollEvent(new TScrollEvent(this, TScrollEvent.TSCROLLBARSCROLLED, getScrollPercent(), 0));
 					}
 				else if (orientation == HORIZONTAL)
 					{
 						slider.setX((x + 25) + ((scrollPercent / 100.0) * ((length - 50.0) - sliderSize)));
 						checkSliderPosition();
-						sendTScrollEvent(new TScrollEvent(this, TScrollEvent.TSCROLLBARSCROLLED, getScrollPercent()));
+						sendTScrollEvent(new TScrollEvent(this, TScrollEvent.TSCROLLBARSCROLLED, getScrollPercent(), 0));
 					}
 			}
 

@@ -311,7 +311,7 @@ public class TSlider extends TComponent implements Serializable
 								slider.y = y;
 							else if (slider.y > y + length - 25)
 								slider.y = y + length - 25;
-							sendTScrollEvent(new TScrollEvent(this, TScrollEvent.TSCROLLBARSCROLLED, getSliderPercent()));
+							sendTScrollEvent(new TScrollEvent(this, TScrollEvent.TSCROLLBARSCROLLED, getSliderPercent(), 0));
 						}
 					else if (orientation == HORIZONTAL)
 						{
@@ -320,7 +320,7 @@ public class TSlider extends TComponent implements Serializable
 								slider.x = x;
 							else if (slider.x > x + length - 25)
 								slider.x = x + length - 25;
-							sendTScrollEvent(new TScrollEvent(this, TScrollEvent.TSCROLLBARSCROLLED, getSliderPercent()));
+							sendTScrollEvent(new TScrollEvent(this, TScrollEvent.TSCROLLBARSCROLLED, getSliderPercent(), 0));
 						}
 			}
 
@@ -363,7 +363,7 @@ public class TSlider extends TComponent implements Serializable
 				else if (orientation == HORIZONTAL)
 					slider.setX(((length - 25f) * (sliderPercent / 100f)) + x);
 
-				sendTScrollEvent(new TScrollEvent(this, TScrollEvent.TSCROLLBARSCROLLED, getSliderPercent()));
+				sendTScrollEvent(new TScrollEvent(this, TScrollEvent.TSCROLLBARSCROLLED, getSliderPercent(), 0));
 			}
 
 		@Override

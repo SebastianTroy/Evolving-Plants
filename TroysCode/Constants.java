@@ -16,4 +16,14 @@ public interface Constants
 		 * and call ""arrayOfColours[BLUE]"" I then have an idea of what it is
 		 * I'm actually accesing.
 		 */
+		
+		public static final byte NONE = 0;
+		public static final byte MAX_AGE = 1;
+		public static final byte SEED_STEMS = 2;
+		public static final byte LEAF_STEMS = 3;
+		public static final byte CHANCE_STEMS = 4;
+		public static final byte MAX_STEMS = 5;
+		public static final byte STEM_ANGLE = 6;
+		public static final byte SEED_ENERGY = 7;
+		public static final byte LEAF_ALPHA = 8;
 	}

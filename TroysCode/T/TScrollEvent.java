@@ -8,12 +8,14 @@ public class TScrollEvent extends AWTEvent
 
 	public static final int TSCROLLBARSCROLLED = 1001;
 	
+	public int sliderIndex;
 	public double scrollPercent;
 	
-	public TScrollEvent(Object source, int id, double scrollPercent)
+	public TScrollEvent(Object source, int id, double scrollPercent, int sliderIndex)
 		{
 			super(source, id);
 			this.scrollPercent = scrollPercent;
+			this.sliderIndex = sliderIndex;
 		}
 
 	}
