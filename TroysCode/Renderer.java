@@ -6,6 +6,8 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.image.BufferStrategy;
 
+import EvolvingPlants.World;
+
 /**
  * This class extends {@link java.awt.Canvas}, it is added to the program's
  * {@link Frame} and is what is drawn onto by the <code>render()</code> methods.
@@ -176,7 +178,8 @@ public class Renderer extends Canvas
 								boolean ticked = false;
 								while (unprocessedSeconds > secondsPerTick)
 									{
-										tick();
+										for (int i = 0; i < World.ticksPerRender; i++)
+											tick();
 										ticked = true;
 										tickCount++;
 
@@ -219,7 +222,7 @@ public class Renderer extends Canvas
 				 * flickering of the value in the DEBUG square.
 				 */
 				if (Tools.randPercent() > 50)
-					timeToTick = (int) ((time2 - time1) / 1000f);
+					timeToTick = (int) ((time2 - time1) / 1000f) * World.ticksPerRender;
 			}
 
 		/**

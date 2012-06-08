@@ -35,7 +35,10 @@ public class Stem extends PlantPart
 			{
 				float stemAngleVar = thisPlant.genes.stemAngleVariation;
 				double growAngle = Tools.randFloat(-stemAngleVar, stemAngleVar);
-				growAngle += (hub.world.windFactor * 10.0) / (y / 200);
+				if (x < 600)
+					growAngle += (hub.world.leftWindFactor * 10.0) / (y / 200);
+				else
+					growAngle += (hub.world.rightWindFactor * 10.0) / (y / 200);
 				
 				TPoint growVector = Tools.getVector(growAngle, thisPlant.genes.stemGrowSpeed);
 				
@@ -52,7 +55,7 @@ public class Stem extends PlantPart
 			{
 				tipY -= growY;
 				tipX += growX;
-				leaf.grow(growX, growY);
+				leaf.move(growX, growY);
 				energyFrom.energy -= energyPerGrow;
 			}
 
@@ -62,7 +65,7 @@ public class Stem extends PlantPart
 				tipY -= yMod;
 				x += xMod;
 				y -= yMod;
-				leaf.grow(xMod, yMod);
+				leaf.move(xMod, yMod);
 			}
 
 		@Override

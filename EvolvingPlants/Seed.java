@@ -34,7 +34,12 @@ public class Seed extends PlantPart
 								y += 2;
 								thisPlant.y += 2;
 
-								double var = (Tools.randDouble(-xMod, xMod) / 2) + (hub.world.windFactor / (y / 200));
+								double var;
+								if (x < 600)
+									var = (Tools.randDouble(-xMod, xMod) / 2) + (hub.world.leftWindFactor / (y / 200));
+								else
+									var = (Tools.randDouble(-xMod, xMod) / 2) + (hub.world.rightWindFactor / (y / 200));
+
 								x += xMod + var;
 								thisPlant.x += xMod + var;
 							}
@@ -78,7 +83,7 @@ public class Seed extends PlantPart
 			{
 				if (energy > thisPlant.genes.seedEnergy / 2)
 					{
-						energy -= 0.5;
+						energy -= 0.4;
 						if (thisPlant.genes.germinate && hub.world.isSpaceToGerminate(thisPlant))
 							{
 								germinated = true;

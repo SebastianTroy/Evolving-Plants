@@ -46,9 +46,8 @@ public class Plant extends PlantPart
 
 		public Plant(Plant parentPlant, float x, float y, Genes genes)
 			{
-				// null because thisPlant != parentPlant (it's == this)
-				super(null, x, y);
-				parent = parentPlant;
+				super(null , x, y);
+				parent = this;
 				thisPlant = this;
 
 				this.genes = genes;
@@ -76,7 +75,10 @@ public class Plant extends PlantPart
 											if (l.y < 612)
 												{
 													l.y += 1.5;
-													l.x += Tools.randDouble(-1.75, 1.75) + (hub.world.windFactor / (l.y / 400));
+													if (l.x < 600)
+														l.x += Tools.randDouble(-1.75, 1.75) + (hub.world.leftWindFactor / (l.y / 400));
+													else
+														l.x += Tools.randDouble(-1.75, 1.75) + (hub.world.rightWindFactor / (l.y / 400));
 													leavesFallen = false;
 												}
 

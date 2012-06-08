@@ -19,7 +19,10 @@ public class Dust extends Entity
 		public void tick()
 			{
 				y += 2;
-				x += (hub.world.windFactor / (y / 200)) + Tools.randFloat(-0.75f, 0.75f);
+				if (x < 600)
+					x += (hub.world.leftWindFactor / (y / 200)) + Tools.randFloat(-0.75f, 0.75f);
+				else
+					x += (hub.world.rightWindFactor / (y / 200)) + Tools.randFloat(-0.75f, 0.75f);
 				
 				if (y > 600)
 					exists = false;

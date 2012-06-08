@@ -10,11 +10,11 @@ public class Leaf extends PlantPart
 	{
 		private Stem[] stems;
 
-		private boolean notGrowingStems = false;
+		private boolean willGrowStems;
 
 		private double seedEnergy = 0;
 
-		private final int ENERGY_THRESHOLD = 25;
+		private final int ENERGY_THRESHOLD = 50;
 
 		public Leaf(Plant thisPlant, float tipX, float tipY)
 			{
@@ -23,17 +23,10 @@ public class Leaf extends PlantPart
 
 				this.x = tipX;
 				this.y = tipY;
+				
+				willGrowStems = thisPlant.genes.chanceOfGrowingStems > Tools.randPercent();
 
 				thisPlant.leaves.add(this);
-			}
-
-		protected final void grow(double growX, double growY)
-			{
-				y -= growY;
-				x += growX;
-				if (stems != null)
-					for (Stem s : stems)
-						s.move(growX, growY);
 			}
 
 		@Override
@@ -43,7 +36,7 @@ public class Leaf extends PlantPart
 					for (Stem s : stems)
 						s.tick();
 
-				else if (!notGrowingStems && energy > ENERGY_THRESHOLD && thisPlant.numberOfStemsLeft > 0)
+				else if (willGrowStems && energy > ENERGY_THRESHOLD && thisPlant.numberOfStemsLeft > 0)
 					growStems();
 
 				if (energy > ENERGY_THRESHOLD)
@@ -80,33 +73,42 @@ public class Leaf extends PlantPart
 					}
 			}
 
-		public final boolean containsPoint(float x, float y)
-			{
-				return Tools.getVectorLength(this.x, this.y, x, y) < 12 ? true : false;
-			}
+		protected final void move(double xMod, double yMod)
+		{
+			y -= yMod;
+			x += xMod;
+			if (stems != null)
+				for (Stem s : stems)
+					s.move(xMod, yMod);
+		}
 
 		private void growStems()
+		{
+			if (willGrowStems)
+				{
+					int numStems = Tools.randInt(0 , (int) Math.min(thisPlant.numberOfStemsLeft, thisPlant.genes.numberOfLeafStems));
+					if (numStems == 0)
+						{
+							willGrowStems = false;
+							return;
+						}
+					stems = new Stem[numStems];
+					for (int i = 0; i < numStems; i++)
+						stems[i] = new Stem(thisPlant, x, y);
+					thisPlant.numberOfStemsLeft -= numStems;
+				}
+			else
+				willGrowStems = false;
+		}
+
+		public final boolean containsPoint(float x, float y)
 			{
-				if (thisPlant.genes.chanceOfGrowingStems > Tools.randPercent())
-					{
-						int numStems = (int) Math.min(thisPlant.numberOfStemsLeft, thisPlant.genes.numberOfLeafStems);
-						if (numStems == 0)
-							{
-								notGrowingStems = true;
-								return;
-							}
-						stems = new Stem[numStems];
-						for (int i = 0; i < numStems; i++)
-							stems[i] = new Stem(thisPlant, x, y);
-						thisPlant.numberOfStemsLeft -= numStems;
-					}
-				else
-					notGrowingStems = true;
+				return Tools.getVectorLengthSquared(this.x, this.y, x, y) < 156.25 ? true : false;
 			}
 
 		public void containsPhoton(Photon photon)
 			{
-				if (Tools.getVectorLength(x, y, photon.x, photon.y) < 12.5)
+				if (containsPoint(photon.x, photon.y))
 					{
 						float energyGainedFromLight = photon.energy * (thisPlant.genes.leafColour.getAlpha() / 255f);
 

@@ -35,7 +35,7 @@ public class Genes
 		private final float stamAngleVar = 15;
 
 		public double stemGrowSpeed = Tools.randDouble(0.01, 3.0);
-		private final double stemGrowSpeedVar = 0.1;
+		private final double stemGrowSpeedVar = 0.08;
 
 		protected boolean germinate = true;
 
@@ -67,18 +67,18 @@ public class Genes
 
 		private final void mutate(Plant thisPlant)
 			{
-				float UVIntensity = 50f;
-				float variability = 50f;
+				float UVIntensity = 0f;
+				float var = 0f;
 
 				if (thisPlant != null)
 					{
 						UVIntensity = thisPlant.x < 600 ? hub.world.UVIntensity : hub.world.UVIntensity2;
-						variability = thisPlant.x < 600 ? hub.world.UVDamage : hub.world.UVDamage2;
+						var = thisPlant.x < 600 ? hub.world.UVDamage : hub.world.UVDamage2;
 					}
 
 				if (UVIntensity > Tools.randFloat(MINPERCENT, MAXPERCENT))
 					{
-						float var = variability / 100f;
+						var /= 100f;
 
 						mutateColour(thisPlant);
 
