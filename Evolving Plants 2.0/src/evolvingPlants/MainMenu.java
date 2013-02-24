@@ -3,24 +3,22 @@ package evolvingPlants;
 import java.awt.Color;
 import java.awt.Graphics;
 
-import evolvingPlants.simulation.Simulation;
-
 import tCode.RenderableObject;
 import tComponents.components.TButton;
-import tComponents.components.TCollection;
 import tComponents.components.TMenu;
 import tComponents.components.TSlider;
 import tComponents.utils.events.TActionEvent;
 import tComponents.utils.events.TScrollEvent;
+import evolvingPlants.simulation.Simulation;
 
 public class MainMenu extends RenderableObject
 	{
-		private TMenu mainMenu = new TMenu(300, 25, 600, 525, TMenu.VERTICAL);
+		private TMenu mainMenu;
 		private TButton newSimButton = new TButton(0, 0, 0, 0, "New Simulation");
 		private TButton resumeSimButton = new TButton(0, 0, 0, 0, "Resume Simulation");
 		private TButton editorButton = new TButton(0, 0, 0, 0, "DNA Editor");
 
-		private TCollection newSimCollection = new TCollection(1200, 0);
+		private TMenu newSimMenu;
 		private TSlider simWidthSlider = new TSlider(1200, 150, 500, TSlider.HORIZONTAL);
 		private TButton startSimButton = new TButton(1450, 400, 300, 75, "Start Simulation");
 
@@ -30,18 +28,18 @@ public class MainMenu extends RenderableObject
 		@Override
 		protected void initiate()
 			{
+				mainMenu = new TMenu(200, 0, 600, Hub.canvasHeight, TMenu.VERTICAL);
+				newSimMenu = new TMenu(1200, 0, 500, Hub.canvasHeight, TMenu.VERTICAL);
+
 				addTComponent(mainMenu);
-				mainMenu.addTComponent(newSimButton, true);
-				mainMenu.addTComponent(resumeSimButton, true);
-				mainMenu.addTComponent(editorButton, true);
+				mainMenu.addTComponent(newSimButton);
+				mainMenu.addTComponent(resumeSimButton);
+				mainMenu.addTComponent(editorButton);
 
 				simWidthSlider.setRange(800, 2000);
-				newSimCollection.addTComponent(simWidthSlider);
-				newSimCollection.addTComponent(startSimButton);
-				addTComponent(newSimCollection);
-				
-				mainMenu.setX(200);
-				newSimCollection.setX(1200);					
+				newSimMenu.addTComponent(simWidthSlider);
+				newSimMenu.addTComponent(startSimButton);
+				addTComponent(newSimMenu);
 			}
 
 		@Override
@@ -61,11 +59,13 @@ public class MainMenu extends RenderableObject
 				if (event.getSource() == newSimButton)
 					{
 						mainMenu.setX(0);
-						newSimCollection.setX(640);
+						newSimMenu.setX(640);
+						simWidth = (int) simWidthSlider.getSliderValue(0);
 					}
 				else if (event.getSource() == resumeSimButton)
 					{
-						changeRenderableObject(Hub.simWindow);
+						if (Hub.simWindow.sim != null)
+							changeRenderableObject(Hub.simWindow);
 					}
 				else if (event.getSource() == startSimButton)
 					{
@@ -83,7 +83,7 @@ public class MainMenu extends RenderableObject
 			{
 				if (event.getSource() == simWidthSlider)
 					{
-						simWidth = (int) ((event.getScrollPercent() * 52) + 800);
+						simWidth = (int) event.getScrollValue();
 					}
 			}
 	}

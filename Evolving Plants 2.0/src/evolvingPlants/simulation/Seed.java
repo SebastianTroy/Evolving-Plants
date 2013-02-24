@@ -3,9 +3,8 @@ package evolvingPlants.simulation;
 import java.awt.Color;
 import java.awt.Graphics;
 
-import evolvingPlants.Hub;
-
 import tools.RandTools;
+import evolvingPlants.Hub;
 
 public class Seed
 	{
@@ -48,7 +47,7 @@ public class Seed
 						y += 90 * secondsPassed;
 					}
 				if (exists && y > Plant.plantY)
-					if (getX() < 200 || getX() > 1000)
+					if (getX() < 0 || getX() > Hub.simWindow.sim.simWidth)
 						exists = false;
 					else
 						{
@@ -62,7 +61,7 @@ public class Seed
 								}
 							else
 								{
-									energy -= genes.metabolism * secondsPassed;
+									energy -= 5 * secondsPassed;
 
 									if (energy < 0)
 										exists = false;
@@ -70,10 +69,15 @@ public class Seed
 						}
 			}
 
-		public final void render(Graphics g)
+		public final void render(Graphics g, int simX)
 			{
+				if (x < -simX + 200 || x > -simX + 1000)
+					return;
+
+				int apparentX = (int) (getX() + simX);
+				
 				g.setColor(Color.BLACK);
-				g.fillOval(getX(), (int) y, (int) (energy / 10), (int) (energy / 10));
+				g.fillOval(apparentX, (int) y, (int) (energy / 10), (int) (energy / 10));
 			}
 
 		public final int getX()

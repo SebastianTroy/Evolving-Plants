@@ -2,9 +2,9 @@ package evolvingPlants.simulation;
 
 import java.awt.Color;
 
-import evolvingPlants.Hub;
 import tools.ColTools;
 import tools.RandTools;
+import evolvingPlants.Hub;
 
 /**
  * A plant has Genes with a fixed number of instructions on how to grow, these
@@ -24,10 +24,9 @@ public class Genes
 
 		private int currentInstruction = 0;
 		private char[] instructions = { END_ALL };
-		int numInstructionsCalled = 1;
 
-		Color leafColour = new Color(100, 100, 100);
-		public double seedEnergy = 60, seedEnergyTransfer = 15, metabolism = 5;
+		Color leafColour = new Color(200, 200, 200);
+		public double seedEnergy = 60, seedEnergyTransfer = 15;
 
 		public Genes(int numInstructions)
 			{
@@ -42,7 +41,6 @@ public class Genes
 
 		public Genes(Genes parent)
 			{
-				metabolism = parent.metabolism;
 				leafColour = parent.leafColour;
 				instructions = new char[parent.instructions.length];
 
@@ -53,7 +51,6 @@ public class Genes
 
 		public Genes(Genes parentOne, Genes parentTwo)
 			{
-				metabolism = (parentOne.metabolism + parentTwo.metabolism) / 2.0;
 				leafColour = ColTools.interpolateColours(parentOne.leafColour, parentTwo.leafColour);
 				instructions = new char[parentOne.instructions.length];
 
@@ -81,7 +78,6 @@ public class Genes
 					{
 						instruction = instructions[currentInstruction];
 						currentInstruction++;
-						numInstructionsCalled++;
 					}
 
 				if (instruction == END_ALL)
@@ -138,8 +134,7 @@ public class Genes
 
 		private final void mutate()
 			{
-				// TODO mutate metabolism
-				// mutate seed colour, energy
+				// TODO mutate seed colour, energy
 
 				// mutate colour
 				int[] colours = { leafColour.getRed(), leafColour.getGreen(), leafColour.getBlue() };

@@ -3,6 +3,7 @@ package evolvingPlants.simulation;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Point;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
@@ -11,6 +12,9 @@ import evolvingPlants.Hub;
 
 public class Simulation
 	{
+
+		boolean showLighting = false;
+
 		// Globally fixed variables
 		private final Color skyBlue = new Color(150, 150, 255);
 		public final double leafOpacity = 0.33;
@@ -24,8 +28,10 @@ public class Simulation
 												// allowed
 
 		// Simulation variables
-		private LightMap lightMap = new LightMap(800, 550);
-		BufferedImage lightImage = new BufferedImage(800, 550, BufferedImage.TYPE_INT_RGB);
+		public double simWidth, simX = 0;
+
+		private LightMap lightMap;
+		BufferedImage lightImage;
 
 		private Genes currentGenes = new Genes(20);
 		public ArrayList<Point> seedsToAdd = new ArrayList<Point>(5);
@@ -36,11 +42,15 @@ public class Simulation
 
 		public Simulation(int width)
 			{
-
+				simWidth = width;
+				lightMap = new LightMap(width, 550);
+				lightImage = new BufferedImage(800, 550, BufferedImage.TYPE_INT_RGB);
 			}
 
 		public void tick(double secondsPassed)
 			{
+				secondsPassed *= 3;
+
 				// Add new seedlings to Array
 				for (Point p : seedsToAdd)
 					addSeed(p.getX(), p.getY(), currentGenes, currentGenes.seedEnergy);
@@ -65,27 +75,24 @@ public class Simulation
 
 		public void render(Graphics g)
 			{
-				g.setColor(Color.CYAN);
-				g.fillRect(0, 0, 200, Hub.canvasHeight);
-				g.fillRect(1000, 0, 200, Hub.canvasHeight);
-
 				g.setColor(skyBlue);
 				g.fillRect(200, 0, 800, 550);
 				// EXTREMELY SLOW! was expected really, perhaps pause game when
 				// showing the lighting?
-				//g.drawImage(lightMap.getLightMap(lightImage, 0), 200, 0, Hub.simWindow.getObserver());
+				if (showLighting)
+					g.drawImage(lightMap.getLightMap(lightImage, (int) -simX), 200, 0, Hub.simWindow.getObserver());
 				g.setColor(Color.GREEN);
 				g.fillRect(200, 550, 800, 50);
 
-				g.setClip(200, 0, 800, Hub.canvasHeight);
-				
 				for (Seed s : seeds)
-					s.render(g);
+					s.render(g, (int) simX + 200);
 
 				for (Plant p : plants)
-					p.render(g);
-				
-				g.setClip(null);
+					p.render(g, (int) simX + 200);
+
+				g.setColor(Color.CYAN);
+				g.fillRect(0, 0, 200, Hub.canvasHeight);
+				g.fillRect(1000, 0, 200, Hub.canvasHeight);
 			}
 
 		public final void addSeed(double x, double y, Genes genes, double energy)
@@ -100,13 +107,13 @@ public class Simulation
 
 		public final void addShadow(double nodeX, double nodeY, Color leafColour)
 			{
-				int x = (int) nodeX - (leafSize / 2) - 200;
+				int x = (int) nodeX - (leafSize / 2);
 				lightMap.addShadow(x, (int) nodeY, leafSize, leafColour);
 			}
 
 		public final void removeShadow(double nodeX, double nodeY, Color leafColour)
 			{
-				int x = (int) nodeX - (leafSize / 2) - 200;
+				int x = (int) nodeX - (leafSize / 2);
 				lightMap.removeShadow(x, (int) nodeY, leafSize, leafColour);
 			}
 
@@ -118,32 +125,38 @@ public class Simulation
 				return true;
 			}
 
-		public double photosynthesizeAt(double d, int y, Color leafColour)
+		public double photosynthesizeAt(double d, int y, Color leafColour, Color shadowColour)
 			{
 				double energyGained = 0;
 
-				int[] shadowCols = lightMap.getLightAt((int) d, y, leafColour);
+				int[] availableLight = lightMap.getLightMinusShadowAt((int) d, y, shadowColour);
 
-				energyGained += leafColour.getRed() - (leafColour.getRed() - shadowCols[0]);
-				energyGained += leafColour.getGreen() - (leafColour.getGreen() - shadowCols[1]);
-				energyGained += leafColour.getBlue() - (leafColour.getBlue() - shadowCols[2]);
+				energyGained += Math.max(0, (availableLight[0] - leafColour.getRed()));
+				energyGained += Math.max(0, (availableLight[1] - leafColour.getGreen()));
+				energyGained += Math.max(0, (availableLight[2] - leafColour.getBlue()));
 				/*
-				 * if leaf colour is (255, 0, 100), energy gained is 255 + 0 +
-				 * 100 in white (255, 255, 255) light. if light was (134, 255,
-				 * 130) for same leaf colour energy gained would be 135 + 0 +
-				 * 100.
+				 * The leaf colour represents the light a leaf DOESN'T absorb.
 				 */
 				/*
-				 * If energy gained is over 500 no extra energy is actually
+				 * If energy gained is over 255 no extra energy is actually
 				 * gained, this stops pressure for plants to evolve completely
 				 * black leaves. Allows for plants with different leaf colours
 				 * to simply compete for space.
 				 */
-				return Math.max(energyGained, 500) / 100.0;
+
+				return Math.min(energyGained, 255) / 50.0;
 			}
 
 		public void mousePressed(MouseEvent e)
 			{
-				seedsToAdd.add(e.getPoint());
+				Point p = e.getPoint();
+				p.x -= simX + 200;
+				seedsToAdd.add(p);
+			}
+
+		public void keyPressed(KeyEvent e)
+			{
+				if (e.getKeyChar() == 's')
+					showLighting = !showLighting;
 			}
 	}

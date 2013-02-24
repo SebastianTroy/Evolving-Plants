@@ -5,7 +5,7 @@ import tCode.TCode;
 public class Hub extends TCode
 	{
 		public static MainMenu menu = new MainMenu();
-		public static SimulationWindow simWindow = new SimulationWindow(820);
+		public static SimulationWindow simWindow = new SimulationWindow();
 
 		public Hub(int width, int height, boolean framed, boolean resizable)
 			{

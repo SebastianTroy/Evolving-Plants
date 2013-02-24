@@ -4,38 +4,44 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.util.ArrayList;
 
-import evolvingPlants.Hub;
-
 import tools.RandTools;
+import evolvingPlants.Hub;
 
 public class Plant
 	{
-		public int plantX;
+		public int plantX, minX, maxX;
 		public static final int plantY = 550;
 
-		private double energy, metabolism, age = 0, fractionGrown = 0;
+		private double energy, metabolism = 1, age = 0, fractionGrown = 0;
 		private Genes genes;
 
 		private NodeTree nodeTree;
 
 		public boolean alive = true;
+
+		private Color shadowColour = new Color(0, 0, 0);
 		private boolean shadowsSet = false;
 
 		public Plant(Seed seed)
 			{
 				plantX = (int) seed.getX();
+				minX = maxX = plantX;
 				genes = seed.genes;
 				energy = seed.energy;
 
 				nodeTree = new NodeTree(genes);
-				metabolism = genes.metabolism + genes.numInstructionsCalled;
+
+				int r = (int) ((255 - genes.leafColour.getRed()) * Hub.simWindow.sim.leafOpacity);
+				int g = (int) ((255 - genes.leafColour.getGreen()) * Hub.simWindow.sim.leafOpacity);
+				int b = (int) ((255 - genes.leafColour.getBlue()) * Hub.simWindow.sim.leafOpacity);
+				shadowColour = new Color(r, g, b);
 			}
 
 		public final void tick(double secondsPassed)
 			{
 				if (fractionGrown < 1) // Growing
 					{
-						fractionGrown += (10.0 / metabolism) * secondsPassed;
+						fractionGrown += (1 / metabolism) * secondsPassed;
 					}
 				else if (fractionGrown > 1)
 					{
@@ -45,7 +51,8 @@ public class Plant
 					}
 				if (alive && energy > 0) // Alive
 					{
-						metabolism += age += secondsPassed * 0.05;
+						age += secondsPassed;
+						metabolism += age / 100;
 						energy -= metabolism * secondsPassed;
 						nodeTree.baseNode.tick(secondsPassed);
 					}
@@ -57,9 +64,12 @@ public class Plant
 					}
 			}
 
-		public final void render(Graphics g)
+		public final void render(Graphics g, int simX)
 			{
-				nodeTree.baseNode.render(g);
+				if (maxX < -simX + 200 || minX > -simX + 1000)
+					return;
+
+				nodeTree.baseNode.render(g, simX);
 			}
 
 		private class NodeTree
@@ -76,6 +86,7 @@ public class Plant
 								switch (genes.nextInstruction(true))
 									{
 										case Genes.ADD_NODE:
+											metabolism++;
 											currentNode.addNode(new Node(currentNode));
 											break;
 										case Genes.CLIMB_NODE_TREE:
@@ -85,12 +96,15 @@ public class Plant
 											currentNode = currentNode.getParentNode();
 											break;
 										case Genes.GROW_UP:
+											metabolism++;
 											currentNode.growUp();
 											break;
 										case Genes.GROW_LEFT:
+											metabolism += 0.25;
 											currentNode.growLeft();
 											break;
 										case Genes.GROW_RIGHT:
+											metabolism += 0.25;
 											currentNode.growRight();
 											break;
 										case Genes.END_ALL:
@@ -143,7 +157,7 @@ public class Plant
 								if (isLeaf)
 									{
 										energy += Hub.simWindow.sim.photosynthesizeAt(getX() + RandTools.getDouble(Hub.simWindow.sim.leafSize / -2, Hub.simWindow.sim.leafSize / 2), (int) y,
-												genes.leafColour);
+												genes.leafColour, (fractionGrown < 1 ? Color.BLACK : shadowColour));
 
 										if (fractionGrown == 1)
 											{
@@ -151,8 +165,11 @@ public class Plant
 													seedDelay -= secondsPassed;
 												else
 													{
-														seedEnergy += genes.seedEnergyTransfer * secondsPassed;
-														energy -= genes.seedEnergyTransfer * secondsPassed;
+														if (energy > genes.seedEnergyTransfer * secondsPassed)
+															{
+																seedEnergy += genes.seedEnergyTransfer * secondsPassed;
+																energy -= genes.seedEnergyTransfer * secondsPassed;
+															}
 														if (seedEnergy > genes.seedEnergy)
 															{
 																growingSeed = false;
@@ -169,15 +186,17 @@ public class Plant
 										n.tick(secondsPassed);
 							}
 
-						private final void render(Graphics g)
+						private final void render(Graphics g, int simX)
 							{
+								int apparentX = (int) (getX() + simX);
+
 								if (!isLeaf)
 									for (Node n : daughterNodes)
-										n.render(g);
+										n.render(g, simX);
 								else
 									{
 										int leafSize = (int) (fractionGrown * Hub.simWindow.sim.leafSize);
-										int x = getX() - (leafSize / 2);
+										int x = apparentX - (leafSize / 2);
 										int y = getY() - (leafSize / 2);
 
 										g.setColor(genes.leafColour);
@@ -186,7 +205,7 @@ public class Plant
 										g.drawOval(x, y, leafSize, leafSize);
 									}
 								g.setColor(Color.BLACK);
-								g.drawLine(getX(), getY(), parentNode.getX(), parentNode.getY());
+								g.drawLine(apparentX, getY(), (int) (parentNode.getX() + simX), parentNode.getY());
 							}
 
 						private final void growUp()
@@ -201,6 +220,8 @@ public class Plant
 								x -= Hub.simWindow.sim.stalkLength;
 								for (Node n : daughterNodes)
 									n.growLeft();
+								if ((int) x < minX)
+									minX = (int) (x - (Hub.simWindow.sim.leafSize / 2));
 							}
 
 						private final void growRight()
@@ -208,6 +229,8 @@ public class Plant
 								x += Hub.simWindow.sim.stalkLength;
 								for (Node n : daughterNodes)
 									n.growRight();
+								if ((int) x > maxX)
+									maxX = (int) (x + (Hub.simWindow.sim.leafSize / 2));
 							}
 
 						private final void addNode(Node newNode)
@@ -244,7 +267,7 @@ public class Plant
 									for (Node n : daughterNodes)
 										n.setShadow();
 								else
-									Hub.simWindow.sim.addShadow(x, y, genes.leafColour);
+									Hub.simWindow.sim.addShadow(x, y, shadowColour);
 							}
 
 						private final void removeShadow()
@@ -253,7 +276,7 @@ public class Plant
 									for (Node n : daughterNodes)
 										n.removeShadow();
 								else
-									Hub.simWindow.sim.removeShadow(x, y, genes.leafColour);
+									Hub.simWindow.sim.removeShadow(x, y, shadowColour);
 							}
 
 						final int getX()
