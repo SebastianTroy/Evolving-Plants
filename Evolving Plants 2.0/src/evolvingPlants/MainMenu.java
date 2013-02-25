@@ -5,6 +5,7 @@ import java.awt.Graphics;
 
 import tCode.RenderableObject;
 import tComponents.components.TButton;
+import tComponents.components.TLabel;
 import tComponents.components.TMenu;
 import tComponents.components.TSlider;
 import tComponents.utils.events.TActionEvent;
@@ -36,7 +37,12 @@ public class MainMenu extends RenderableObject
 				mainMenu.addTComponent(resumeSimButton);
 				mainMenu.addTComponent(editorButton);
 
-				simWidthSlider.setRange(800, 2000);
+				// TODO check out why TMenu's don't function the same when added
+				// before/after their components! (hint TLabels dont have
+				// dimensions until added to parent)
+
+				simWidthSlider.setRange(800, 4000);
+				newSimMenu.addTComponent(new TLabel(0, 0, "Simulation Width in pixels"), false);
 				newSimMenu.addTComponent(simWidthSlider);
 				newSimMenu.addTComponent(startSimButton);
 				addTComponent(newSimMenu);

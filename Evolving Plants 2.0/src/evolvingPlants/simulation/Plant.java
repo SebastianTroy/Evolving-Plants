@@ -9,7 +9,7 @@ import evolvingPlants.Hub;
 
 public class Plant
 	{
-		public int plantX, minX, maxX;
+		public int plantX, minX, maxX, leafSize;
 		public static final int plantY = 550;
 
 		private double energy, metabolism = 1, age = 0, fractionGrown = 0;
@@ -28,12 +28,14 @@ public class Plant
 				minX = maxX = plantX;
 				genes = seed.genes;
 				energy = seed.energy;
+				leafSize = (int) Hub.simWindow.leafSizeSlider.getSliderValue();
 
 				nodeTree = new NodeTree(genes);
 
-				int r = (int) ((255 - genes.leafColour.getRed()) * Hub.simWindow.sim.leafOpacity);
-				int g = (int) ((255 - genes.leafColour.getGreen()) * Hub.simWindow.sim.leafOpacity);
-				int b = (int) ((255 - genes.leafColour.getBlue()) * Hub.simWindow.sim.leafOpacity);
+				double leafOpacity = Hub.simWindow.leafOpacitySlider.getSliderValue();
+				int r = (int) ((255 - genes.leafColour.getRed()) * leafOpacity);
+				int g = (int) ((255 - genes.leafColour.getGreen()) * leafOpacity);
+				int b = (int) ((255 - genes.leafColour.getBlue()) * leafOpacity);
 				shadowColour = new Color(r, g, b);
 			}
 
@@ -78,7 +80,7 @@ public class Plant
 
 				private NodeTree(Genes genes)
 					{
-						baseNode.y -= Hub.simWindow.sim.stalkLength;
+						baseNode.y -= (int) Hub.simWindow.stalkLengthSlider.getSliderValue();
 						Node currentNode = baseNode;
 
 						while (genes.currentInstruction() != Genes.END_ALL)
@@ -156,8 +158,9 @@ public class Plant
 							{
 								if (isLeaf)
 									{
-										energy += Hub.simWindow.sim.photosynthesizeAt(getX() + RandTools.getDouble(Hub.simWindow.sim.leafSize / -2, Hub.simWindow.sim.leafSize / 2), (int) y,
-												genes.leafColour, (fractionGrown < 1 ? Color.BLACK : shadowColour));
+										energy += Hub.simWindow.sim.photosynthesizeAt(
+												getX() + RandTools.getDouble((int) leafSize / -2, (int) leafSize / 2),
+												(int) y, genes.leafColour, (fractionGrown < 1 ? Color.BLACK : shadowColour));
 
 										if (fractionGrown == 1)
 											{
@@ -195,7 +198,7 @@ public class Plant
 										n.render(g, simX);
 								else
 									{
-										int leafSize = (int) (fractionGrown * Hub.simWindow.sim.leafSize);
+										int leafSize = (int) (fractionGrown * (int) Plant.this.leafSize);
 										int x = apparentX - (leafSize / 2);
 										int y = getY() - (leafSize / 2);
 
@@ -210,33 +213,33 @@ public class Plant
 
 						private final void growUp()
 							{
-								y -= Hub.simWindow.sim.stalkLength;
+								y -= (int) Hub.simWindow.stalkLengthSlider.getSliderValue();
 								for (Node n : daughterNodes)
 									n.growUp();
 							}
 
 						private final void growLeft()
 							{
-								x -= Hub.simWindow.sim.stalkLength;
+								x -= (int) Hub.simWindow.stalkLengthSlider.getSliderValue();
 								for (Node n : daughterNodes)
 									n.growLeft();
 								if ((int) x < minX)
-									minX = (int) (x - (Hub.simWindow.sim.leafSize / 2));
+									minX = (int) (x - ((int) leafSize / 2));
 							}
 
 						private final void growRight()
 							{
-								x += Hub.simWindow.sim.stalkLength;
+								x += (int) Hub.simWindow.stalkLengthSlider.getSliderValue();
 								for (Node n : daughterNodes)
 									n.growRight();
 								if ((int) x > maxX)
-									maxX = (int) (x + (Hub.simWindow.sim.leafSize / 2));
+									maxX = (int) (x + ((int) leafSize / 2));
 							}
 
 						private final void addNode(Node newNode)
 							{
 								daughterNodes.add(newNode);
-								newNode.y -= Hub.simWindow.sim.stalkLength;
+								newNode.y -= (int) Hub.simWindow.stalkLengthSlider.getSliderValue();
 							}
 
 						private final Node getParentNode()
@@ -267,7 +270,7 @@ public class Plant
 									for (Node n : daughterNodes)
 										n.setShadow();
 								else
-									Hub.simWindow.sim.addShadow(x, y, shadowColour);
+									Hub.simWindow.sim.addShadow(x, y, leafSize, shadowColour);
 							}
 
 						private final void removeShadow()
@@ -276,7 +279,7 @@ public class Plant
 									for (Node n : daughterNodes)
 										n.removeShadow();
 								else
-									Hub.simWindow.sim.removeShadow(x, y, shadowColour);
+									Hub.simWindow.sim.removeShadow(x, y, leafSize, shadowColour);
 							}
 
 						final int getX()

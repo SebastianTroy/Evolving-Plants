@@ -17,9 +17,6 @@ public class Simulation
 
 		// Globally fixed variables
 		private final Color skyBlue = new Color(150, 150, 255);
-		public final double leafOpacity = 0.33;
-		public final int stalkLength = 20;
-		public final int leafSize = 12;
 
 		// User adjustable variables
 		public double minPlantSpacing = 5;
@@ -49,7 +46,7 @@ public class Simulation
 
 		public void tick(double secondsPassed)
 			{
-				secondsPassed *= 3;
+				secondsPassed *= Hub.simWindow.playbackSpeed.getSliderValue();
 
 				// Add new seedlings to Array
 				for (Point p : seedsToAdd)
@@ -105,24 +102,24 @@ public class Simulation
 				plants.add(newPlant);
 			}
 
-		public final void addShadow(double nodeX, double nodeY, Color leafColour)
+		public final boolean isSpaceAt(double x)
+		{
+			for (Plant p : plants)
+				if (Math.abs(p.plantX - x) < Hub.simWindow.sim.minPlantSpacing)
+					return false;
+			return true;
+		}
+
+		public final void addShadow(double nodeX, double nodeY, int leafSize, Color leafColour)
 			{
 				int x = (int) nodeX - (leafSize / 2);
 				lightMap.addShadow(x, (int) nodeY, leafSize, leafColour);
 			}
 
-		public final void removeShadow(double nodeX, double nodeY, Color leafColour)
+		public final void removeShadow(double nodeX, double nodeY, int leafSize, Color leafColour)
 			{
 				int x = (int) nodeX - (leafSize / 2);
 				lightMap.removeShadow(x, (int) nodeY, leafSize, leafColour);
-			}
-
-		public final boolean isSpaceAt(double x)
-			{
-				for (Plant p : plants)
-					if (Math.abs(p.plantX - x) < Hub.simWindow.sim.minPlantSpacing)
-						return false;
-				return true;
 			}
 
 		public double photosynthesizeAt(double d, int y, Color leafColour, Color shadowColour)
@@ -149,9 +146,12 @@ public class Simulation
 
 		public void mousePressed(MouseEvent e)
 			{
-				Point p = e.getPoint();
-				p.x -= simX + 200;
-				seedsToAdd.add(p);
+				if (e.getY() > 70 && e.getY() < 550 && e.getX() > 200 && e.getX() < 1000)
+					{
+						Point p = e.getPoint();
+						p.x -= simX + 200;
+						seedsToAdd.add(p);
+					}
 			}
 
 		public void keyPressed(KeyEvent e)

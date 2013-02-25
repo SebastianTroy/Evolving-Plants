@@ -1,5 +1,9 @@
 package evolvingPlants;
 
+import java.awt.image.BufferedImage;
+
+import javax.imageio.ImageIO;
+
 import tCode.TCode;
 
 public class Hub extends TCode
@@ -10,6 +14,7 @@ public class Hub extends TCode
 		public Hub(int width, int height, boolean framed, boolean resizable)
 			{
 				super(width, height, framed, resizable);
+				frame.icons.add(loadImage("dna.png"));
 				DEBUG = true;
 				begin(menu);
 			}
@@ -17,5 +22,18 @@ public class Hub extends TCode
 		public static void main(String[] args)
 			{
 				new Hub(1200, 600, true, false);
+			}
+
+		public static BufferedImage loadImage(String name)
+			{
+				try
+					{
+						return ImageIO.read(Hub.class.getResource("/" + name));
+					}
+				catch (Exception e)
+					{
+						e.printStackTrace();
+						return new BufferedImage(1, 1, BufferedImage.TYPE_INT_RGB);
+					}
 			}
 	}
