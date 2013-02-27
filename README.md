@@ -14,7 +14,8 @@ You can [download a runnable.jar here](https://github.com/SebastianTroy/Evolving
 If it doesn't run when you double click on it, first try installing the latest version of java, if you are still
 having problems you can [download the windows launcher here](https://github.com/SebastianTroy/Evolving-Plants-2.0/raw/master/Evolving%20Plants%202.0/run.bat) 
 and run that from from the same directory as the .jar. If you are on linux you can run it directly from the command line using
-java -jar "Evolving Plants 2.0.jar".
+java -jar "Evolving Plants 2.0.jar". In linux you'll likely have to right click on the file and tag it as executable before
+you can run it. Enjoy!
 
 How do I compile the program?
 -----------------------------
