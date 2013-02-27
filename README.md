@@ -13,7 +13,8 @@ How do I run the program?
 You can [download a runnable.jar here](https://github.com/SebastianTroy/Evolving-Plants-2.0/raw/master/Evolving%20Plants%202.0/Evolving%20Plants%202.0.jar)
 If it doesn't run when you double click on it, first try installing the latest version of java, if you are still
 having problems you can [download the windows launcher here](https://github.com/SebastianTroy/Evolving-Plants-2.0/raw/master/Evolving%20Plants%202.0/run.bat) 
-and run that from from the same directory as the .jar.
+and run that from from the same directory as the .jar. If you are on linux you can run it directly from the command line using
+java -jar "Evolving Plants 2.0.jar".
 
 How do I compile the program?
 -----------------------------
