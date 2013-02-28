@@ -37,14 +37,11 @@ public class MainMenu extends RenderableObject
 				mainMenu.addTComponent(resumeSimButton);
 				mainMenu.addTComponent(editorButton);
 
-				// TODO check out why TMenu's don't function the same when added
-				// before/after their components! (hint TLabels dont have
-				// dimensions until added to parent)
-
 				simWidthSlider.setRange(800, 4000);
 				newSimMenu.addTComponent(new TLabel(0, 0, "Simulation Width in pixels"), false);
 				newSimMenu.addTComponent(simWidthSlider);
 				newSimMenu.addTComponent(startSimButton);
+				newSimMenu.setBorderSize(22);
 				addTComponent(newSimMenu);
 			}
 

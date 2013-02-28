@@ -19,7 +19,6 @@ public class Simulation
 		private final Color skyBlue = new Color(150, 150, 255);
 
 		// User adjustable variables
-		public double minPlantSpacing = 5;
 		public double uvIntensity = 2;
 		public double geneCompatability = 0.1; // only 1/10 difference is
 												// allowed
@@ -27,7 +26,7 @@ public class Simulation
 		// Simulation variables
 		public double simWidth, simX = 0;
 
-		private LightMap lightMap;
+		public LightMap lightMap;
 		BufferedImage lightImage;
 
 		private Genes currentGenes = new Genes(20);
@@ -72,20 +71,22 @@ public class Simulation
 
 		public void render(Graphics g)
 			{
+				int simX = (int) this.simX;
+
 				g.setColor(skyBlue);
 				g.fillRect(200, 0, 800, 550);
 				// EXTREMELY SLOW! was expected really, perhaps pause game when
 				// showing the lighting?
 				if (showLighting)
-					g.drawImage(lightMap.getLightMap(lightImage, (int) -simX), 200, 0, Hub.simWindow.getObserver());
+					g.drawImage(lightMap.getLightMap(lightImage, -simX), 200, 0, Hub.simWindow.getObserver());
 				g.setColor(Color.GREEN);
 				g.fillRect(200, 550, 800, 50);
 
 				for (Seed s : seeds)
-					s.render(g, (int) simX + 200);
+					s.render(g, simX + 200);
 
 				for (Plant p : plants)
-					p.render(g, (int) simX + 200);
+					p.render(g, simX + 200);
 
 				g.setColor(Color.CYAN);
 				g.fillRect(0, 0, 200, Hub.canvasHeight);
@@ -99,16 +100,38 @@ public class Simulation
 
 		public final void addPlant(Plant newPlant)
 			{
-				plants.add(newPlant);
+				if (isSpaceAt(newPlant.plantX, newPlant.sizeCategory))
+					plants.add(newPlant);
 			}
 
-		public final boolean isSpaceAt(double x)
-		{
-			for (Plant p : plants)
-				if (Math.abs(p.plantX - x) < Hub.simWindow.sim.minPlantSpacing)
-					return false;
-			return true;
-		}
+		public final boolean isSpaceAt(double x, int sizeCategory)
+			{
+				int smallSpacing = (int) Hub.simWindow.smallPlantSpacingSlider.getSliderValue();
+				int mediumSpacing = (int) Hub.simWindow.mediumPlantSpacingSlider.getSliderValue();
+				int largeSpacing = (int) Hub.simWindow.largePlantSpacingSlider.getSliderValue();
+				switch (sizeCategory)
+					{
+						case Plant.SMALL:
+							for (Plant p : plants)
+								if (p.sizeCategory == Plant.SMALL)
+									if (Math.abs(p.plantX - x) < smallSpacing)
+										return false;
+							break;
+						case Plant.MEDIUM:
+							for (Plant p : plants)
+								if (p.sizeCategory == Plant.MEDIUM)
+									if (Math.abs(p.plantX - x) < mediumSpacing)
+										return false;
+							break;
+						case Plant.LARGE:
+							for (Plant p : plants)
+								if (p.sizeCategory == Plant.LARGE)
+									if (Math.abs(p.plantX - x) < largeSpacing)
+										return false;
+							break;
+					}
+				return true;
+			}
 
 		public final void addShadow(double nodeX, double nodeY, int leafSize, Color leafColour)
 			{
@@ -141,16 +164,23 @@ public class Simulation
 				 * to simply compete for space.
 				 */
 
-				return Math.min(energyGained, 255) / 50.0;
+				return Math.min(energyGained, 255);
 			}
 
 		public void mousePressed(MouseEvent e)
 			{
 				if (e.getY() > 70 && e.getY() < 550 && e.getX() > 200 && e.getX() < 1000)
 					{
-						Point p = e.getPoint();
-						p.x -= simX + 200;
-						seedsToAdd.add(p);
+						if (Hub.simWindow.currentCursor == Hub.simWindow.plantSeedCursor)
+							{
+								Point p = e.getPoint();
+								p.x -= simX + 200;
+								seedsToAdd.add(p);
+							}
+						else if (Hub.simWindow.currentCursor == Hub.simWindow.getGenesCursor)
+							{}
+						else if (Hub.simWindow.currentCursor == Hub.simWindow.killPlantCursor)
+							{} // TODO getPlantAt(x, y){}
 					}
 			}
 

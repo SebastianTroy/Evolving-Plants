@@ -12,6 +12,7 @@ public class LightMap
 		private static final int BLUE = 2;
 
 		private int[][][] lightData;
+		private int[] baseLightColours = { 255, 255, 255 };
 
 		private int width, height, depth = 3;
 
@@ -25,7 +26,40 @@ public class LightMap
 				for (int x = 0; x < width; x++)
 					for (int y = 0; y < height; y++)
 						for (int c = 0; c < depth; c++)
-							lightData[x][y][c] = 255;
+							lightData[x][y][c] = baseLightColours[c];
+			}
+
+		public void setRedLight(double newRed)
+			{
+				int difference = (int) newRed - baseLightColours[RED];
+
+				for (int x = 0; x < width; x++)
+					for (int y = 0; y < height; y++)
+						lightData[x][y][RED] += difference;
+
+				baseLightColours[RED] = (int) newRed;
+			}
+
+		public void setGreenLight(double newGreen)
+			{
+				int difference = (int) newGreen - baseLightColours[GREEN];
+
+				for (int x = 0; x < width; x++)
+					for (int y = 0; y < height; y++)
+						lightData[x][y][GREEN] += difference;
+
+				baseLightColours[GREEN] = (int) newGreen;
+			}
+
+		public void setBlueLight(double newBlue)
+			{
+				int difference = (int) newBlue - baseLightColours[BLUE];
+
+				for (int x = 0; x < width; x++)
+					for (int y = 0; y < height; y++)
+						lightData[x][y][BLUE] += difference;
+
+				baseLightColours[BLUE] = (int) newBlue;
 			}
 
 		public final void addShadow(int shadowX, int shadowY, int shadowWidth, Color shadowColour)

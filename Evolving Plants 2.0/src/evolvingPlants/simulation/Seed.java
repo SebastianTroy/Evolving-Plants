@@ -52,7 +52,7 @@ public class Seed
 					else
 						{
 							falling = false;
-							boolean canGrow = Hub.simWindow.sim.isSpaceAt(getX());
+							boolean canGrow = Hub.simWindow.sim.isSpaceAt(getX(), Plant.SMALL);
 
 							if (canGrow)
 								{
@@ -84,5 +84,4 @@ public class Seed
 			{
 				return (int) (x - (energy / 10));
 			}
-
 	}

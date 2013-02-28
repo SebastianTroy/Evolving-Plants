@@ -9,10 +9,14 @@ import evolvingPlants.Hub;
 
 public class Plant
 	{
-		public int plantX, minX, maxX, leafSize;
+		public static final int LARGE = 0;
+		public static final int MEDIUM = 1;
+		public static final int SMALL = 2;
+
+		public int plantX, minX, maxX, leafSize, sizeCategory;
 		public static final int plantY = 550;
 
-		private double energy, metabolism = 1, age = 0, fractionGrown = 0;
+		private double height = 0, energy, metabolism = 1, age = 0, fractionGrown = 0;
 		private Genes genes;
 
 		private NodeTree nodeTree;
@@ -54,7 +58,7 @@ public class Plant
 				if (alive && energy > 0) // Alive
 					{
 						age += secondsPassed;
-						metabolism += age / 100;
+						metabolism += secondsPassed * 2;
 						energy -= metabolism * secondsPassed;
 						nodeTree.baseNode.tick(secondsPassed);
 					}
@@ -109,6 +113,13 @@ public class Plant
 											metabolism += 0.25;
 											currentNode.growRight();
 											break;
+										case Genes.GROW_DOWN:
+											metabolism += 0.1;
+											currentNode.growDown();
+											break;
+										case Genes.SKIP:
+											metabolism += 0.20;
+											break;
 										case Genes.END_ALL:
 											currentNode = null;
 									}
@@ -117,6 +128,13 @@ public class Plant
 
 						baseNode.setLeaves();
 						baseNode.parentNode = new Node(plantX, plantY);
+
+						if (height > Hub.simWindow.largePlantSizeSlider.getSliderValue())
+							sizeCategory = LARGE;
+						else if (height > Hub.simWindow.mediumPlantSizeSlider.getSliderValue())
+							sizeCategory = MEDIUM;
+						else
+							sizeCategory = SMALL;
 					}
 
 				private final void setShadows()
@@ -158,9 +176,8 @@ public class Plant
 							{
 								if (isLeaf)
 									{
-										energy += Hub.simWindow.sim.photosynthesizeAt(
-												getX() + RandTools.getDouble((int) leafSize / -2, (int) leafSize / 2),
-												(int) y, genes.leafColour, (fractionGrown < 1 ? Color.BLACK : shadowColour));
+										energy += Hub.simWindow.sim.photosynthesizeAt(getX() + RandTools.getDouble((int) leafSize / -2, (int) leafSize / 2), (int) y, genes.leafColour,
+												(fractionGrown < 1 ? Color.BLACK : shadowColour)) * secondsPassed;
 
 										if (fractionGrown == 1)
 											{
@@ -214,8 +231,20 @@ public class Plant
 						private final void growUp()
 							{
 								y -= (int) Hub.simWindow.stalkLengthSlider.getSliderValue();
+								if (height < plantY - y)
+									height = plantY - y;
 								for (Node n : daughterNodes)
 									n.growUp();
+							}
+
+						private final void growDown()
+							{
+								if (y < plantY - Hub.simWindow.stalkLengthSlider.getSliderValue())
+									{
+										y += (int) Hub.simWindow.stalkLengthSlider.getSliderValue();
+										for (Node n : daughterNodes)
+											n.growDown();
+									}
 							}
 
 						private final void growLeft()
@@ -239,7 +268,7 @@ public class Plant
 						private final void addNode(Node newNode)
 							{
 								daughterNodes.add(newNode);
-								newNode.y -= (int) Hub.simWindow.stalkLengthSlider.getSliderValue();
+								newNode.growUp();
 							}
 
 						private final Node getParentNode()

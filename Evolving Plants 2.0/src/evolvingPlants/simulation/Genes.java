@@ -20,12 +20,15 @@ public class Genes
 		public static final char GROW_UP = '^';
 		public static final char GROW_LEFT = '<';
 		public static final char GROW_RIGHT = '>';
+		public static final char GROW_DOWN = 'v';
+		public static final char SKIP = ' ';
 		public static final char END_ALL = '|';
 
 		private int currentInstruction = 0;
 		private char[] instructions = { END_ALL };
 
 		Color leafColour = new Color(200, 200, 200);
+		Color seedColour = new Color(255, 0, 0);
 		public double seedEnergy = 60, seedEnergyTransfer = 15;
 
 		public Genes(int numInstructions)
@@ -36,12 +39,14 @@ public class Genes
 				instructions = new char[numInstructions];
 				for (int i = 0; i < numInstructions; i++)
 					instructions[i] = END_ALL;
-				// instructions[i] = getRandomInstruction();
 			}
 
 		public Genes(Genes parent)
 			{
 				leafColour = parent.leafColour;
+				seedColour = parent.seedColour;
+				seedEnergy = parent.seedEnergy;
+				seedEnergyTransfer = parent.seedEnergyTransfer;
 				instructions = new char[parent.instructions.length];
 
 				instructions = aSexual(parent.instructions);
@@ -52,6 +57,9 @@ public class Genes
 		public Genes(Genes parentOne, Genes parentTwo)
 			{
 				leafColour = ColTools.interpolateColours(parentOne.leafColour, parentTwo.leafColour);
+				seedColour = ColTools.interpolateColours(parentOne.seedColour, parentTwo.seedColour);
+				seedEnergy = (parentOne.seedEnergy + parentTwo.seedEnergy) / 2;
+				seedEnergyTransfer = (parentOne.seedEnergyTransfer + parentTwo.seedEnergyTransfer) / 2;
 				instructions = new char[parentOne.instructions.length];
 
 				if (areRelated(parentOne.instructions, parentTwo.instructions))
@@ -93,7 +101,7 @@ public class Genes
 
 		private final char getRandomInstruction()
 			{
-				switch (RandTools.getInt(0, 6))
+				switch (RandTools.getInt(0, 10))
 					{
 						case 0:
 							return ADD_NODE;
@@ -107,8 +115,12 @@ public class Genes
 							return GROW_LEFT;
 						case 5:
 							return GROW_RIGHT;
-						default:
+						case 6:
+							return GROW_DOWN;
+						case 7:
 							return END_ALL;
+						default:
+							return SKIP;
 					}
 			}
 
@@ -134,19 +146,27 @@ public class Genes
 
 		private final void mutate()
 			{
-				// TODO mutate seed colour, energy
+				seedEnergy += RandTools.getDouble(-1, 1);
+				seedEnergyTransfer += RandTools.getDouble(-1, 1);
 
-				// mutate colour
-				int[] colours = { leafColour.getRed(), leafColour.getGreen(), leafColour.getBlue() };
-				colours[0] += RandTools.getInt(-10, 10);
-				colours[1] += RandTools.getInt(-10, 10);
-				colours[2] += RandTools.getInt(-10, 10);
-				leafColour = ColTools.checkColour(colours[0], colours[1], colours[2]);
+				// mutate seed colour
+				int[] seedColours = { seedColour.getRed(), seedColour.getGreen(), seedColour.getBlue() };
+				seedColours[0] += RandTools.getInt(-4, 4);
+				seedColours[1] += RandTools.getInt(-4, 4);
+				seedColours[2] += RandTools.getInt(-4, 4);
+				seedColour = ColTools.checkColour(seedColours[0], seedColours[1], seedColours[2]);
+
+				// mutate leaf colour
+				int[] leafColours = { leafColour.getRed(), leafColour.getGreen(), leafColour.getBlue() };
+				leafColours[0] += RandTools.getInt(-2, 2);
+				leafColours[1] += RandTools.getInt(-2, 2);
+				leafColours[2] += RandTools.getInt(-2, 2);
+				leafColour = ColTools.checkColour(leafColours[0], leafColours[1], leafColours[2]);
 
 				// Mutate instructions
 				for (int i = 0; i < instructions.length; i++)
 					{
-						if (RandTools.randPercent() <= Hub.simWindow.sim.uvIntensity)
+						if (RandTools.randPercent() < Hub.simWindow.sim.uvIntensity)
 							instructions[i] = getRandomInstruction();
 					}
 			}

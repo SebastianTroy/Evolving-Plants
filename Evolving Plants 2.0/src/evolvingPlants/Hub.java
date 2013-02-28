@@ -14,7 +14,7 @@ public class Hub extends TCode
 		public Hub(int width, int height, boolean framed, boolean resizable)
 			{
 				super(width, height, framed, resizable);
-				frame.icons.add(loadImage("dna.png"));
+				frame.icons.add(loadImage("icon.png"));
 				DEBUG = true;
 				begin(menu);
 			}
