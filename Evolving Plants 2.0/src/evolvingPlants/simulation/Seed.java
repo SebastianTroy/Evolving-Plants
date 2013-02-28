@@ -17,7 +17,7 @@ public class Seed
 				this.x = x;
 				this.y = y;
 				this.energy = energy;
-				genes = new Genes(parent);
+				genes = new Genes(parent, true);
 			}
 
 		public Seed(double x, double y, Genes parentOne, Genes parentTwo, double energy)
@@ -82,6 +82,6 @@ public class Seed
 
 		public final int getX()
 			{
-				return (int) (x - (energy / 10));
+				return (int) (x - (energy / 20));
 			}
 	}

@@ -53,6 +53,7 @@ public class SimulationWindow extends RenderableObject
 		public Cursor currentCursor = getObserver().getCursor();
 
 		private TMenu plantOptionsMenu;
+		public final TButton showLightButton = new TButton("Show light");
 		public final TSlider largePlantSizeSlider = new TSlider(TSlider.HORIZONTAL);
 		public final TSlider largePlantSpacingSlider = new TSlider(TSlider.HORIZONTAL);
 		public final TSlider mediumPlantSizeSlider = new TSlider(TSlider.HORIZONTAL);
@@ -155,6 +156,7 @@ public class SimulationWindow extends RenderableObject
 				plantInteractionsMenu.addTComponent(killPlantsButton);
 
 				// LightOptions menu set-up. This menu is located on the left
+				lightOptionsMenu.addTComponent(showLightButton);
 				leafOpacitySlider.setRange(0, 1);
 				lightOptionsMenu.addTComponent(new TLabel("Light Intensity"), false);
 				redLightSlider.setSliderImage(0, Hub.loadImage("redSun.png"));
@@ -207,49 +209,65 @@ public class SimulationWindow extends RenderableObject
 		@Override
 		public final void tActionEvent(TActionEvent e)
 			{
+				Object eventSource = e.getSource();
+
+				// Important buttons
+				if (eventSource == mainMenuButton)
+					changeRenderableObject(Hub.menu);
+				else if (eventSource == resetSimButton)
+					sim = new Simulation((int) sim.simWidth);
 				// Change menu's ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-				if (e.getSource() == plantInteractionsButton)
+				else if (eventSource == plantInteractionsButton)
 					setLeftMenu(plantInteractionsMenu);
-				else if (e.getSource() == plantOptionsButton)
+				else if (eventSource == plantOptionsButton)
 					setLeftMenu(plantOptionsMenu);
-				else if (e.getSource() == lightOptionsButton)
+				else if (eventSource == lightOptionsButton)
 					setLeftMenu(lightOptionsMenu);
 				// Change Cursor ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-				else if (e.getSource() == selectPlantButton)
+				else if (eventSource == selectPlantButton)
 					currentCursor = Cursor.getDefaultCursor();
-				else if (e.getSource() == plantSeedButton)
+				else if (eventSource == plantSeedButton)
 					currentCursor = plantSeedCursor;
-				else if (e.getSource() == getGenesButton)
+				else if (eventSource == getGenesButton)
 					currentCursor = getGenesCursor;
-				else if (e.getSource() == killPlantsButton)
+				else if (eventSource == killPlantsButton)
 					currentCursor = killPlantCursor;
+				// Update light
+				else if (eventSource == showLightButton)
+					{
+						
+						sim.showLighting = !sim.showLighting;
+						showLightButton.setLabel(sim.showLighting ? "Hide light" : "Show Light", true);
+					}
 			}
 
 		@Override
 		public final void tScrollEvent(TScrollEvent e)
 			{
+				Object eventSource = e.getSource();
+
 				// Update simulation position
-				if (e.getSource() == simulationScroller)
+				if (eventSource == simulationScroller)
 					sim.simX = -e.getScrollValue();
 				// Update plant size category limits
-				else if (e.getSource() == largePlantSizeSlider)
+				else if (eventSource == largePlantSizeSlider)
 					mediumPlantSizeSlider.setRange(0, largePlantSizeSlider.getSliderValue());
 				// update light
-				else if (e.getSource() == redLightSlider && e.getScrollType() == TScrollEvent.FINAL_VALUE)
+				else if (eventSource == redLightSlider && e.getScrollType() == TScrollEvent.FINAL_VALUE)
 					{
 						double simSpeed = playbackSpeed.getSliderValue();
 						playbackSpeed.setSliderValue(0);
 						sim.lightMap.setRedLight(redLightSlider.getSliderValue());
 						playbackSpeed.setSliderValue(simSpeed);
 					}
-				else if (e.getSource() == greenLightSlider && e.getScrollType() == TScrollEvent.FINAL_VALUE)
+				else if (eventSource == greenLightSlider && e.getScrollType() == TScrollEvent.FINAL_VALUE)
 					{
 						double simSpeed = playbackSpeed.getSliderValue();
 						playbackSpeed.setSliderValue(0);
 						sim.lightMap.setGreenLight(greenLightSlider.getSliderValue());
 						playbackSpeed.setSliderValue(simSpeed);
 					}
-				else if (e.getSource() == blueLightSlider && e.getScrollType() == TScrollEvent.FINAL_VALUE)
+				else if (eventSource == blueLightSlider && e.getScrollType() == TScrollEvent.FINAL_VALUE)
 					{
 						double simSpeed = playbackSpeed.getSliderValue();
 						playbackSpeed.setSliderValue(0);

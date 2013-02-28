@@ -2,6 +2,8 @@ package evolvingPlants.simulation;
 
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Point;
+import java.awt.geom.Point2D;
 import java.util.ArrayList;
 
 import tools.RandTools;
@@ -21,20 +23,24 @@ public class Plant
 
 		private NodeTree nodeTree;
 
-		public boolean alive = true;
+		public boolean alive = true, selected = false;
 
 		private Color shadowColour = new Color(0, 0, 0);
 		private boolean shadowsSet = false;
 
 		public Plant(Seed seed)
 			{
-				plantX = (int) seed.getX();
+				plantX = (int) seed.x;
 				minX = maxX = plantX;
 				genes = seed.genes;
 				energy = seed.energy;
 				leafSize = (int) Hub.simWindow.leafSizeSlider.getSliderValue();
 
 				nodeTree = new NodeTree(genes);
+
+				minX -= leafSize / 2;
+				maxX += leafSize / 2;
+				height += leafSize / 2;
 
 				double leafOpacity = Hub.simWindow.leafOpacitySlider.getSliderValue();
 				int r = (int) ((255 - genes.leafColour.getRed()) * leafOpacity);
@@ -78,13 +84,38 @@ public class Plant
 				nodeTree.baseNode.render(g, simX);
 			}
 
+		public boolean contains(Point p)
+			{
+				// if nowhere near plant, return false
+				if (p.x < minX || p.x > maxX || plantY - p.y > height)
+					return false;
+
+				return nodeTree.contains(p);
+			}
+
+		public Genes getGenesCopy()
+			{
+				return new Genes(genes, false);
+			}
+		
+		public final void kill()
+			{
+				energy = -9999999;
+				metabolism = 999999;
+			}
+
+		private double getLeafSize()
+			{
+				return fractionGrown * leafSize;
+			}
+
 		private class NodeTree
 			{
 				private Node baseNode = new Node(plantX, plantY);
 
 				private NodeTree(Genes genes)
 					{
-						baseNode.y -= (int) Hub.simWindow.stalkLengthSlider.getSliderValue();
+						baseNode.growUp();
 						Node currentNode = baseNode;
 
 						while (genes.currentInstruction() != Genes.END_ALL)
@@ -145,6 +176,11 @@ public class Plant
 				private final void removeShadows()
 					{
 						baseNode.removeShadow();
+					}
+
+				private boolean contains(Point p)
+					{
+						return baseNode.contains(p);
 					}
 
 				private class Node
@@ -215,24 +251,42 @@ public class Plant
 										n.render(g, simX);
 								else
 									{
-										int leafSize = (int) (fractionGrown * (int) Plant.this.leafSize);
+										int leafSize = (int) getLeafSize();
 										int x = apparentX - (leafSize / 2);
 										int y = getY() - (leafSize / 2);
 
 										g.setColor(genes.leafColour);
 										g.fillOval(x, y, leafSize, leafSize);
-										g.setColor(Color.BLACK);
+										g.setColor(selected ? Color.LIGHT_GRAY : Color.BLACK);
 										g.drawOval(x, y, leafSize, leafSize);
 									}
-								g.setColor(Color.BLACK);
+								g.setColor(selected ? Color.LIGHT_GRAY : Color.BLACK);
 								g.drawLine(apparentX, getY(), (int) (parentNode.getX() + simX), parentNode.getY());
+							}
+
+						private boolean contains(Point p)
+							{
+								if (!isLeaf)
+									{
+										for (Node n : daughterNodes)
+											if (n.contains(p))
+												return true;
+									}
+								else
+									{
+										Point2D leaf = new Point(getX(), getY());
+										if (leaf.distance(p) < (leafSize / 2))
+											return true;
+
+									}
+								return false;
 							}
 
 						private final void growUp()
 							{
 								y -= (int) Hub.simWindow.stalkLengthSlider.getSliderValue();
 								if (height < plantY - y)
-									height = plantY - y;
+										height = plantY - y;
 								for (Node n : daughterNodes)
 									n.growUp();
 							}

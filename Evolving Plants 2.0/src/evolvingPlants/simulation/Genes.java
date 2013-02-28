@@ -41,7 +41,7 @@ public class Genes
 					instructions[i] = END_ALL;
 			}
 
-		public Genes(Genes parent)
+		public Genes(Genes parent, boolean mutate)
 			{
 				leafColour = parent.leafColour;
 				seedColour = parent.seedColour;
@@ -51,7 +51,8 @@ public class Genes
 
 				instructions = aSexual(parent.instructions);
 
-				mutate();
+				if (mutate)
+					mutate();
 			}
 
 		public Genes(Genes parentOne, Genes parentTwo)

@@ -1,6 +1,7 @@
 package evolvingPlants.simulation;
 
 import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.event.KeyEvent;
@@ -12,16 +13,13 @@ import evolvingPlants.Hub;
 
 public class Simulation
 	{
-
-		boolean showLighting = false;
-
 		// Globally fixed variables
 		private final Color skyBlue = new Color(150, 150, 255);
 
 		// User adjustable variables
 		public double uvIntensity = 2;
-		public double geneCompatability = 0.1; // only 1/10 difference is
-												// allowed
+		public double geneCompatability = 0.1; // lower is less compatible
+		public boolean showLighting = false;
 
 		// Simulation variables
 		public double simWidth, simX = 0;
@@ -29,6 +27,7 @@ public class Simulation
 		public LightMap lightMap;
 		BufferedImage lightImage;
 
+		// seeds added by user
 		private Genes currentGenes = new Genes(20);
 		public ArrayList<Point> seedsToAdd = new ArrayList<Point>(5);
 
@@ -41,6 +40,8 @@ public class Simulation
 				simWidth = width;
 				lightMap = new LightMap(width, 550);
 				lightImage = new BufferedImage(800, 550, BufferedImage.TYPE_INT_RGB);
+
+				Hub.simWindow.currentCursor = Hub.simWindow.plantSeedCursor;
 			}
 
 		public void tick(double secondsPassed)
@@ -171,16 +172,36 @@ public class Simulation
 			{
 				if (e.getY() > 70 && e.getY() < 550 && e.getX() > 200 && e.getX() < 1000)
 					{
+						Point point = e.getPoint();
+						point.x -= simX + 200;
+
 						if (Hub.simWindow.currentCursor == Hub.simWindow.plantSeedCursor)
 							{
-								Point p = e.getPoint();
-								p.x -= simX + 200;
-								seedsToAdd.add(p);
+								seedsToAdd.add(point);
+							}
+						else if (Hub.simWindow.currentCursor == Cursor.getDefaultCursor())
+							{
+								for (Plant plant : plants)
+									if (plant.contains(point))
+										plant.selected = true;
+									else if (plant.selected)
+										plant.selected = false;
 							}
 						else if (Hub.simWindow.currentCursor == Hub.simWindow.getGenesCursor)
-							{}
+							{
+								for (Plant plant : plants)
+									if (plant.contains(point))
+										{
+											currentGenes = plant.getGenesCopy();
+											System.out.println(new String(plant.getGenesCopy().getGenes()));
+										}
+							}
 						else if (Hub.simWindow.currentCursor == Hub.simWindow.killPlantCursor)
-							{} // TODO getPlantAt(x, y){}
+							{
+								for (Plant plant : plants)
+									if (plant.contains(point))
+										plant.kill();
+							}
 					}
 			}
 
