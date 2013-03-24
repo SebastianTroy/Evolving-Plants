@@ -73,7 +73,7 @@ public class LightMap
 					shadowWidth = width - shadowX;
 
 				for (int x = Math.max(0, shadowX); x < shadowX + shadowWidth; x++)
-					for (int y = shadowY; y < height; y++)
+					for (int y = Math.max(0, shadowY); y < height; y++)
 						for (int c = 0; c < depth; c++)
 							lightData[x][y][c] -= shadowCols[c];
 			}
@@ -89,7 +89,7 @@ public class LightMap
 					shadowWidth = width - shadowX;
 
 				for (int x = Math.max(0, shadowX); x < shadowX + shadowWidth; x++)
-					for (int y = shadowY; y < height; y++)
+					for (int y = Math.max(0, shadowY); y < height; y++)
 						for (int c = 0; c < depth; c++)
 							lightData[x][y][c] += shadowCols[c];
 			}

@@ -38,8 +38,9 @@ public class SimulationWindow extends RenderableObject
 
 		private TMenu simOptionsMenu;
 		public final TSlider playbackSpeed = new TSlider(TSlider.HORIZONTAL);
+		private final TButton warpSpeedButton = new TButton("Warp speed [off]");
 		private final TButton resetSimButton = new TButton("Reset Simulation");
-		public final TButton mainMenuButton = new TButton("Main Menu");
+		private final TButton mainMenuButton = new TButton("Main Menu");
 
 		private TMenu plantInteractionsMenu;
 		private RadioButtonsCollection plantInteractionButtons = new RadioButtonsCollection();
@@ -97,7 +98,8 @@ public class SimulationWindow extends RenderableObject
 				topMenu.addTComponent(plantInteractionsButton);
 
 				// SimOptions menu set-up. This menu is located on the right
-				playbackSpeed.setRange(0, 10);
+				simOptionsMenu.addTComponent(warpSpeedButton);
+				playbackSpeed.setRange(0, 25);
 				simOptionsMenu.addTComponent(new TLabel("Playback Speed"), false);
 				simOptionsMenu.addTComponent(playbackSpeed);
 				simOptionsMenu.addTComponent(resetSimButton);
@@ -112,7 +114,7 @@ public class SimulationWindow extends RenderableObject
 				leafSizeSlider.setRange(2, 25);
 				plantOptionsMenu.addTComponent(leafSizeSlider);
 				plantOptionsMenu.addTComponent(new TLabel("Stalk Length"), false);
-				stalkLengthSlider.setRange(5, 100);
+				stalkLengthSlider.setRange(15, 100);
 				plantOptionsMenu.addTComponent(stalkLengthSlider);
 
 				TLabel largePlantsLabel = new TLabel("Large Plants");
@@ -223,6 +225,12 @@ public class SimulationWindow extends RenderableObject
 					setLeftMenu(plantOptionsMenu);
 				else if (eventSource == lightOptionsButton)
 					setLeftMenu(lightOptionsMenu);
+				// Modify Sim variables
+				else if (eventSource == warpSpeedButton)
+					{
+						sim.warpSpeed = !sim.warpSpeed;
+						warpSpeedButton.setLabel("Warp speed " + (sim.warpSpeed ? "[on]" : "[off]"), true);
+					}
 				// Change Cursor ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 				else if (eventSource == selectPlantButton)
 					currentCursor = Cursor.getDefaultCursor();
@@ -235,7 +243,7 @@ public class SimulationWindow extends RenderableObject
 				// Update light
 				else if (eventSource == showLightButton)
 					{
-						
+
 						sim.showLighting = !sim.showLighting;
 						showLightButton.setLabel(sim.showLighting ? "Hide light" : "Show Light", true);
 					}

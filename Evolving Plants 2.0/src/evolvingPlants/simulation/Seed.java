@@ -52,7 +52,7 @@ public class Seed
 					else
 						{
 							falling = false;
-							boolean canGrow = Hub.simWindow.sim.isSpaceAt(getX(), Plant.SMALL);
+							boolean canGrow = Hub.simWindow.sim.isSpaceAt(getX(), 42);
 
 							if (canGrow)
 								{
@@ -76,7 +76,7 @@ public class Seed
 
 				int apparentX = (int) (getX() + simX);
 				
-				g.setColor(Color.BLACK);
+				g.setColor(genes.seedColour);
 				g.fillOval(apparentX, (int) y, (int) (energy / 10), (int) (energy / 10));
 			}
 

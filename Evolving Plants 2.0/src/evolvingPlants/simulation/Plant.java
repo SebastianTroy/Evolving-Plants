@@ -41,12 +41,6 @@ public class Plant
 				minX -= leafSize / 2;
 				maxX += leafSize / 2;
 				height += leafSize / 2;
-
-				double leafOpacity = Hub.simWindow.leafOpacitySlider.getSliderValue();
-				int r = (int) ((255 - genes.leafColour.getRed()) * leafOpacity);
-				int g = (int) ((255 - genes.leafColour.getGreen()) * leafOpacity);
-				int b = (int) ((255 - genes.leafColour.getBlue()) * leafOpacity);
-				shadowColour = new Color(r, g, b);
 			}
 
 		public final void tick(double secondsPassed)
@@ -55,8 +49,13 @@ public class Plant
 					{
 						fractionGrown += (1 / metabolism) * secondsPassed;
 					}
-				else if (fractionGrown > 1)
+				else if (fractionGrown > 1) // full grown - only called once
 					{
+						double leafOpacity = Hub.simWindow.leafOpacitySlider.getSliderValue();
+						int r = (int) ((255 - genes.leafColour.getRed()) * leafOpacity);
+						int g = (int) ((255 - genes.leafColour.getGreen()) * leafOpacity);
+						int b = (int) ((255 - genes.leafColour.getBlue()) * leafOpacity);
+						shadowColour = new Color(r, g, b);
 						nodeTree.setShadows();
 						shadowsSet = true;
 						fractionGrown = 1;
@@ -68,7 +67,7 @@ public class Plant
 						energy -= metabolism * secondsPassed;
 						nodeTree.baseNode.tick(secondsPassed);
 					}
-				else if (alive)
+				else if (alive) // Only called once
 					{
 						if (shadowsSet)
 							nodeTree.removeShadows();
@@ -97,7 +96,7 @@ public class Plant
 			{
 				return new Genes(genes, false);
 			}
-		
+
 		public final void kill()
 			{
 				energy = -9999999;
@@ -188,8 +187,7 @@ public class Plant
 						private double x, y;
 
 						private boolean isLeaf = false;
-						private boolean growingSeed = false;
-						private double seedEnergy = 0, seedDelay = RandTools.getDouble(0.5, 1.75);
+						private double seedEnergy = 0;
 
 						private Node parentNode;
 						private ArrayList<Node> daughterNodes = new ArrayList<Node>();
@@ -212,29 +210,29 @@ public class Plant
 							{
 								if (isLeaf)
 									{
-										energy += Hub.simWindow.sim.photosynthesizeAt(getX() + RandTools.getDouble((int) leafSize / -2, (int) leafSize / 2), (int) y, genes.leafColour,
-												(fractionGrown < 1 ? Color.BLACK : shadowColour)) * secondsPassed;
+										// NOTE: seedlings do not have shadows
+										// hence BLACK shadow
+										energy += Hub.simWindow.sim.photosynthesizeAt(getX() + RandTools.getDouble((int) leafSize / -2, (int) leafSize / 2), (int) y, genes.leafColour, shadowColour)
+												* secondsPassed;
 
 										if (fractionGrown == 1)
 											{
-												if (!growingSeed)
-													seedDelay -= secondsPassed;
-												else
+												if (energy > genes.seedEnergyTransfer * secondsPassed)
 													{
-														if (energy > genes.seedEnergyTransfer * secondsPassed)
-															{
-																seedEnergy += genes.seedEnergyTransfer * secondsPassed;
-																energy -= genes.seedEnergyTransfer * secondsPassed;
-															}
-														if (seedEnergy > genes.seedEnergy)
-															{
-																growingSeed = false;
-																seedEnergy = 0;
-																Hub.simWindow.sim.addSeed(getX(), getY(), genes, genes.seedEnergy);
-															}
+														seedEnergy += genes.seedEnergyTransfer * secondsPassed;
+														energy -= genes.seedEnergyTransfer * secondsPassed;
 													}
-												if (seedDelay < 0)
-													growingSeed = true;
+												if (seedEnergy > genes.seedEnergy)
+													{
+														/*
+														 * make seed twice as
+														 * energetically
+														 * expensive
+														 */
+														energy -= seedEnergy;
+														seedEnergy = 0;
+														Hub.simWindow.sim.addSeed(getX(), getY(), genes, genes.seedEnergy);
+													}
 											}
 									}
 								else
@@ -286,7 +284,7 @@ public class Plant
 							{
 								y -= (int) Hub.simWindow.stalkLengthSlider.getSliderValue();
 								if (height < plantY - y)
-										height = plantY - y;
+									height = plantY - y;
 								for (Node n : daughterNodes)
 									n.growUp();
 							}

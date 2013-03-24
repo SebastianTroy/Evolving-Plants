@@ -37,12 +37,18 @@ public class MainMenu extends RenderableObject
 				mainMenu.addTComponent(resumeSimButton);
 				mainMenu.addTComponent(editorButton);
 
+				addTComponent(newSimMenu);
 				simWidthSlider.setRange(800, 4000);
 				newSimMenu.addTComponent(new TLabel(0, 0, "Simulation Width in pixels"), false);
 				newSimMenu.addTComponent(simWidthSlider);
 				newSimMenu.addTComponent(startSimButton);
 				newSimMenu.setBorderSize(22);
-				addTComponent(newSimMenu);
+			}
+
+		private final void reset()
+			{
+				mainMenu.setLocation(200, 0);
+				newSimMenu.setLocation(1200, 0);
 			}
 
 		@Override
@@ -68,15 +74,20 @@ public class MainMenu extends RenderableObject
 				else if (event.getSource() == resumeSimButton)
 					{
 						if (Hub.simWindow.sim != null)
-							changeRenderableObject(Hub.simWindow);
+							{
+								reset();
+								changeRenderableObject(Hub.simWindow);
+							}
 					}
 				else if (event.getSource() == startSimButton)
 					{
+						reset();
 						Hub.simWindow.sim = new Simulation(simWidth);
 						changeRenderableObject(Hub.simWindow);
 					}
 				else if (event.getSource() == editorButton)
 					{
+						// reset();
 						// changeRenderableObject(Hub.editorWindow);
 					}
 			}
