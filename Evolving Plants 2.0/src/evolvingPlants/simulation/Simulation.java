@@ -10,7 +10,7 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 
 import evolvingPlants.Hub;
-import evolvingPlants.io.SimPresetIO;
+import evolvingPlants.SimPresetIO;
 
 public class Simulation
 	{
@@ -187,8 +187,6 @@ public class Simulation
 					{
 						Point point = e.getPoint();
 						point.x -= simX + 200;
-						
-						new SimPresetIO().createPreset("Test");
 
 						if (Hub.simWindow.currentCursor == Hub.simWindow.plantSeedCursor)
 							{

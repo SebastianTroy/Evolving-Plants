@@ -32,17 +32,19 @@ public class SimulationWindow extends RenderableObject
 		private final TButton plantInteractionsButton = new TButton("Plant Interactions");
 		private final TButton plantOptionsButton = new TButton("Plant Options");
 		private final TButton lightOptionsButton = new TButton("Light Options");
+		private final TButton presetOptionsButton = new TButton("Preset Options");
+		private final TButton geneOptionsButton = new TButton("Gene Options");
 
 		private TMenu currentLeftSideMenu;
 		private TMenu currentRightSideMenu;
 
-		private TMenu simOptionsMenu;
+		private final TMenu simOptionsMenu = new TMenu(1000, 0, 200, Hub.canvasHeight, TMenu.VERTICAL);
 		public final TSlider playbackSpeed = new TSlider(TSlider.HORIZONTAL);
 		private final TButton warpSpeedButton = new TButton("Warp speed [off]");
 		private final TButton resetSimButton = new TButton("Reset Simulation");
 		private final TButton mainMenuButton = new TButton("Main Menu");
 
-		private TMenu plantInteractionsMenu;
+		private TMenu plantInteractionsMenu = new TMenu(0, 0, 200, Hub.canvasHeight, TMenu.VERTICAL);
 		private RadioButtonsCollection plantInteractionButtons = new RadioButtonsCollection();
 		private TRadioButton selectPlantButton = new TRadioButton("Select Plants");
 		private TRadioButton plantSeedButton = new TRadioButton("Plant Seeds");
@@ -53,7 +55,7 @@ public class SimulationWindow extends RenderableObject
 		public Cursor killPlantCursor;
 		public Cursor currentCursor = getObserver().getCursor();
 
-		private TMenu plantOptionsMenu;
+		private TMenu plantOptionsMenu = new TMenu(0, 0, 200, Hub.canvasHeight, TMenu.VERTICAL);
 		public final TButton showLightButton = new TButton("Show light");
 		public final TSlider largePlantSizeSlider = new TSlider(TSlider.HORIZONTAL);
 		public final TSlider largePlantSpacingSlider = new TSlider(TSlider.HORIZONTAL);
@@ -63,11 +65,17 @@ public class SimulationWindow extends RenderableObject
 		public final TSlider leafSizeSlider = new TSlider(TSlider.HORIZONTAL);
 		public final TSlider stalkLengthSlider = new TSlider(TSlider.HORIZONTAL);
 
-		private TMenu lightOptionsMenu;
+		private TMenu lightOptionsMenu = new TMenu(0, 0, 200, Hub.canvasHeight, TMenu.VERTICAL);
 		public final TSlider redLightSlider = new TSlider(TSlider.HORIZONTAL);
 		public final TSlider greenLightSlider = new TSlider(TSlider.HORIZONTAL);
 		public final TSlider blueLightSlider = new TSlider(TSlider.HORIZONTAL);
 		public final TSlider leafOpacitySlider = new TSlider(TSlider.HORIZONTAL);
+
+		private TMenu geneOptionsMenu = new TMenu(0, 0, 200, Hub.canvasHeight, TMenu.VERTICAL);
+		// TODO add gene options
+
+		private TMenu presetOptionsMenu = new TMenu(0, 0, 200, Hub.canvasHeight, TMenu.VERTICAL);
+		// TODO add preset options
 
 		@Override
 		protected void initiate()
@@ -85,17 +93,16 @@ public class SimulationWindow extends RenderableObject
 				getGenesCursor = k.createCustomCursor(Hub.loadImage("dna.png"), new Point(0, 0), "seed");
 				killPlantCursor = k.createCustomCursor(Hub.loadImage("skull.png"), new Point(0, 0), "seed");
 
-				simOptionsMenu = new TMenu(1000, 0, 200, Hub.canvasHeight, TMenu.VERTICAL);
-				plantInteractionsMenu = new TMenu(0, 0, 200, Hub.canvasHeight, TMenu.VERTICAL);
-				plantOptionsMenu = new TMenu(0, 0, 200, Hub.canvasHeight, TMenu.VERTICAL);
-				lightOptionsMenu = new TMenu(0, 0, 200, Hub.canvasHeight, TMenu.VERTICAL);
+				setLeftMenu(plantInteractionsMenu);
 				setRightMenu(simOptionsMenu);
 
 				// Top menu set-up.
 				addTComponent(topMenu);
+				topMenu.addTComponent(plantInteractionsButton);
 				topMenu.addTComponent(plantOptionsButton);
 				topMenu.addTComponent(lightOptionsButton);
-				topMenu.addTComponent(plantInteractionsButton);
+				topMenu.addTComponent(geneOptionsButton);
+				topMenu.addTComponent(presetOptionsButton);
 
 				// SimOptions menu set-up. This menu is located on the right
 				simOptionsMenu.addTComponent(warpSpeedButton);
@@ -116,6 +123,10 @@ public class SimulationWindow extends RenderableObject
 				plantOptionsMenu.addTComponent(new TLabel("Stalk Length"), false);
 				stalkLengthSlider.setRange(15, 100);
 				plantOptionsMenu.addTComponent(stalkLengthSlider);
+				
+				//GeneOptionsMenu set-up. This menu is located on the left
+				
+				//PresetOptionsMenu set-up. This menu is located on the left
 
 				TLabel largePlantsLabel = new TLabel("Large Plants");
 				largePlantsLabel.setFontSize(14);
@@ -225,6 +236,10 @@ public class SimulationWindow extends RenderableObject
 					setLeftMenu(plantOptionsMenu);
 				else if (eventSource == lightOptionsButton)
 					setLeftMenu(lightOptionsMenu);
+				else if (eventSource == geneOptionsButton)
+					setLeftMenu(geneOptionsMenu);
+				else if (eventSource == presetOptionsButton)
+					setLeftMenu(presetOptionsMenu);
 				// Modify Sim variables
 				else if (eventSource == warpSpeedButton)
 					{
