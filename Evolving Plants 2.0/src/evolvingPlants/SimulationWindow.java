@@ -16,10 +16,10 @@ import tComponents.components.TMenu;
 import tComponents.components.TRadioButton;
 import tComponents.components.TScrollBar;
 import tComponents.components.TSlider;
+import tComponents.components.TTextField;
 import tComponents.utils.RadioButtonsCollection;
 import tComponents.utils.events.TActionEvent;
 import tComponents.utils.events.TScrollEvent;
-import evolvingPlants.simulation.LightMap;
 import evolvingPlants.simulation.Simulation;
 
 public class SimulationWindow extends RenderableObject
@@ -75,7 +75,12 @@ public class SimulationWindow extends RenderableObject
 		// TODO add gene options
 
 		private TMenu presetOptionsMenu = new TMenu(0, 0, 200, Hub.canvasHeight, TMenu.VERTICAL);
-		// TODO add preset options
+		private final TTextField saveNameField = new TTextField(0, 0, 180, 20, "My Settings");
+		private final TButton savePresetButton = new TButton("Save Current Settings");
+		public final TMenu savedPresetsMenu = new TMenu(0, 0, 180, 200, TMenu.VERTICAL);
+		private RadioButtonsCollection loadDeletePresetButtons = new RadioButtonsCollection();
+		public final TRadioButton loadPresetButton = new TRadioButton("Load Presets");
+		public final TRadioButton deletePresetButton = new TRadioButton("Delete Presets");
 
 		@Override
 		protected void initiate()
@@ -104,6 +109,17 @@ public class SimulationWindow extends RenderableObject
 				topMenu.addTComponent(geneOptionsButton);
 				topMenu.addTComponent(presetOptionsButton);
 
+				// PlantInteractions menu set-up. This menu is located on the
+				// left
+				plantInteractionButtons.addRadioButton(selectPlantButton);
+				plantInteractionButtons.addRadioButton(plantSeedButton);
+				plantInteractionButtons.addRadioButton(getGenesButton);
+				plantInteractionButtons.addRadioButton(killPlantsButton);
+				plantInteractionsMenu.addTComponent(selectPlantButton);
+				plantInteractionsMenu.addTComponent(plantSeedButton);
+				plantInteractionsMenu.addTComponent(getGenesButton);
+				plantInteractionsMenu.addTComponent(killPlantsButton);
+
 				// SimOptions menu set-up. This menu is located on the right
 				simOptionsMenu.addTComponent(warpSpeedButton);
 				playbackSpeed.setRange(0, 25);
@@ -123,10 +139,6 @@ public class SimulationWindow extends RenderableObject
 				plantOptionsMenu.addTComponent(new TLabel("Stalk Length"), false);
 				stalkLengthSlider.setRange(15, 100);
 				plantOptionsMenu.addTComponent(stalkLengthSlider);
-				
-				//GeneOptionsMenu set-up. This menu is located on the left
-				
-				//PresetOptionsMenu set-up. This menu is located on the left
 
 				TLabel largePlantsLabel = new TLabel("Large Plants");
 				largePlantsLabel.setFontSize(14);
@@ -157,16 +169,18 @@ public class SimulationWindow extends RenderableObject
 				smallPlantSpacingSlider.setRange(1, 25);
 				plantOptionsMenu.addTComponent(smallPlantSpacingSlider);
 
-				// PlantInteractions menu set-up. This menu is located on the
-				// left
-				plantInteractionButtons.addRadioButton(selectPlantButton);
-				plantInteractionButtons.addRadioButton(plantSeedButton);
-				plantInteractionButtons.addRadioButton(getGenesButton);
-				plantInteractionButtons.addRadioButton(killPlantsButton);
-				plantInteractionsMenu.addTComponent(selectPlantButton);
-				plantInteractionsMenu.addTComponent(plantSeedButton);
-				plantInteractionsMenu.addTComponent(getGenesButton);
-				plantInteractionsMenu.addTComponent(killPlantsButton);
+				// GeneOptionsMenu set-up. This menu is located on the left
+				// TODO place gene interaction components here
+
+				// PresetOptionsMenu set-up. This menu is located on the left
+				presetOptionsMenu.addTComponent(saveNameField);
+				presetOptionsMenu.addTComponent(savePresetButton);
+				presetOptionsMenu.addTComponent(savedPresetsMenu, false);
+				Hub.presetIO.addPresetsToMenu();
+				presetOptionsMenu.addTComponent(loadPresetButton);
+				presetOptionsMenu.addTComponent(deletePresetButton);
+				loadDeletePresetButtons.addRadioButton(loadPresetButton);
+				loadDeletePresetButtons.addRadioButton(deletePresetButton);
 
 				// LightOptions menu set-up. This menu is located on the left
 				lightOptionsMenu.addTComponent(showLightButton);
@@ -174,19 +188,17 @@ public class SimulationWindow extends RenderableObject
 				lightOptionsMenu.addTComponent(new TLabel("Light Intensity"), false);
 				redLightSlider.setSliderImage(0, Hub.loadImage("redSun.png"));
 				redLightSlider.setRange(0, 255);
-				redLightSlider.setSliderValue(255);
 				lightOptionsMenu.addTComponent(redLightSlider);
 				greenLightSlider.setSliderImage(0, Hub.loadImage("greenSun.png"));
 				greenLightSlider.setRange(0, 255);
-				greenLightSlider.setSliderValue(255);
 				lightOptionsMenu.addTComponent(greenLightSlider);
 				blueLightSlider.setSliderImage(0, Hub.loadImage("blueSun.png"));
 				blueLightSlider.setRange(0, 255);
-				blueLightSlider.setSliderValue(255);
 				lightOptionsMenu.addTComponent(blueLightSlider);
 				lightOptionsMenu.addTComponent(new TLabel("Leaf Transparency"), false);
 				lightOptionsMenu.addTComponent(leafOpacitySlider);
 
+				Hub.presetIO.loadPreset("default.txt");
 			}
 
 		@Override
@@ -261,6 +273,12 @@ public class SimulationWindow extends RenderableObject
 
 						sim.showLighting = !sim.showLighting;
 						showLightButton.setLabel(sim.showLighting ? "Hide light" : "Show Light", true);
+					}
+				// Preset options
+				else if (eventSource == savePresetButton)
+					{
+						Hub.presetIO.createPreset(saveNameField.getText());
+						Hub.presetIO.addPresetsToMenu();
 					}
 			}
 
