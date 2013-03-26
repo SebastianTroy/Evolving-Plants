@@ -28,23 +28,23 @@ public class SimulationWindow extends RenderableObject
 		Rectangle simBounds = new Rectangle(200, 70, 800, 480);
 		private final TScrollBar simulationScroller = new TScrollBar(200, 0, 800, 800, TScrollBar.HORIZONTAL, new Rectangle(200, 0, 800, 550));
 
-		private final TMenu topMenu = new TMenu(200, 0, 800, 70, TMenu.HORIZONTAL);
+		final TMenu topMenu = new TMenu(200, 0, 800, 70, TMenu.HORIZONTAL);
 		private final TButton plantInteractionsButton = new TButton("Plant Interactions");
 		private final TButton plantOptionsButton = new TButton("Plant Options");
 		private final TButton lightOptionsButton = new TButton("Light Options");
 		private final TButton presetOptionsButton = new TButton("Preset Options");
 		private final TButton geneOptionsButton = new TButton("Gene Options");
 
-		private TMenu currentLeftSideMenu;
-		private TMenu currentRightSideMenu;
+		TMenu currentLeftSideMenu;
+		TMenu currentRightSideMenu;
 
-		private final TMenu simOptionsMenu = new TMenu(1000, 0, 200, Hub.canvasHeight, TMenu.VERTICAL);
+		TMenu simOptionsMenu;
 		public final TSlider playbackSpeed = new TSlider(TSlider.HORIZONTAL);
-		private final TButton warpSpeedButton = new TButton("Warp speed [off]");
+		public final TSlider warpSpeedSlider = new TSlider(TSlider.HORIZONTAL);
 		private final TButton resetSimButton = new TButton("Reset Simulation");
 		private final TButton mainMenuButton = new TButton("Main Menu");
 
-		private TMenu plantInteractionsMenu = new TMenu(0, 0, 200, Hub.canvasHeight, TMenu.VERTICAL);
+		TMenu plantInteractionsMenu;
 		private RadioButtonsCollection plantInteractionButtons = new RadioButtonsCollection();
 		private TRadioButton selectPlantButton = new TRadioButton("Select Plants");
 		private TRadioButton plantSeedButton = new TRadioButton("Plant Seeds");
@@ -55,7 +55,7 @@ public class SimulationWindow extends RenderableObject
 		public Cursor killPlantCursor;
 		public Cursor currentCursor = getObserver().getCursor();
 
-		private TMenu plantOptionsMenu = new TMenu(0, 0, 200, Hub.canvasHeight, TMenu.VERTICAL);
+		TMenu plantOptionsMenu;
 		public final TButton showLightButton = new TButton("Show light");
 		public final TSlider largePlantSizeSlider = new TSlider(TSlider.HORIZONTAL);
 		public final TSlider largePlantSpacingSlider = new TSlider(TSlider.HORIZONTAL);
@@ -65,17 +65,17 @@ public class SimulationWindow extends RenderableObject
 		public final TSlider leafSizeSlider = new TSlider(TSlider.HORIZONTAL);
 		public final TSlider stalkLengthSlider = new TSlider(TSlider.HORIZONTAL);
 
-		private TMenu lightOptionsMenu = new TMenu(0, 0, 200, Hub.canvasHeight, TMenu.VERTICAL);
+		TMenu lightOptionsMenu;
 		public final TSlider redLightSlider = new TSlider(TSlider.HORIZONTAL);
 		public final TSlider greenLightSlider = new TSlider(TSlider.HORIZONTAL);
 		public final TSlider blueLightSlider = new TSlider(TSlider.HORIZONTAL);
 		public final TSlider leafOpacitySlider = new TSlider(TSlider.HORIZONTAL);
 
-		private TMenu geneOptionsMenu = new TMenu(0, 0, 200, Hub.canvasHeight, TMenu.VERTICAL);
+		TMenu geneOptionsMenu;
 		// TODO add gene options
 
-		private TMenu presetOptionsMenu = new TMenu(0, 0, 200, Hub.canvasHeight, TMenu.VERTICAL);
-		private final TTextField saveNameField = new TTextField(0, 0, 180, 20, "My Settings");
+		TMenu presetOptionsMenu;
+		private final TTextField saveNameField = new TTextField(0, 0, 160, 25, "My Settings");
 		private final TButton savePresetButton = new TButton("Save Current Settings");
 		public final TMenu savedPresetsMenu = new TMenu(0, 0, 200, 350, TMenu.VERTICAL);
 		private RadioButtonsCollection loadDeletePresetButtons = new RadioButtonsCollection();
@@ -91,15 +91,19 @@ public class SimulationWindow extends RenderableObject
 				if (sim.simWidth > 800)
 					addTComponent(simulationScroller);
 
+				simOptionsMenu = new TMenu(1000, 0, 200, Hub.canvasHeight, TMenu.VERTICAL);
+				plantInteractionsMenu = new TMenu(0, 0, 200, Hub.canvasHeight, TMenu.VERTICAL);
+				plantOptionsMenu = new TMenu(0, 0, 200, Hub.canvasHeight, TMenu.VERTICAL);
+				lightOptionsMenu = new TMenu(0, 0, 200, Hub.canvasHeight, TMenu.VERTICAL);
+				geneOptionsMenu = new TMenu(0, 0, 200, Hub.canvasHeight, TMenu.VERTICAL);
+				presetOptionsMenu = new TMenu(0, 0, 200, Hub.canvasHeight, TMenu.VERTICAL);
+
 				topMenu.setBorderSize(5);
 
 				Toolkit k = Toolkit.getDefaultToolkit();
 				plantSeedCursor = k.createCustomCursor(Hub.loadImage("seed.png"), new Point(0, 0), "seed");
 				getGenesCursor = k.createCustomCursor(Hub.loadImage("dna.png"), new Point(0, 0), "seed");
 				killPlantCursor = k.createCustomCursor(Hub.loadImage("skull.png"), new Point(0, 0), "seed");
-
-				setLeftMenu(plantInteractionsMenu);
-				setRightMenu(simOptionsMenu);
 
 				// Top menu set-up.
 				addTComponent(topMenu);
@@ -121,8 +125,9 @@ public class SimulationWindow extends RenderableObject
 				plantInteractionsMenu.addTComponent(killPlantsButton);
 
 				// SimOptions menu set-up. This menu is located on the right
-				simOptionsMenu.addTComponent(warpSpeedButton);
-				playbackSpeed.setRange(0, 25);
+				warpSpeedSlider.setRange(1, 10);
+				simOptionsMenu.addTComponent(warpSpeedSlider);
+				playbackSpeed.setRange(0, 12);
 				simOptionsMenu.addTComponent(new TLabel("Playback Speed"), false);
 				simOptionsMenu.addTComponent(playbackSpeed);
 				simOptionsMenu.addTComponent(resetSimButton);
@@ -173,7 +178,7 @@ public class SimulationWindow extends RenderableObject
 				// TODO place gene interaction components here
 
 				// PresetOptionsMenu set-up. This menu is located on the left
-				presetOptionsMenu.addTComponent(saveNameField);
+				presetOptionsMenu.addTComponent(saveNameField, false);
 				presetOptionsMenu.addTComponent(savePresetButton);
 				presetOptionsMenu.addTComponent(savedPresetsMenu, false);
 				Hub.presetIO.addPresetsToMenu();
@@ -198,6 +203,9 @@ public class SimulationWindow extends RenderableObject
 				lightOptionsMenu.addTComponent(new TLabel("Leaf Transparency"), false);
 				lightOptionsMenu.addTComponent(leafOpacitySlider);
 
+				setLeftMenu(plantInteractionsMenu);
+				setRightMenu(simOptionsMenu);
+
 				Hub.presetIO.loadPreset("default.txt");
 			}
 
@@ -213,7 +221,7 @@ public class SimulationWindow extends RenderableObject
 				sim.render(g);
 			}
 
-		private final void setLeftMenu(TMenu newMenu)
+		final void setLeftMenu(TMenu newMenu)
 			{
 				removeTComponent(currentLeftSideMenu);
 				currentLeftSideMenu = newMenu;
@@ -252,12 +260,6 @@ public class SimulationWindow extends RenderableObject
 					setLeftMenu(geneOptionsMenu);
 				else if (eventSource == presetOptionsButton)
 					setLeftMenu(presetOptionsMenu);
-				// Modify Sim variables
-				else if (eventSource == warpSpeedButton)
-					{
-						sim.warpSpeed = !sim.warpSpeed;
-						warpSpeedButton.setLabel("Warp speed " + (sim.warpSpeed ? "[on]" : "[off]"), true);
-					}
 				// Change Cursor ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 				else if (eventSource == selectPlantButton)
 					currentCursor = Cursor.getDefaultCursor();
@@ -292,27 +294,27 @@ public class SimulationWindow extends RenderableObject
 					sim.simX = -e.getScrollValue();
 				// Update plant size category limits
 				else if (eventSource == largePlantSizeSlider)
-					mediumPlantSizeSlider.setRange(0, largePlantSizeSlider.getSliderValue());
+					mediumPlantSizeSlider.setRange(0, (int) largePlantSizeSlider.getValue());
 				// update light
-				else if (eventSource == redLightSlider && e.getScrollType() == TScrollEvent.FINAL_VALUE)
+				else if (eventSource == redLightSlider && (e.getScrollType() == TScrollEvent.FINAL_VALUE || e.getScrollType() == TScrollEvent.VALUE_SET_INTERNALLY))
 					{
-						double simSpeed = playbackSpeed.getSliderValue();
+						double simSpeed = playbackSpeed.getValue();
 						playbackSpeed.setSliderValue(0);
-						sim.lightMap.setRedLight(redLightSlider.getSliderValue());
+						sim.lightMap.setRedLight(redLightSlider.getValue());
 						playbackSpeed.setSliderValue(simSpeed);
 					}
-				else if (eventSource == greenLightSlider && e.getScrollType() == TScrollEvent.FINAL_VALUE)
+				else if (eventSource == greenLightSlider && (e.getScrollType() == TScrollEvent.FINAL_VALUE || e.getScrollType() == TScrollEvent.VALUE_SET_INTERNALLY))
 					{
-						double simSpeed = playbackSpeed.getSliderValue();
+						double simSpeed = playbackSpeed.getValue();
 						playbackSpeed.setSliderValue(0);
-						sim.lightMap.setGreenLight(greenLightSlider.getSliderValue());
+						sim.lightMap.setGreenLight(greenLightSlider.getValue());
 						playbackSpeed.setSliderValue(simSpeed);
 					}
-				else if (eventSource == blueLightSlider && e.getScrollType() == TScrollEvent.FINAL_VALUE)
+				else if (eventSource == blueLightSlider && (e.getScrollType() == TScrollEvent.FINAL_VALUE || e.getScrollType() == TScrollEvent.VALUE_SET_INTERNALLY))
 					{
-						double simSpeed = playbackSpeed.getSliderValue();
+						double simSpeed = playbackSpeed.getValue();
 						playbackSpeed.setSliderValue(0);
-						sim.lightMap.setBlueLight(blueLightSlider.getSliderValue());
+						sim.lightMap.setBlueLight(blueLightSlider.getValue());
 						playbackSpeed.setSliderValue(simSpeed);
 					}
 			}
@@ -328,7 +330,7 @@ public class SimulationWindow extends RenderableObject
 			{
 				if (simBounds.contains(e.getPoint()))
 					getObserver().setCursor(currentCursor);
-				else
+				else if (getObserver().getCursor().getType() != Cursor.TEXT_CURSOR)
 					getObserver().setCursor(Cursor.getDefaultCursor());
 			}
 
@@ -337,7 +339,7 @@ public class SimulationWindow extends RenderableObject
 			{
 				if (simBounds.contains(e.getPoint()))
 					getObserver().setCursor(currentCursor);
-				else
+				else if (getObserver().getCursor().getType() != Cursor.TEXT_CURSOR)
 					getObserver().setCursor(Cursor.getDefaultCursor());
 			}
 

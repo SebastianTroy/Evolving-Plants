@@ -10,7 +10,6 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 
 import evolvingPlants.Hub;
-import evolvingPlants.SimPresetIO;
 
 public class Simulation
 	{
@@ -24,9 +23,8 @@ public class Simulation
 		public double simWidth, simX = 0;
 		public LightMap lightMap;
 		BufferedImage lightImage;
-		public boolean warpSpeed = false;
 		// seeds added by user
-		private Genes currentGenes = new Genes(40);
+		private Genes currentGenes = new Genes(100);
 		public ArrayList<Point> seedsToAdd = new ArrayList<Point>(5);
 		private ArrayList<Seed> seeds = new ArrayList<Seed>(20);
 		ArrayList<Plant> plants = new ArrayList<Plant>(40);
@@ -41,31 +39,27 @@ public class Simulation
 
 		public void tick(double secondsPassed)
 			{
-				int iterations = warpSpeed ? 5 : 1;
-				secondsPassed *= Hub.simWindow.playbackSpeed.getSliderValue();
+				secondsPassed *= Hub.simWindow.playbackSpeed.getValue();
 
-				do
+				for (int i = 0; i < Hub.simWindow.warpSpeedSlider.getValue(); i++)
 					{
 						// Add new seedlings to Array
 						for (Point p : seedsToAdd)
-							addSeed(p.getX(), p.getY(), currentGenes, currentGenes.seedEnergy);
+							addSeed(p.getX(), p.getY(), currentGenes, currentGenes.seedEnergy, Plant.SMALL);
 						seedsToAdd.clear();
 						// Remove germinated seeds
-						for (int i = 0; i < seeds.size(); i++)
-							if (seeds.get(i).exists == false)
-								seeds.remove(i);
+						for (int s = 0; s < seeds.size(); s++)
+							if (seeds.get(s).exists == false)
+								seeds.remove(s);
 						// Remove dead plants
-						for (int i = 0; i < plants.size(); i++)
-							if (plants.get(i).alive == false)
-								plants.remove(i);
+						for (int p = 0; p < plants.size(); p++)
+							if (plants.get(p).alive == false)
+								plants.remove(p);
 						for (Seed s : seeds)
 							s.tick(secondsPassed);
 						for (Plant p : plants)
 							p.tick(secondsPassed);
-
-						iterations--;
 					}
-				while (iterations > 0);
 			}
 
 		public void render(Graphics g)
@@ -91,12 +85,12 @@ public class Simulation
 							{
 								int y2 = (int) y;
 								g.drawLine(200, y2, 1000, y2);
-								y -= Hub.simWindow.stalkLengthSlider.getSliderValue();
+								y -= Hub.simWindow.stalkLengthSlider.getValue();
 							}
 						g.setColor(Color.WHITE);
-						int y2 = Plant.plantY - (int) Hub.simWindow.largePlantSizeSlider.getSliderValue();
+						int y2 = Plant.plantY - (int) Hub.simWindow.largePlantSizeSlider.getValue();
 						g.drawLine(200, y2, 1000, y2);
-						y2 = Plant.plantY - (int) Hub.simWindow.mediumPlantSizeSlider.getSliderValue();
+						y2 = Plant.plantY - (int) Hub.simWindow.mediumPlantSizeSlider.getValue();
 						g.drawLine(200, y2, 1000, y2);
 					}
 				g.setColor(Color.CYAN);
@@ -104,9 +98,9 @@ public class Simulation
 				g.fillRect(1000, 0, 200, Hub.canvasHeight);
 			}
 
-		public final void addSeed(double x, double y, Genes genes, double energy)
+		public final void addSeed(double x, double y, Genes genes, double energy, int parentSizeCategory)
 			{
-				seeds.add(new Seed(x, y, genes, energy));
+				seeds.add(new Seed(x, y, genes, energy, parentSizeCategory));
 			}
 
 		public final void addPlant(Plant newPlant)
@@ -117,20 +111,19 @@ public class Simulation
 
 		public final boolean isSpaceAt(double x, int sizeCategory)
 			{
-				int smallSpacing = (int) Hub.simWindow.smallPlantSpacingSlider.getSliderValue();
-				int mediumSpacing = (int) Hub.simWindow.mediumPlantSpacingSlider.getSliderValue();
-				int largeSpacing = (int) Hub.simWindow.largePlantSpacingSlider.getSliderValue();
+				int smallSpacing = (int) Hub.simWindow.smallPlantSpacingSlider.getValue();
+				int mediumSpacing = (int) Hub.simWindow.mediumPlantSpacingSlider.getValue();
+				int largeSpacing = (int) Hub.simWindow.largePlantSpacingSlider.getValue();
 				switch (sizeCategory)
 					{
 						case Plant.SMALL:
 							for (Plant p : plants)
-								if (p.sizeCategory == Plant.SMALL)
-									if (Math.abs(p.plantX - x) < smallSpacing)
-										return false;
+								if (Math.abs(p.plantX - x) < smallSpacing)
+									return false;
 							break;
 						case Plant.MEDIUM:
 							for (Plant p : plants)
-								if (p.sizeCategory == Plant.MEDIUM)
+								if (p.sizeCategory != Plant.SMALL)
 									if (Math.abs(p.plantX - x) < mediumSpacing)
 										return false;
 							break;
@@ -141,7 +134,7 @@ public class Simulation
 										return false;
 							break;
 						default:
-							return true;
+							return false;
 					}
 				return true;
 			}
@@ -175,8 +168,11 @@ public class Simulation
 				 * by too much light and dark adapted species are actually at a
 				 * large disadvantage in normal conditions.
 				 */
-				if (energyGained > 255)
-					energyGained = Math.max(0, 255 - (energyGained - 255));
+				if (energyGained > 200)
+					energyGained = Math.max(0, 200 - (energyGained - 200));
+
+				// TODO FIND OUT WHY SMALL PLANTS DO NOT GROW UNDER LARGE PLANTS
+				// DESPITE PLENTY OF LIGHT
 
 				return energyGained;
 			}

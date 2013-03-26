@@ -18,7 +18,7 @@ public class Plant
 		public int plantX, minX, maxX, leafSize, sizeCategory;
 		public static final int plantY = 550;
 
-		private double height = 0, energy, metabolism = 1, age = 0, fractionGrown = 0;
+		private double height = 0, lean = 0, energy, metabolism = 1, fractionGrown = 0;
 		private Genes genes;
 
 		private NodeTree nodeTree;
@@ -34,7 +34,7 @@ public class Plant
 				minX = maxX = plantX;
 				genes = seed.genes;
 				energy = seed.energy;
-				leafSize = (int) Hub.simWindow.leafSizeSlider.getSliderValue();
+				leafSize = (int) Hub.simWindow.leafSizeSlider.getValue();
 
 				nodeTree = new NodeTree(genes);
 
@@ -47,14 +47,14 @@ public class Plant
 			{
 				if (!alive)
 					return;
-				
+
 				if (fractionGrown < 1) // Growing
 					{
 						fractionGrown += (1.75 / metabolism) * secondsPassed;
 					}
 				else if (fractionGrown > 1) // full grown - only called once
 					{
-						double leafOpacity = Hub.simWindow.leafOpacitySlider.getSliderValue();
+						double leafOpacity = Hub.simWindow.leafOpacitySlider.getValue();
 						int r = (int) ((255 - genes.leafColour.getRed()) * leafOpacity);
 						int g = (int) ((255 - genes.leafColour.getGreen()) * leafOpacity);
 						int b = (int) ((255 - genes.leafColour.getBlue()) * leafOpacity);
@@ -65,7 +65,6 @@ public class Plant
 					}
 				if (alive && energy > 0) // Alive
 					{
-						age += secondsPassed;
 						metabolism += secondsPassed * 2;
 						energy -= metabolism * secondsPassed;
 						nodeTree.baseNode.tick(secondsPassed);
@@ -159,12 +158,16 @@ public class Plant
 							else
 								genes.nextInstruction(false);
 
+						baseNode.calculateLean();
 						baseNode.setLeaves();
 						baseNode.parentNode = new Node(plantX, plantY);
 
-						if (height > Hub.simWindow.largePlantSizeSlider.getSliderValue())
+						if (Math.abs(lean) / height > 0.6)
+							alive = false;
+
+						if (height > Hub.simWindow.largePlantSizeSlider.getValue())
 							sizeCategory = LARGE;
-						else if (height > Hub.simWindow.mediumPlantSizeSlider.getSliderValue())
+						else if (height > Hub.simWindow.mediumPlantSizeSlider.getValue())
 							sizeCategory = MEDIUM;
 						else
 							sizeCategory = SMALL;
@@ -234,7 +237,7 @@ public class Plant
 														 */
 														energy -= seedEnergy;
 														seedEnergy = 0;
-														Hub.simWindow.sim.addSeed(getX(), getY(), genes, genes.seedEnergy);
+														Hub.simWindow.sim.addSeed(getX(), getY(), genes, genes.seedEnergy, sizeCategory);
 													}
 											}
 									}
@@ -285,7 +288,7 @@ public class Plant
 
 						private final void growUp()
 							{
-								y -= (int) Hub.simWindow.stalkLengthSlider.getSliderValue();
+								y -= (int) Hub.simWindow.stalkLengthSlider.getValue();
 								if (height < plantY - y)
 									height = plantY - y;
 								for (Node n : daughterNodes)
@@ -294,9 +297,9 @@ public class Plant
 
 						private final void growDown()
 							{
-								if (y < plantY - Hub.simWindow.stalkLengthSlider.getSliderValue())
+								if (y < plantY - Hub.simWindow.stalkLengthSlider.getValue())
 									{
-										y += (int) Hub.simWindow.stalkLengthSlider.getSliderValue();
+										y += (int) Hub.simWindow.stalkLengthSlider.getValue();
 										for (Node n : daughterNodes)
 											n.growDown();
 									}
@@ -304,7 +307,7 @@ public class Plant
 
 						private final void growLeft()
 							{
-								x -= (int) Hub.simWindow.stalkLengthSlider.getSliderValue();
+								x -= (int) Hub.simWindow.stalkLengthSlider.getValue();
 								for (Node n : daughterNodes)
 									n.growLeft();
 								if ((int) x < minX)
@@ -313,7 +316,7 @@ public class Plant
 
 						private final void growRight()
 							{
-								x += (int) Hub.simWindow.stalkLengthSlider.getSliderValue();
+								x += (int) Hub.simWindow.stalkLengthSlider.getValue();
 								for (Node n : daughterNodes)
 									n.growRight();
 								if ((int) x > maxX)
@@ -338,6 +341,13 @@ public class Plant
 								else
 									return this;
 							}
+						
+						private final void calculateLean()
+							{
+								lean -= plantX - x;
+								for (Node n : daughterNodes)
+									n.calculateLean();
+							}
 
 						private final void setLeaves()
 							{
@@ -345,7 +355,7 @@ public class Plant
 									for (Node n : daughterNodes)
 										n.setLeaves();
 								else if (parentNode == this || (parentNode.x != x && parentNode.y != y))
-										isLeaf = true;
+									isLeaf = true;
 							}
 
 						private final void setShadow()

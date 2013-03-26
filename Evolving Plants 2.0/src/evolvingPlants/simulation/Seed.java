@@ -1,6 +1,5 @@
 package evolvingPlants.simulation;
 
-import java.awt.Color;
 import java.awt.Graphics;
 
 import tools.RandTools;
@@ -11,12 +10,14 @@ public class Seed
 		double x, y, energy, distance = -1, speed;
 		public boolean exists = true, falling = true;
 		Genes genes;
+		private int parentSizeCategory;
 
-		public Seed(double x, double y, Genes parent, double energy)
+		public Seed(double x, double y, Genes parent, double energy, int parentSizeCategory)
 			{
 				this.x = x;
 				this.y = y;
 				this.energy = energy;
+				this.parentSizeCategory = parentSizeCategory;
 				genes = new Genes(parent, true);
 			}
 
@@ -45,26 +46,25 @@ public class Seed
 							}
 
 						y += 90 * secondsPassed;
+
+						if (y > Plant.plantY)
+							falling = false;
 					}
-				if (exists && y > Plant.plantY)
+				else if (exists)
 					if (getX() < 0 || getX() > Hub.simWindow.sim.simWidth)
 						exists = false;
 					else
 						{
-							falling = false;
-							boolean canGrow = Hub.simWindow.sim.isSpaceAt(getX(), 42);
+							energy -= 50 * secondsPassed;
 
-							if (canGrow)
+							if (energy < 0)
+								exists = false;
+
+							// If is space to germinate
+							if (Hub.simWindow.sim.isSpaceAt(getX(), parentSizeCategory))
 								{
 									Hub.simWindow.sim.addPlant(new Plant(this));
 									exists = false;
-								}
-							else
-								{
-									energy -= 5 * secondsPassed;
-
-									if (energy < 0)
-										exists = false;
 								}
 						}
 			}
@@ -75,7 +75,7 @@ public class Seed
 					return;
 
 				int apparentX = (int) (getX() + simX);
-				
+
 				g.setColor(genes.seedColour);
 				g.fillOval(apparentX, (int) y, (int) (energy / 10), (int) (energy / 10));
 			}

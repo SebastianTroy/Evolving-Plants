@@ -31,6 +31,9 @@ public class LightMap
 
 		public void setRedLight(double newRed)
 			{
+				if (newRed == baseLightColours[RED])
+					return;
+				
 				int difference = (int) newRed - baseLightColours[RED];
 
 				for (int x = 0; x < width; x++)
@@ -42,6 +45,9 @@ public class LightMap
 
 		public void setGreenLight(double newGreen)
 			{
+				if (newGreen == baseLightColours[GREEN])
+					return;
+
 				int difference = (int) newGreen - baseLightColours[GREEN];
 
 				for (int x = 0; x < width; x++)
@@ -53,6 +59,9 @@ public class LightMap
 
 		public void setBlueLight(double newBlue)
 			{
+				if (newBlue == baseLightColours[BLUE])
+					return;
+
 				int difference = (int) newBlue - baseLightColours[BLUE];
 
 				for (int x = 0; x < width; x++)

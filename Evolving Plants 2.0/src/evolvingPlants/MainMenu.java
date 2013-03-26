@@ -69,7 +69,7 @@ public class MainMenu extends RenderableObject
 					{
 						mainMenu.setX(0);
 						newSimMenu.setX(640);
-						simWidth = (int) simWidthSlider.getSliderValue(0);
+						simWidth = (int) simWidthSlider.getValue(0);
 					}
 				else if (event.getSource() == resumeSimButton)
 					{

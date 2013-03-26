@@ -10,12 +10,9 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
 
-import tCode.RenderableObject;
 import tComponents.components.TButton;
 import tComponents.components.TMenu;
-import tComponents.utils.events.TActionEvent;
 
 public class SimPresetIO
 	{
@@ -36,7 +33,7 @@ public class SimPresetIO
 		public final void addPresetsToMenu()
 			{
 				TMenu presetMenu = Hub.simWindow.savedPresetsMenu;
-				
+
 				presetMenu.clearTComponents();
 
 				createDefaultPresetFile();
@@ -56,45 +53,47 @@ public class SimPresetIO
 				try
 					{
 						File presetFile = new File(saveDirectory + "//" + presetName + ".txt");
-						
+
 						if (presetFile.exists())
 							presetFile = new File(saveDirectory + "//" + presetName + "-.txt");
-						
+
 						out = new BufferedWriter(new FileWriter(presetFile, false));
 						out.write("Plants:");
 						out.newLine();
 						out.write("LeafSize= ");
-						out.write(sim.leafSizeSlider.getSliderValue() + "");
+						out.write(sim.leafSizeSlider.getValue() + "");
 						out.newLine();
 						out.write("StalkLength= ");
-						out.write(sim.stalkLengthSlider.getSliderValue() + "");
+						out.write(sim.stalkLengthSlider.getValue() + "");
 						out.newLine();
 						out.write("LargePlantSize= ");
-						out.write(sim.largePlantSizeSlider.getSliderValue() + "");
+						out.write(sim.largePlantSizeSlider.getValue() + "");
 						out.newLine();
 						out.write("LargePlantSpacing= ");
-						out.write(sim.largePlantSpacingSlider.getSliderValue() + "");
+						out.write(sim.largePlantSpacingSlider.getValue() + "");
 						out.newLine();
 						out.write("MediumPlantSize= ");
-						out.write(sim.mediumPlantSizeSlider.getSliderValue() + "");
+						out.write(sim.mediumPlantSizeSlider.getValue() + "");
 						out.newLine();
 						out.write("MediumPlantSpacing= ");
-						out.write(sim.mediumPlantSpacingSlider.getSliderValue() + "");
+						out.write(sim.mediumPlantSpacingSlider.getValue() + "");
 						out.newLine();
 						out.write("SmallPlantSpacing= ");
-						out.write(sim.smallPlantSpacingSlider.getSliderValue() + "");
+						out.write(sim.smallPlantSpacingSlider.getValue() + "");
 						out.newLine();
 						out.newLine();
 						out.write("Light:");
 						out.newLine();
 						out.write("RedLightIntensity= ");
-						out.write(sim.redLightSlider.getSliderValue() + "");
+						out.write(sim.redLightSlider.getValue() + "");
 						out.newLine();
 						out.write("GreenLightIntensity= ");
-						out.write(sim.greenLightSlider.getSliderValue() + "");
+						out.write(sim.greenLightSlider.getValue() + "");
 						out.newLine();
 						out.write("BlueLightIntensity= ");
-						out.write(sim.blueLightSlider.getSliderValue() + "");
+						out.write(sim.blueLightSlider.getValue() + "");
+						out.newLine();
+						out.write(sim.leafOpacitySlider.getValue() + "");
 					}
 				catch (Exception e)
 					{
@@ -125,6 +124,7 @@ public class SimPresetIO
 
 						in = new BufferedReader(new FileReader(presetFile));
 						in.readLine();// Plants
+						/**/sim.addTComponent(sim.plantOptionsMenu);
 						sim.leafSizeSlider.setSliderValue(readValueFromLine(in.readLine()));
 						sim.stalkLengthSlider.setSliderValue(readValueFromLine(in.readLine()));
 						sim.largePlantSizeSlider.setSliderValue(readValueFromLine(in.readLine()));
@@ -132,11 +132,15 @@ public class SimPresetIO
 						sim.mediumPlantSizeSlider.setSliderValue(readValueFromLine(in.readLine()));
 						sim.mediumPlantSpacingSlider.setSliderValue(readValueFromLine(in.readLine()));
 						sim.smallPlantSpacingSlider.setSliderValue(readValueFromLine(in.readLine()));
+						/**/sim.removeTComponent(sim.plantOptionsMenu);
 						in.readLine();// /n
 						in.readLine();// Light
+						/**/sim.addTComponent(sim.lightOptionsMenu);
 						sim.redLightSlider.setSliderValue(readValueFromLine(in.readLine()));
 						sim.greenLightSlider.setSliderValue(readValueFromLine(in.readLine()));
 						sim.blueLightSlider.setSliderValue(readValueFromLine(in.readLine()));
+						sim.leafOpacitySlider.setSliderValue(readValueFromLine(in.readLine()));
+						/**/sim.removeTComponent(sim.lightOptionsMenu);
 					}
 				catch (Exception e)
 					{
@@ -164,7 +168,7 @@ public class SimPresetIO
 			{
 				if (new File(saveDirectory + "default.txt").exists())
 					return;
-					
+
 				BufferedWriter out = null;
 
 				try
@@ -179,7 +183,7 @@ public class SimPresetIO
 						out.newLine();
 						out.write("StalkLength= 20.0");
 						out.newLine();
-						out.write("LargePlantSize= 250.0");
+						out.write("LargePlantSize= 290.0");
 						out.newLine();
 						out.write("LargePlantSpacing= 65.0");
 						out.newLine();
@@ -197,6 +201,8 @@ public class SimPresetIO
 						out.write("GreenLightIntensity= 255.0");
 						out.newLine();
 						out.write("BlueLightIntensity= 255.0");
+						out.newLine();
+						out.write("LeafTransparency= 1.0");
 					}
 				catch (Exception e)
 					{
@@ -222,6 +228,8 @@ public class SimPresetIO
 				Graphics g = im.getGraphics();
 
 				g.drawImage(saveImage, 5, 0, null);
+				g.setColor(new Color(1, 1, 1, 1));
+				g.fillRect(0, 0, 175, 45);
 				g.setColor(Color.BLACK);
 				g.drawString(file.getName(), 51, 25);
 				g.dispose();
