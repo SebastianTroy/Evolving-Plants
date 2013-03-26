@@ -13,6 +13,8 @@ public class LightMap
 
 		private int[][][] lightData;
 		private int[] baseLightColours = { 255, 255, 255 };
+		
+		BufferedImage lightMap = new BufferedImage(800, 550, BufferedImage.TYPE_INT_RGB);
 
 		private int width, height, depth = 3;
 
@@ -103,7 +105,7 @@ public class LightMap
 							lightData[x][y][c] += shadowCols[c];
 			}
 
-		public final BufferedImage getLightMap(BufferedImage image, int xPos)
+		public final BufferedImage getLightImage(BufferedImage image, int xPos)
 			{
 				for (int x = xPos; x < xPos + image.getWidth() && x < width; x++)
 					for (int y = 0; y < image.getHeight(); y++)

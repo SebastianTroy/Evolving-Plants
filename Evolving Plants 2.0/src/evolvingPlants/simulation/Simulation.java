@@ -14,18 +14,21 @@ import evolvingPlants.Hub;
 public class Simulation
 	{
 		// Globally fixed variables
-		private final Color skyBlue = new Color(150, 150, 255);
+		private static final Color skyBlue = new Color(150, 150, 255);
 		// User adjustable variables
-		public double uvIntensity = 2;
 		public double geneCompatability = 0.1; // lower is less compatible
 		public boolean showLighting = false;
+		public double oldWarpSpeed;// Keep track of warp speed when pausing
 		// Simulation variables
 		public double simWidth, simX = 0;
 		public LightMap lightMap;
 		BufferedImage lightImage;
 		// seeds added by user
-		private Genes currentGenes = new Genes(100);
+		private Genes currentGenes = new Genes(35);
 		public ArrayList<Point> seedsToAdd = new ArrayList<Point>(5);
+		// Light Filters
+		private ArrayList<LightFilter> filters = new ArrayList<LightFilter>();
+		// Seeds and Plants in the simulation
 		private ArrayList<Seed> seeds = new ArrayList<Seed>(20);
 		ArrayList<Plant> plants = new ArrayList<Plant>(40);
 
@@ -70,7 +73,7 @@ public class Simulation
 				// EXTREMELY SLOW! was expected really, perhaps force a pause of
 				// the sim when showing the lighting?
 				if (showLighting)
-					g.drawImage(lightMap.getLightMap(lightImage, -simX), 200, 0, Hub.simWindow.getObserver());
+					g.drawImage(lightImage, 200, 0, Hub.simWindow.getObserver());
 				g.setColor(Color.GREEN);
 				g.fillRect(200, 550, 800, 50);
 				for (Seed s : seeds)
@@ -171,10 +174,12 @@ public class Simulation
 				if (energyGained > 200)
 					energyGained = Math.max(0, 200 - (energyGained - 200));
 
-				// TODO FIND OUT WHY SMALL PLANTS DO NOT GROW UNDER LARGE PLANTS
-				// DESPITE PLENTY OF LIGHT
-
 				return energyGained;
+			}
+
+		public void updateLighting()
+			{
+				lightImage = lightMap.getLightImage(lightImage, (int) -simX);
 			}
 
 		public void mousePressed(MouseEvent e)
@@ -207,10 +212,23 @@ public class Simulation
 							}
 						else if (Hub.simWindow.currentCursor == Hub.simWindow.killPlantCursor)
 							{
-								for (Plant plant : plants)
-									if (plant.contains(point))
-										plant.kill();
+								for (int i = 0; i < plants.size(); i++)
+									if (plants.get(i).contains(point))
+										plants.get(i).kill();
 							}
+					}
+			}
+
+		public void mouseDragged(MouseEvent e)
+			{
+				Point point = e.getPoint();
+				point.x -= simX + 200;
+
+				if (Hub.simWindow.currentCursor == Hub.simWindow.killPlantCursor)
+					{
+						for (int i = 0; i < plants.size(); i++)
+							if (plants.get(i).contains(point))
+								plants.get(i).kill();
 					}
 			}
 

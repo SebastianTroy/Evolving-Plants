@@ -11,6 +11,8 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 
+import javax.swing.JOptionPane;
+
 import tComponents.components.TButton;
 import tComponents.components.TMenu;
 
@@ -65,6 +67,12 @@ public class SimPresetIO
 						out.newLine();
 						out.write("StalkLength= ");
 						out.write(sim.stalkLengthSlider.getValue() + "");
+						out.newLine();
+						out.write("MutationChance= ");
+						out.write(sim.mutantOffspringSlider.getValue() + "");
+						out.newLine();
+						out.write("DNADamage= ");
+						out.write(sim.dnaDamageSlider.getValue() + "");
 						out.newLine();
 						out.write("LargePlantSize= ");
 						out.write(sim.largePlantSizeSlider.getValue() + "");
@@ -125,21 +133,23 @@ public class SimPresetIO
 						in = new BufferedReader(new FileReader(presetFile));
 						in.readLine();// Plants
 						/**/sim.addTComponent(sim.plantOptionsMenu);
-						sim.leafSizeSlider.setSliderValue(readValueFromLine(in.readLine()));
-						sim.stalkLengthSlider.setSliderValue(readValueFromLine(in.readLine()));
-						sim.largePlantSizeSlider.setSliderValue(readValueFromLine(in.readLine()));
-						sim.largePlantSpacingSlider.setSliderValue(readValueFromLine(in.readLine()));
-						sim.mediumPlantSizeSlider.setSliderValue(readValueFromLine(in.readLine()));
-						sim.mediumPlantSpacingSlider.setSliderValue(readValueFromLine(in.readLine()));
-						sim.smallPlantSpacingSlider.setSliderValue(readValueFromLine(in.readLine()));
+						sim.leafSizeSlider.setValue(readValueFromLine(in.readLine()));
+						sim.stalkLengthSlider.setValue(readValueFromLine(in.readLine()));
+						sim.mutantOffspringSlider.setValue(readValueFromLine(in.readLine()));
+						sim.dnaDamageSlider.setValue(readValueFromLine(in.readLine()));
+						sim.largePlantSizeSlider.setValue(readValueFromLine(in.readLine()));
+						sim.largePlantSpacingSlider.setValue(readValueFromLine(in.readLine()));
+						sim.mediumPlantSizeSlider.setValue(readValueFromLine(in.readLine()));
+						sim.mediumPlantSpacingSlider.setValue(readValueFromLine(in.readLine()));
+						sim.smallPlantSpacingSlider.setValue(readValueFromLine(in.readLine()));
 						/**/sim.removeTComponent(sim.plantOptionsMenu);
 						in.readLine();// /n
 						in.readLine();// Light
 						/**/sim.addTComponent(sim.lightOptionsMenu);
-						sim.redLightSlider.setSliderValue(readValueFromLine(in.readLine()));
-						sim.greenLightSlider.setSliderValue(readValueFromLine(in.readLine()));
-						sim.blueLightSlider.setSliderValue(readValueFromLine(in.readLine()));
-						sim.leafOpacitySlider.setSliderValue(readValueFromLine(in.readLine()));
+						sim.redLightSlider.setValue(readValueFromLine(in.readLine()));
+						sim.greenLightSlider.setValue(readValueFromLine(in.readLine()));
+						sim.blueLightSlider.setValue(readValueFromLine(in.readLine()));
+						sim.leafOpacitySlider.setValue(readValueFromLine(in.readLine()));
 						/**/sim.removeTComponent(sim.lightOptionsMenu);
 					}
 				catch (Exception e)
@@ -166,6 +176,13 @@ public class SimPresetIO
 
 		private final void createDefaultPresetFile()
 			{
+
+				//TODO have preset files within .jar and extract to folder when missing.
+				// URL inputUrl =
+				// getClass().getResource("/absolute/path/of/source/in/jar/file");
+				// File dest = new File("/path/to/destination/file");
+				// FileUtils.copyURLToFile(inputUrl, dest);
+
 				if (new File(saveDirectory + "default.txt").exists())
 					return;
 
@@ -183,7 +200,11 @@ public class SimPresetIO
 						out.newLine();
 						out.write("StalkLength= 20.0");
 						out.newLine();
-						out.write("LargePlantSize= 290.0");
+						out.write("MutationChance= 25.0");
+						out.newLine();
+						out.write("DNADamage= 2.0");
+						out.newLine();
+						out.write("LargePlantSize= 170.0");
 						out.newLine();
 						out.write("LargePlantSpacing= 65.0");
 						out.newLine();
@@ -256,7 +277,9 @@ public class SimPresetIO
 									{
 										if (Hub.simWindow.loadPresetButton.isChecked())
 											loadPreset(file.getName());
-										else if (Hub.simWindow.deletePresetButton.isChecked())
+										else if (Hub.simWindow.deletePresetButton.isChecked()
+												&& JOptionPane.showConfirmDialog(Hub.simWindow.getObserver(), "Are you sure you want to delete this preset?", "Delete Confirmation",
+														JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION)
 											{
 												file.delete();
 												addPresetsToMenu();

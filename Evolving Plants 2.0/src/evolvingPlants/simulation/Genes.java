@@ -122,6 +122,9 @@ public class Genes
 
 		private final void mutate()
 			{
+				if (RandTools.randPercent() > Hub.simWindow.mutantOffspringSlider.getValue())
+					return;
+
 				seedEnergy += RandTools.getDouble(-10, 10);
 				seedEnergyTransfer += RandTools.getDouble(-1, 1);
 
@@ -138,7 +141,7 @@ public class Genes
 				// Mutate instructions
 				for (int i = 0; i < instructions.length; i++)
 					{
-						if (RandTools.randPercent() < Hub.simWindow.sim.uvIntensity)
+						if (RandTools.randPercent() < Hub.simWindow.dnaDamageSlider.getValue())
 							instructions[i] = getRandomInstruction();
 					}
 			}

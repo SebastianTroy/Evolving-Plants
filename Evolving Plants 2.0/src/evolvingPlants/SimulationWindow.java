@@ -13,6 +13,7 @@ import tCode.RenderableObject;
 import tComponents.components.TButton;
 import tComponents.components.TLabel;
 import tComponents.components.TMenu;
+import tComponents.components.TNumberField;
 import tComponents.components.TRadioButton;
 import tComponents.components.TScrollBar;
 import tComponents.components.TSlider;
@@ -56,6 +57,8 @@ public class SimulationWindow extends RenderableObject
 		public Cursor currentCursor = getObserver().getCursor();
 
 		TMenu plantOptionsMenu;
+		public final TSlider mutantOffspringSlider = new TSlider(TSlider.HORIZONTAL);
+		public final TSlider dnaDamageSlider = new TSlider(TSlider.HORIZONTAL);
 		public final TButton showLightButton = new TButton("Show light");
 		public final TSlider largePlantSizeSlider = new TSlider(TSlider.HORIZONTAL);
 		public final TSlider largePlantSpacingSlider = new TSlider(TSlider.HORIZONTAL);
@@ -66,6 +69,10 @@ public class SimulationWindow extends RenderableObject
 		public final TSlider stalkLengthSlider = new TSlider(TSlider.HORIZONTAL);
 
 		TMenu lightOptionsMenu;
+		private final TSlider filterWidthSlider = new TSlider(TSlider.HORIZONTAL);
+		private final TSlider filterRedLightSlider = new TSlider(TSlider.HORIZONTAL);
+		private final TSlider filterGreenLightSlider = new TSlider(TSlider.HORIZONTAL);
+		private final TSlider filterBlueLightSlider = new TSlider(TSlider.HORIZONTAL);
 		public final TSlider redLightSlider = new TSlider(TSlider.HORIZONTAL);
 		public final TSlider greenLightSlider = new TSlider(TSlider.HORIZONTAL);
 		public final TSlider blueLightSlider = new TSlider(TSlider.HORIZONTAL);
@@ -125,7 +132,8 @@ public class SimulationWindow extends RenderableObject
 				plantInteractionsMenu.addTComponent(killPlantsButton);
 
 				// SimOptions menu set-up. This menu is located on the right
-				warpSpeedSlider.setRange(1, 10);
+				warpSpeedSlider.setRange(0, 50);
+				simOptionsMenu.addTComponent(new TLabel("Warp Speed"), false);
 				simOptionsMenu.addTComponent(warpSpeedSlider);
 				playbackSpeed.setRange(0, 12);
 				simOptionsMenu.addTComponent(new TLabel("Playback Speed"), false);
@@ -135,7 +143,7 @@ public class SimulationWindow extends RenderableObject
 
 				// PlantOptions menu set-up. This menu is located on the left
 				TLabel allPlantsLabel = new TLabel("All Plants");
-				allPlantsLabel.setFontSize(14);
+				allPlantsLabel.setFontSize(15);
 				allPlantsLabel.setBackgroundColour(new Color(0, 200, 200));
 				plantOptionsMenu.addTComponent(allPlantsLabel, false);
 				plantOptionsMenu.addTComponent(new TLabel("Leaf Size"), false);
@@ -144,9 +152,14 @@ public class SimulationWindow extends RenderableObject
 				plantOptionsMenu.addTComponent(new TLabel("Stalk Length"), false);
 				stalkLengthSlider.setRange(15, 100);
 				plantOptionsMenu.addTComponent(stalkLengthSlider);
+				plantOptionsMenu.addTComponent(new TLabel("Chance of mutant offspring (%)"), false);
+				plantOptionsMenu.addTComponent(mutantOffspringSlider);
+				plantOptionsMenu.addTComponent(new TLabel("Damage to mutant DNA (%)"), false);
+				dnaDamageSlider.setRange(0, 15);
+				plantOptionsMenu.addTComponent(dnaDamageSlider);
 
 				TLabel largePlantsLabel = new TLabel("Large Plants");
-				largePlantsLabel.setFontSize(14);
+				largePlantsLabel.setFontSize(15);
 				largePlantsLabel.setBackgroundColour(new Color(0, 200, 200));
 				plantOptionsMenu.addTComponent(largePlantsLabel, false);
 				plantOptionsMenu.addTComponent(new TLabel("Plant is large if bigger than:"), false);
@@ -157,7 +170,7 @@ public class SimulationWindow extends RenderableObject
 				plantOptionsMenu.addTComponent(largePlantSpacingSlider);
 
 				TLabel mediumPlantsLabel = new TLabel("Medium Plants");
-				mediumPlantsLabel.setFontSize(14);
+				mediumPlantsLabel.setFontSize(15);
 				mediumPlantsLabel.setBackgroundColour(new Color(0, 200, 200));
 				plantOptionsMenu.addTComponent(mediumPlantsLabel, false);
 				plantOptionsMenu.addTComponent(new TLabel("Plant is medium if bigger than:"), false);
@@ -167,7 +180,7 @@ public class SimulationWindow extends RenderableObject
 				plantOptionsMenu.addTComponent(mediumPlantSpacingSlider);
 
 				TLabel smallPlantsLabel = new TLabel("Small Plants");
-				smallPlantsLabel.setFontSize(14);
+				smallPlantsLabel.setFontSize(15);
 				smallPlantsLabel.setBackgroundColour(new Color(0, 200, 200));
 				plantOptionsMenu.addTComponent(smallPlantsLabel, false);
 				plantOptionsMenu.addTComponent(new TLabel("Small plant spacing"), false);
@@ -188,17 +201,44 @@ public class SimulationWindow extends RenderableObject
 				loadDeletePresetButtons.addRadioButton(deletePresetButton);
 
 				// LightOptions menu set-up. This menu is located on the left
+				// TODO just make an addFilterButton and create a generic filter
+				// that when clicked on can be edited by a menu on the right.
+
+				// TLabel filterOptionsLabel = new
+				// TLabel("Light Filter Options");
+				// filterOptionsLabel.setFontSize(15);
+				// filterOptionsLabel.setBackgroundColour(new Color(0, 200,
+				// 200));
+				// lightOptionsMenu.addTComponent(filterOptionsLabel, false);
+				// lightOptionsMenu.addTComponent(new TLabel("Filter Width"),
+				// false);
+				// filterWidthSlider.setRange(0, sim.simWidth);
+				// lightOptionsMenu.addTComponent(filterWidthSlider);
+				// filterRedLightSlider.setSliderImage(0,
+				// Hub.loadImage("redSun.png"));
+				// filterGreenLightSlider.setSliderImage(0,
+				// Hub.loadImage("greenSun.png"));
+				// filterBlueLightSlider.setSliderImage(0,
+				// Hub.loadImage("blueSun.png"));
+				// lightOptionsMenu.addTComponent(filterRedLightSlider);
+				// lightOptionsMenu.addTComponent(filterGreenLightSlider);
+				// lightOptionsMenu.addTComponent(filterBlueLightSlider);
+
+				TLabel lightOptionsLabel = new TLabel("Sunlight Options");
+				lightOptionsLabel.setFontSize(15);
+				lightOptionsLabel.setBackgroundColour(new Color(0, 200, 200));
+				lightOptionsMenu.addTComponent(lightOptionsLabel, false);
 				lightOptionsMenu.addTComponent(showLightButton);
 				leafOpacitySlider.setRange(0, 1);
 				lightOptionsMenu.addTComponent(new TLabel("Light Intensity"), false);
-				redLightSlider.setSliderImage(0, Hub.loadImage("redSun.png"));
 				redLightSlider.setRange(0, 255);
-				lightOptionsMenu.addTComponent(redLightSlider);
-				greenLightSlider.setSliderImage(0, Hub.loadImage("greenSun.png"));
 				greenLightSlider.setRange(0, 255);
-				lightOptionsMenu.addTComponent(greenLightSlider);
-				blueLightSlider.setSliderImage(0, Hub.loadImage("blueSun.png"));
 				blueLightSlider.setRange(0, 255);
+				redLightSlider.setSliderImage(0, Hub.loadImage("redSun.png"));
+				greenLightSlider.setSliderImage(0, Hub.loadImage("greenSun.png"));
+				blueLightSlider.setSliderImage(0, Hub.loadImage("blueSun.png"));
+				lightOptionsMenu.addTComponent(redLightSlider);
+				lightOptionsMenu.addTComponent(greenLightSlider);
 				lightOptionsMenu.addTComponent(blueLightSlider);
 				lightOptionsMenu.addTComponent(new TLabel("Leaf Transparency"), false);
 				lightOptionsMenu.addTComponent(leafOpacitySlider);
@@ -272,6 +312,14 @@ public class SimulationWindow extends RenderableObject
 				// Update light
 				else if (eventSource == showLightButton)
 					{
+						if (!sim.showLighting)
+							{
+								sim.oldWarpSpeed = warpSpeedSlider.getValue();
+								warpSpeedSlider.setPercent(0);
+								sim.updateLighting();
+							}
+						else
+							warpSpeedSlider.setValue(sim.oldWarpSpeed);
 
 						sim.showLighting = !sim.showLighting;
 						showLightButton.setLabel(sim.showLighting ? "Hide light" : "Show Light", true);
@@ -291,7 +339,11 @@ public class SimulationWindow extends RenderableObject
 
 				// Update simulation position
 				if (eventSource == simulationScroller)
-					sim.simX = -e.getScrollValue();
+					{
+						sim.simX = -e.getScrollValue();
+						if (sim.showLighting)
+							sim.updateLighting();
+					}
 				// Update plant size category limits
 				else if (eventSource == largePlantSizeSlider)
 					mediumPlantSizeSlider.setRange(0, (int) largePlantSizeSlider.getValue());
@@ -299,23 +351,23 @@ public class SimulationWindow extends RenderableObject
 				else if (eventSource == redLightSlider && (e.getScrollType() == TScrollEvent.FINAL_VALUE || e.getScrollType() == TScrollEvent.VALUE_SET_INTERNALLY))
 					{
 						double simSpeed = playbackSpeed.getValue();
-						playbackSpeed.setSliderValue(0);
+						playbackSpeed.setValue(0);
 						sim.lightMap.setRedLight(redLightSlider.getValue());
-						playbackSpeed.setSliderValue(simSpeed);
+						playbackSpeed.setValue(simSpeed);
 					}
 				else if (eventSource == greenLightSlider && (e.getScrollType() == TScrollEvent.FINAL_VALUE || e.getScrollType() == TScrollEvent.VALUE_SET_INTERNALLY))
 					{
 						double simSpeed = playbackSpeed.getValue();
-						playbackSpeed.setSliderValue(0);
+						playbackSpeed.setValue(0);
 						sim.lightMap.setGreenLight(greenLightSlider.getValue());
-						playbackSpeed.setSliderValue(simSpeed);
+						playbackSpeed.setValue(simSpeed);
 					}
 				else if (eventSource == blueLightSlider && (e.getScrollType() == TScrollEvent.FINAL_VALUE || e.getScrollType() == TScrollEvent.VALUE_SET_INTERNALLY))
 					{
 						double simSpeed = playbackSpeed.getValue();
-						playbackSpeed.setSliderValue(0);
+						playbackSpeed.setValue(0);
 						sim.lightMap.setBlueLight(blueLightSlider.getValue());
-						playbackSpeed.setSliderValue(simSpeed);
+						playbackSpeed.setValue(simSpeed);
 					}
 			}
 
@@ -337,6 +389,8 @@ public class SimulationWindow extends RenderableObject
 		@Override
 		public void mouseDragged(MouseEvent e)
 			{
+				sim.mouseDragged(e);
+
 				if (simBounds.contains(e.getPoint()))
 					getObserver().setCursor(currentCursor);
 				else if (getObserver().getCursor().getType() != Cursor.TEXT_CURSOR)
