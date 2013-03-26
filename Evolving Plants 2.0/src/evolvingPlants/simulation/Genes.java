@@ -29,7 +29,7 @@ public class Genes
 
 		Color leafColour = new Color(175, 175, 175);
 		Color seedColour = ColTools.randColour();
-		public double seedEnergy = 60, seedEnergyTransfer = 15;
+		public double seedEnergy = 100, seedEnergyTransfer = 15;
 
 		public Genes(int numInstructions)
 			{
@@ -145,7 +145,7 @@ public class Genes
 
 		private final char getRandomInstruction()
 			{
-				switch (RandTools.getInt(0, 10))
+				switch (RandTools.getInt(0, 20))
 					{
 						case 0:
 							return ADD_NODE;

@@ -34,7 +34,7 @@ public class Seed
 					{
 						if (distance < 0)
 							{
-								distance = RandTools.getDouble(0, 15);
+								distance = RandTools.getDouble(0, 20);
 								speed = RandTools.getDouble(2, 7);
 								speed *= RandTools.getBool() ? -1.0 : 1.0;
 							}

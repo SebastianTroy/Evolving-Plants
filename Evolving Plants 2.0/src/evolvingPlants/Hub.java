@@ -8,9 +8,9 @@ import tCode.TCode;
 
 public class Hub extends TCode
 	{
-		public static MainMenu menu = new MainMenu();
-		public static SimulationWindow simWindow = new SimulationWindow();
-		public static SimPresetIO presetIO = new SimPresetIO();
+		public static final MainMenu menu = new MainMenu();
+		public static final SimulationWindow simWindow = new SimulationWindow();
+		public static final SimPresetIO presetIO = new SimPresetIO();
 
 		public Hub(int width, int height, boolean framed, boolean resizable)
 			{

@@ -22,7 +22,6 @@ public class SimPresetIO
 		private String saveDirectory = System.getProperty("user.home") + "//Evolving Plants//Presets";
 
 		private final BufferedImage saveImage = Hub.loadImage("save.jpeg");
-		private final BufferedImage binImage = Hub.loadImage("bin.png");
 
 		public SimPresetIO()
 			{
@@ -163,6 +162,9 @@ public class SimPresetIO
 
 		private final void createDefaultPresetFile()
 			{
+				if (new File(saveDirectory + "default.txt").exists())
+					return;
+					
 				BufferedWriter out = null;
 
 				try
@@ -179,11 +181,11 @@ public class SimPresetIO
 						out.newLine();
 						out.write("LargePlantSize= 250.0");
 						out.newLine();
-						out.write("LargePlantSpacing= 75.0");
+						out.write("LargePlantSpacing= 65.0");
 						out.newLine();
-						out.write("MediumPlantSize= 22.0");
+						out.write("MediumPlantSize= 30.0");
 						out.newLine();
-						out.write("MediumPlantSpacing= 35.0");
+						out.write("MediumPlantSpacing= 25.0");
 						out.newLine();
 						out.write("SmallPlantSpacing= 5.0");
 						out.newLine();

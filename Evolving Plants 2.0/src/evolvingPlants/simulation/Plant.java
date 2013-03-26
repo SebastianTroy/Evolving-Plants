@@ -45,9 +45,12 @@ public class Plant
 
 		public final void tick(double secondsPassed)
 			{
+				if (!alive)
+					return;
+				
 				if (fractionGrown < 1) // Growing
 					{
-						fractionGrown += (1 / metabolism) * secondsPassed;
+						fractionGrown += (1.75 / metabolism) * secondsPassed;
 					}
 				else if (fractionGrown > 1) // full grown - only called once
 					{
@@ -67,7 +70,7 @@ public class Plant
 						energy -= metabolism * secondsPassed;
 						nodeTree.baseNode.tick(secondsPassed);
 					}
-				else if (alive) // Only called once
+				else
 					{
 						if (shadowsSet)
 							nodeTree.removeShadows();
@@ -341,8 +344,8 @@ public class Plant
 								if (daughterNodes.size() > 0)
 									for (Node n : daughterNodes)
 										n.setLeaves();
-								else
-									isLeaf = true;
+								else if (parentNode == this || (parentNode.x != x && parentNode.y != y))
+										isLeaf = true;
 							}
 
 						private final void setShadow()
@@ -350,7 +353,7 @@ public class Plant
 								if (daughterNodes.size() > 0)
 									for (Node n : daughterNodes)
 										n.setShadow();
-								else
+								else if (isLeaf)
 									Hub.simWindow.sim.addShadow(x, y, leafSize, shadowColour);
 							}
 
@@ -359,7 +362,7 @@ public class Plant
 								if (daughterNodes.size() > 0)
 									for (Node n : daughterNodes)
 										n.removeShadow();
-								else
+								else if (isLeaf)
 									Hub.simWindow.sim.removeShadow(x, y, leafSize, shadowColour);
 							}
 

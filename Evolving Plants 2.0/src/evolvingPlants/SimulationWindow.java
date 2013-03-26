@@ -77,7 +77,7 @@ public class SimulationWindow extends RenderableObject
 		private TMenu presetOptionsMenu = new TMenu(0, 0, 200, Hub.canvasHeight, TMenu.VERTICAL);
 		private final TTextField saveNameField = new TTextField(0, 0, 180, 20, "My Settings");
 		private final TButton savePresetButton = new TButton("Save Current Settings");
-		public final TMenu savedPresetsMenu = new TMenu(0, 0, 180, 200, TMenu.VERTICAL);
+		public final TMenu savedPresetsMenu = new TMenu(0, 0, 200, 350, TMenu.VERTICAL);
 		private RadioButtonsCollection loadDeletePresetButtons = new RadioButtonsCollection();
 		public final TRadioButton loadPresetButton = new TRadioButton("Load Presets");
 		public final TRadioButton deletePresetButton = new TRadioButton("Delete Presets");
