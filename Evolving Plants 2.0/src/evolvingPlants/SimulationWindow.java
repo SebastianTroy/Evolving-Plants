@@ -96,7 +96,7 @@ public class SimulationWindow extends RenderableObject
 				simulationScroller.setMaxScrollDistance(sim.simWidth);
 
 				if (sim.simWidth > 800)
-					addTComponent(simulationScroller);
+					add(simulationScroller);
 
 				simOptionsMenu = new TMenu(1000, 0, 200, Hub.canvasHeight, TMenu.VERTICAL);
 				plantInteractionsMenu = new TMenu(0, 0, 200, Hub.canvasHeight, TMenu.VERTICAL);
@@ -113,92 +113,92 @@ public class SimulationWindow extends RenderableObject
 				killPlantCursor = k.createCustomCursor(Hub.loadImage("skull.png"), new Point(0, 0), "seed");
 
 				// Top menu set-up.
-				addTComponent(topMenu);
-				topMenu.addTComponent(plantInteractionsButton);
-				topMenu.addTComponent(plantOptionsButton);
-				topMenu.addTComponent(lightOptionsButton);
-				topMenu.addTComponent(geneOptionsButton);
-				topMenu.addTComponent(presetOptionsButton);
+				add(topMenu);
+				topMenu.add(plantInteractionsButton);
+				topMenu.add(plantOptionsButton);
+				topMenu.add(lightOptionsButton);
+				topMenu.add(geneOptionsButton);
+				topMenu.add(presetOptionsButton);
 
 				// PlantInteractions menu set-up. This menu is located on the
 				// left
-				plantInteractionButtons.addRadioButton(selectPlantButton);
-				plantInteractionButtons.addRadioButton(plantSeedButton);
-				plantInteractionButtons.addRadioButton(getGenesButton);
-				plantInteractionButtons.addRadioButton(killPlantsButton);
-				plantInteractionsMenu.addTComponent(selectPlantButton);
-				plantInteractionsMenu.addTComponent(plantSeedButton);
-				plantInteractionsMenu.addTComponent(getGenesButton);
-				plantInteractionsMenu.addTComponent(killPlantsButton);
+				plantInteractionButtons.add(selectPlantButton);
+				plantInteractionButtons.add(plantSeedButton);
+				plantInteractionButtons.add(getGenesButton);
+				plantInteractionButtons.add(killPlantsButton);
+				plantInteractionsMenu.add(selectPlantButton);
+				plantInteractionsMenu.add(plantSeedButton);
+				plantInteractionsMenu.add(getGenesButton);
+				plantInteractionsMenu.add(killPlantsButton);
 
 				// SimOptions menu set-up. This menu is located on the right
 				warpSpeedSlider.setRange(0, 50);
-				simOptionsMenu.addTComponent(new TLabel("Warp Speed"), false);
-				simOptionsMenu.addTComponent(warpSpeedSlider);
+				simOptionsMenu.add(new TLabel("Warp Speed"), false);
+				simOptionsMenu.add(warpSpeedSlider);
 				playbackSpeed.setRange(0, 12);
-				simOptionsMenu.addTComponent(new TLabel("Playback Speed"), false);
-				simOptionsMenu.addTComponent(playbackSpeed);
-				simOptionsMenu.addTComponent(resetSimButton);
-				simOptionsMenu.addTComponent(mainMenuButton);
+				simOptionsMenu.add(new TLabel("Playback Speed"), false);
+				simOptionsMenu.add(playbackSpeed);
+				simOptionsMenu.add(resetSimButton);
+				simOptionsMenu.add(mainMenuButton);
 
 				// PlantOptions menu set-up. This menu is located on the left
 				TLabel allPlantsLabel = new TLabel("All Plants");
 				allPlantsLabel.setFontSize(15);
 				allPlantsLabel.setBackgroundColour(new Color(0, 200, 200));
-				plantOptionsMenu.addTComponent(allPlantsLabel, false);
-				plantOptionsMenu.addTComponent(new TLabel("Leaf Size"), false);
+				plantOptionsMenu.add(allPlantsLabel, false);
+				plantOptionsMenu.add(new TLabel("Leaf Size"), false);
 				leafSizeSlider.setRange(2, 25);
-				plantOptionsMenu.addTComponent(leafSizeSlider);
-				plantOptionsMenu.addTComponent(new TLabel("Stalk Length"), false);
+				plantOptionsMenu.add(leafSizeSlider);
+				plantOptionsMenu.add(new TLabel("Stalk Length"), false);
 				stalkLengthSlider.setRange(15, 100);
-				plantOptionsMenu.addTComponent(stalkLengthSlider);
-				plantOptionsMenu.addTComponent(new TLabel("Chance of mutant offspring (%)"), false);
-				plantOptionsMenu.addTComponent(mutantOffspringSlider);
-				plantOptionsMenu.addTComponent(new TLabel("Damage to mutant DNA (%)"), false);
+				plantOptionsMenu.add(stalkLengthSlider);
+				plantOptionsMenu.add(new TLabel("Chance of mutant offspring (%)"), false);
+				plantOptionsMenu.add(mutantOffspringSlider);
+				plantOptionsMenu.add(new TLabel("Damage to mutant DNA (%)"), false);
 				dnaDamageSlider.setRange(0, 15);
-				plantOptionsMenu.addTComponent(dnaDamageSlider);
+				plantOptionsMenu.add(dnaDamageSlider);
 
 				TLabel largePlantsLabel = new TLabel("Large Plants");
 				largePlantsLabel.setFontSize(15);
 				largePlantsLabel.setBackgroundColour(new Color(0, 200, 200));
-				plantOptionsMenu.addTComponent(largePlantsLabel, false);
-				plantOptionsMenu.addTComponent(new TLabel("Plant is large if bigger than:"), false);
+				plantOptionsMenu.add(largePlantsLabel, false);
+				plantOptionsMenu.add(new TLabel("Plant is large if bigger than:"), false);
 				largePlantSizeSlider.setRange(0, Hub.canvasHeight);
-				plantOptionsMenu.addTComponent(largePlantSizeSlider);
-				plantOptionsMenu.addTComponent(new TLabel("Large plant spacing"), false);
+				plantOptionsMenu.add(largePlantSizeSlider);
+				plantOptionsMenu.add(new TLabel("Large plant spacing"), false);
 				largePlantSpacingSlider.setRange(1, 100);
-				plantOptionsMenu.addTComponent(largePlantSpacingSlider);
+				plantOptionsMenu.add(largePlantSpacingSlider);
 
 				TLabel mediumPlantsLabel = new TLabel("Medium Plants");
 				mediumPlantsLabel.setFontSize(15);
 				mediumPlantsLabel.setBackgroundColour(new Color(0, 200, 200));
-				plantOptionsMenu.addTComponent(mediumPlantsLabel, false);
-				plantOptionsMenu.addTComponent(new TLabel("Plant is medium if bigger than:"), false);
-				plantOptionsMenu.addTComponent(mediumPlantSizeSlider);
-				plantOptionsMenu.addTComponent(new TLabel("Medium plant spacing"), false);
+				plantOptionsMenu.add(mediumPlantsLabel, false);
+				plantOptionsMenu.add(new TLabel("Plant is medium if bigger than:"), false);
+				plantOptionsMenu.add(mediumPlantSizeSlider);
+				plantOptionsMenu.add(new TLabel("Medium plant spacing"), false);
 				mediumPlantSpacingSlider.setRange(1, 50);
-				plantOptionsMenu.addTComponent(mediumPlantSpacingSlider);
+				plantOptionsMenu.add(mediumPlantSpacingSlider);
 
 				TLabel smallPlantsLabel = new TLabel("Small Plants");
 				smallPlantsLabel.setFontSize(15);
 				smallPlantsLabel.setBackgroundColour(new Color(0, 200, 200));
-				plantOptionsMenu.addTComponent(smallPlantsLabel, false);
-				plantOptionsMenu.addTComponent(new TLabel("Small plant spacing"), false);
+				plantOptionsMenu.add(smallPlantsLabel, false);
+				plantOptionsMenu.add(new TLabel("Small plant spacing"), false);
 				smallPlantSpacingSlider.setRange(1, 25);
-				plantOptionsMenu.addTComponent(smallPlantSpacingSlider);
+				plantOptionsMenu.add(smallPlantSpacingSlider);
 
 				// GeneOptionsMenu set-up. This menu is located on the left
 				// TODO place gene interaction components here
 
 				// PresetOptionsMenu set-up. This menu is located on the left
-				presetOptionsMenu.addTComponent(saveNameField, false);
-				presetOptionsMenu.addTComponent(savePresetButton);
-				presetOptionsMenu.addTComponent(savedPresetsMenu, false);
+				presetOptionsMenu.add(saveNameField, false);
+				presetOptionsMenu.add(savePresetButton);
+				presetOptionsMenu.add(savedPresetsMenu, false);
 				Hub.presetIO.addPresetsToMenu();
-				presetOptionsMenu.addTComponent(loadPresetButton);
-				presetOptionsMenu.addTComponent(deletePresetButton);
-				loadDeletePresetButtons.addRadioButton(loadPresetButton);
-				loadDeletePresetButtons.addRadioButton(deletePresetButton);
+				presetOptionsMenu.add(loadPresetButton);
+				presetOptionsMenu.add(deletePresetButton);
+				loadDeletePresetButtons.add(loadPresetButton);
+				loadDeletePresetButtons.add(deletePresetButton);
 
 				// LightOptions menu set-up. This menu is located on the left
 				// TODO just make an addFilterButton and create a generic filter
@@ -227,21 +227,21 @@ public class SimulationWindow extends RenderableObject
 				TLabel lightOptionsLabel = new TLabel("Sunlight Options");
 				lightOptionsLabel.setFontSize(15);
 				lightOptionsLabel.setBackgroundColour(new Color(0, 200, 200));
-				lightOptionsMenu.addTComponent(lightOptionsLabel, false);
-				lightOptionsMenu.addTComponent(showLightButton);
+				lightOptionsMenu.add(lightOptionsLabel, false);
+				lightOptionsMenu.add(showLightButton);
 				leafOpacitySlider.setRange(0, 1);
-				lightOptionsMenu.addTComponent(new TLabel("Light Intensity"), false);
+				lightOptionsMenu.add(new TLabel("Light Intensity"), false);
 				redLightSlider.setRange(0, 255);
 				greenLightSlider.setRange(0, 255);
 				blueLightSlider.setRange(0, 255);
 				redLightSlider.setSliderImage(0, Hub.loadImage("redSun.png"));
 				greenLightSlider.setSliderImage(0, Hub.loadImage("greenSun.png"));
 				blueLightSlider.setSliderImage(0, Hub.loadImage("blueSun.png"));
-				lightOptionsMenu.addTComponent(redLightSlider);
-				lightOptionsMenu.addTComponent(greenLightSlider);
-				lightOptionsMenu.addTComponent(blueLightSlider);
-				lightOptionsMenu.addTComponent(new TLabel("Leaf Transparency"), false);
-				lightOptionsMenu.addTComponent(leafOpacitySlider);
+				lightOptionsMenu.add(redLightSlider);
+				lightOptionsMenu.add(greenLightSlider);
+				lightOptionsMenu.add(blueLightSlider);
+				lightOptionsMenu.add(new TLabel("Leaf Transparency"), false);
+				lightOptionsMenu.add(leafOpacitySlider);
 
 				setLeftMenu(plantInteractionsMenu);
 				setRightMenu(simOptionsMenu);
@@ -263,20 +263,20 @@ public class SimulationWindow extends RenderableObject
 
 		final void setLeftMenu(TMenu newMenu)
 			{
-				removeTComponent(currentLeftSideMenu);
+				remove(currentLeftSideMenu);
 				currentLeftSideMenu = newMenu;
 				currentLeftSideMenu.setLocation(0, 0);
 				currentLeftSideMenu.setDimensions(200, Hub.canvasHeight);
-				addTComponent(currentLeftSideMenu);
+				add(currentLeftSideMenu);
 			}
 
 		private final void setRightMenu(TMenu newMenu)
 			{
-				removeTComponent(currentRightSideMenu);
+				remove(currentRightSideMenu);
 				currentRightSideMenu = newMenu;
 				currentRightSideMenu.setLocation(1000, 0);
 				currentRightSideMenu.setDimensions(200, Hub.canvasHeight / 2);
-				addTComponent(currentRightSideMenu);
+				add(currentRightSideMenu);
 			}
 
 		@Override

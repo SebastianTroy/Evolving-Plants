@@ -43,7 +43,7 @@ public class SimPresetIO
 
 				for (File file : files)
 					{
-						presetMenu.addTComponent(newButton(file), false);
+						presetMenu.add(newButton(file), false);
 					}
 			}
 
@@ -132,7 +132,7 @@ public class SimPresetIO
 
 						in = new BufferedReader(new FileReader(presetFile));
 						in.readLine();// Plants
-						/**/sim.addTComponent(sim.plantOptionsMenu);
+						/**/sim.add(sim.plantOptionsMenu);
 						sim.leafSizeSlider.setValue(readValueFromLine(in.readLine()));
 						sim.stalkLengthSlider.setValue(readValueFromLine(in.readLine()));
 						sim.mutantOffspringSlider.setValue(readValueFromLine(in.readLine()));
@@ -142,15 +142,15 @@ public class SimPresetIO
 						sim.mediumPlantSizeSlider.setValue(readValueFromLine(in.readLine()));
 						sim.mediumPlantSpacingSlider.setValue(readValueFromLine(in.readLine()));
 						sim.smallPlantSpacingSlider.setValue(readValueFromLine(in.readLine()));
-						/**/sim.removeTComponent(sim.plantOptionsMenu);
+						/**/sim.remove(sim.plantOptionsMenu);
 						in.readLine();// /n
 						in.readLine();// Light
-						/**/sim.addTComponent(sim.lightOptionsMenu);
+						/**/sim.add(sim.lightOptionsMenu);
 						sim.redLightSlider.setValue(readValueFromLine(in.readLine()));
 						sim.greenLightSlider.setValue(readValueFromLine(in.readLine()));
 						sim.blueLightSlider.setValue(readValueFromLine(in.readLine()));
 						sim.leafOpacitySlider.setValue(readValueFromLine(in.readLine()));
-						/**/sim.removeTComponent(sim.lightOptionsMenu);
+						/**/sim.remove(sim.lightOptionsMenu);
 					}
 				catch (Exception e)
 					{

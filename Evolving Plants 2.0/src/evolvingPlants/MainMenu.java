@@ -32,16 +32,16 @@ public class MainMenu extends RenderableObject
 				mainMenu = new TMenu(200, 0, 600, Hub.canvasHeight, TMenu.VERTICAL);
 				newSimMenu = new TMenu(1200, 0, 500, Hub.canvasHeight, TMenu.VERTICAL);
 
-				addTComponent(mainMenu);
-				mainMenu.addTComponent(newSimButton);
-				mainMenu.addTComponent(resumeSimButton);
-				mainMenu.addTComponent(editorButton);
+				add(mainMenu);
+				mainMenu.add(newSimButton);
+				mainMenu.add(resumeSimButton);
+				mainMenu.add(editorButton);
 
-				addTComponent(newSimMenu);
+				add(newSimMenu);
 				simWidthSlider.setRange(800, 4000);
-				newSimMenu.addTComponent(new TLabel(0, 0, "Simulation Width in pixels"), false);
-				newSimMenu.addTComponent(simWidthSlider);
-				newSimMenu.addTComponent(startSimButton);
+				newSimMenu.add(new TLabel(0, 0, "Simulation Width in pixels"), false);
+				newSimMenu.add(simWidthSlider);
+				newSimMenu.add(startSimButton);
 				newSimMenu.setBorderSize(22);
 			}
 
