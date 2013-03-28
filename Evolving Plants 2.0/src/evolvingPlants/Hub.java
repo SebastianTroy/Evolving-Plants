@@ -4,10 +4,9 @@ import java.awt.image.BufferedImage;
 
 import javax.imageio.ImageIO;
 
+import tCode.TCode;
 import evolvingPlants.io.GeneIO;
 import evolvingPlants.io.SimPresetIO;
-
-import tCode.TCode;
 
 public class Hub extends TCode
 	{

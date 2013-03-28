@@ -6,14 +6,12 @@ import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
-import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 
 import tCode.RenderableObject;
 import tComponents.components.TButton;
 import tComponents.components.TLabel;
 import tComponents.components.TMenu;
-import tComponents.components.TNumberField;
 import tComponents.components.TRadioButton;
 import tComponents.components.TScrollBar;
 import tComponents.components.TSlider;

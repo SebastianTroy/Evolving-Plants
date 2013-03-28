@@ -13,11 +13,10 @@ import java.io.IOException;
 
 import javax.swing.JOptionPane;
 
-import evolvingPlants.Hub;
-import evolvingPlants.SimulationWindow;
-
 import tComponents.components.TButton;
 import tComponents.components.TMenu;
+import evolvingPlants.Hub;
+import evolvingPlants.SimulationWindow;
 
 public class SimPresetIO
 	{
@@ -95,7 +94,7 @@ public class SimPresetIO
 						out.newLine();
 						out.write("BlueLightIntensity= " + sim.blueLightSlider.getValue());
 						out.newLine();
-						out.write("BlueLightIntensity= " + sim.leafOpacitySlider.getValue());
+						out.write("LeafTransparency= " + sim.leafOpacitySlider.getValue());
 					}
 				catch (Exception e)
 					{
