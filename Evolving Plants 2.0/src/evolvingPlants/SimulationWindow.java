@@ -56,7 +56,7 @@ public class SimulationWindow extends RenderableObject
 		public Cursor killPlantCursor;
 		public Cursor currentCursor = getObserver().getCursor();
 
-		TMenu plantOptionsMenu;
+		public TMenu plantOptionsMenu;
 		public final TSlider mutantOffspringSlider = new TSlider(TSlider.HORIZONTAL);
 		public final TSlider dnaDamageSlider = new TSlider(TSlider.HORIZONTAL);
 		public final TButton showLightButton = new TButton("Show light");
@@ -68,7 +68,7 @@ public class SimulationWindow extends RenderableObject
 		public final TSlider leafSizeSlider = new TSlider(TSlider.HORIZONTAL);
 		public final TSlider stalkLengthSlider = new TSlider(TSlider.HORIZONTAL);
 
-		TMenu lightOptionsMenu;
+		public TMenu lightOptionsMenu;
 		private final TSlider filterWidthSlider = new TSlider(TSlider.HORIZONTAL);
 		private final TSlider filterRedLightSlider = new TSlider(TSlider.HORIZONTAL);
 		private final TSlider filterGreenLightSlider = new TSlider(TSlider.HORIZONTAL);
@@ -79,10 +79,15 @@ public class SimulationWindow extends RenderableObject
 		public final TSlider leafOpacitySlider = new TSlider(TSlider.HORIZONTAL);
 
 		TMenu geneOptionsMenu;
-		// TODO add gene options
+		private final TTextField geneSaveNameField = new TTextField(0, 0, 160, 25, "My Genes");
+		private final TButton saveGenesButton = new TButton("Save Current Genes");
+		public final TMenu savedGenesMenu = new TMenu(0, 0, 200, 350, TMenu.VERTICAL);
+		private RadioButtonsCollection loadDeleteGenesButtons = new RadioButtonsCollection();
+		public final TRadioButton loadGenesButton = new TRadioButton("Load Genes");
+		public final TRadioButton deleteGenesButton = new TRadioButton("Delete Genes");
 
 		TMenu presetOptionsMenu;
-		private final TTextField saveNameField = new TTextField(0, 0, 160, 25, "My Settings");
+		private final TTextField presetSaveNameField = new TTextField(0, 0, 160, 25, "My Settings");
 		private final TButton savePresetButton = new TButton("Save Current Settings");
 		public final TMenu savedPresetsMenu = new TMenu(0, 0, 200, 350, TMenu.VERTICAL);
 		private RadioButtonsCollection loadDeletePresetButtons = new RadioButtonsCollection();
@@ -134,9 +139,11 @@ public class SimulationWindow extends RenderableObject
 				// SimOptions menu set-up. This menu is located on the right
 				warpSpeedSlider.setRange(0, 50);
 				simOptionsMenu.add(new TLabel("Warp Speed"), false);
+				warpSpeedSlider.setValue(10.0);
 				simOptionsMenu.add(warpSpeedSlider);
 				playbackSpeed.setRange(0, 12);
 				simOptionsMenu.add(new TLabel("Playback Speed"), false);
+				playbackSpeed.setValue(5.0);
 				simOptionsMenu.add(playbackSpeed);
 				simOptionsMenu.add(resetSimButton);
 				simOptionsMenu.add(mainMenuButton);
@@ -188,10 +195,18 @@ public class SimulationWindow extends RenderableObject
 				plantOptionsMenu.add(smallPlantSpacingSlider);
 
 				// GeneOptionsMenu set-up. This menu is located on the left
-				// TODO place gene interaction components here
+				geneOptionsMenu.add(geneSaveNameField, false);
+				geneOptionsMenu.add(saveGenesButton);
+				geneOptionsMenu.add(savedGenesMenu, false);
+				Hub.geneIO.addGenesToMenu();
+				Hub.geneIO.loadGenes("default.txt");
+				geneOptionsMenu.add(loadGenesButton);
+				geneOptionsMenu.add(deleteGenesButton);
+				loadDeleteGenesButtons.add(loadGenesButton);
+				loadDeleteGenesButtons.add(deleteGenesButton);
 
 				// PresetOptionsMenu set-up. This menu is located on the left
-				presetOptionsMenu.add(saveNameField, false);
+				presetOptionsMenu.add(presetSaveNameField, false);
 				presetOptionsMenu.add(savePresetButton);
 				presetOptionsMenu.add(savedPresetsMenu, false);
 				Hub.presetIO.addPresetsToMenu();
@@ -229,7 +244,6 @@ public class SimulationWindow extends RenderableObject
 				lightOptionsLabel.setBackgroundColour(new Color(0, 200, 200));
 				lightOptionsMenu.add(lightOptionsLabel, false);
 				lightOptionsMenu.add(showLightButton);
-				leafOpacitySlider.setRange(0, 1);
 				lightOptionsMenu.add(new TLabel("Light Intensity"), false);
 				redLightSlider.setRange(0, 255);
 				greenLightSlider.setRange(0, 255);
@@ -327,8 +341,14 @@ public class SimulationWindow extends RenderableObject
 				// Preset options
 				else if (eventSource == savePresetButton)
 					{
-						Hub.presetIO.createPreset(saveNameField.getText());
+						Hub.presetIO.savePreset(presetSaveNameField.getText());
 						Hub.presetIO.addPresetsToMenu();
+					}
+				// Gene options
+				else if (eventSource == saveGenesButton)
+					{
+						Hub.geneIO.saveGenes(geneSaveNameField.getText());
+						Hub.geneIO.addGenesToMenu();
 					}
 			}
 
@@ -395,11 +415,5 @@ public class SimulationWindow extends RenderableObject
 					getObserver().setCursor(currentCursor);
 				else if (getObserver().getCursor().getType() != Cursor.TEXT_CURSOR)
 					getObserver().setCursor(Cursor.getDefaultCursor());
-			}
-
-		@Override
-		public void keyPressed(KeyEvent e)
-			{
-				sim.keyPressed(e);
 			}
 	}

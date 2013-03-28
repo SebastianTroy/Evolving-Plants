@@ -4,13 +4,18 @@ import java.awt.image.BufferedImage;
 
 import javax.imageio.ImageIO;
 
+import evolvingPlants.io.GeneIO;
+import evolvingPlants.io.SimPresetIO;
+
 import tCode.TCode;
 
 public class Hub extends TCode
 	{
+		public static final GeneIO geneIO = new GeneIO();
+		public static final SimPresetIO presetIO = new SimPresetIO();
+
 		public static final MainMenu menu = new MainMenu();
 		public static final SimulationWindow simWindow = new SimulationWindow();
-		public static final SimPresetIO presetIO = new SimPresetIO();
 
 		public Hub(int width, int height, boolean framed, boolean resizable)
 			{

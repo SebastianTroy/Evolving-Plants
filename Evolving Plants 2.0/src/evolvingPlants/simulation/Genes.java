@@ -27,18 +27,16 @@ public class Genes
 		private int currentInstruction = 0;
 		private char[] instructions = { END_ALL };
 
-		Color leafColour = new Color(175, 175, 175);
-		Color seedColour = ColTools.randColour();
-		public double seedEnergy = 100, seedEnergyTransfer = 15;
+		public Color leafColour;
+		public Color seedColour = ColTools.randColour();
+		public double seedEnergy, seedEnergyTransfer = 50;
 
-		public Genes(int numInstructions)
+		public Genes(String genes, double seedEnergy, int leafRed, int leafGreen, int leafBlue)
 			{
-				if (numInstructions < 1)
-					numInstructions = 1;
+				instructions = genes.toCharArray();
+				this.seedEnergy = seedEnergy;
+				leafColour = new Color(leafRed, leafGreen, leafBlue);
 
-				instructions = new char[numInstructions];
-				for (int i = 0; i < numInstructions; i++)
-					instructions[i] = SKIP;
 			}
 
 		public Genes(Genes parent, boolean mutate)
@@ -143,6 +141,31 @@ public class Genes
 					{
 						if (RandTools.randPercent() < Hub.simWindow.dnaDamageSlider.getValue())
 							instructions[i] = getRandomInstruction();
+					}
+			}
+
+		private final char getCheckedInstruction(char instruction)
+			{
+				switch (instruction)
+					{
+						case 'N':
+							return ADD_NODE;
+						case '+':
+							return CLIMB_NODE_TREE;
+						case '-':
+							return DESCEND_NODE_TREE;
+						case '^':
+							return GROW_UP;
+						case '<':
+							return GROW_LEFT;
+						case '>':
+							return GROW_RIGHT;
+						case 'v':
+							return GROW_DOWN;
+						case '|':
+							return END_ALL;
+						default:
+							return SKIP;
 					}
 			}
 

@@ -54,7 +54,7 @@ public class Plant
 					}
 				else if (fractionGrown > 1) // full grown - only called once
 					{
-						double leafOpacity = Hub.simWindow.leafOpacitySlider.getValue();
+						double leafOpacity = 1.0 - (Hub.simWindow.leafOpacitySlider.getValue() / 100.0);
 						int r = (int) ((255 - genes.leafColour.getRed()) * leafOpacity);
 						int g = (int) ((255 - genes.leafColour.getGreen()) * leafOpacity);
 						int b = (int) ((255 - genes.leafColour.getBlue()) * leafOpacity);

@@ -24,7 +24,7 @@ public class Simulation
 		public LightMap lightMap;
 		BufferedImage lightImage;
 		// seeds added by user
-		private Genes currentGenes = new Genes(35);
+		public Genes currentGenes;
 		public ArrayList<Point> seedsToAdd = new ArrayList<Point>(5);
 		// Light Filters
 		private ArrayList<LightFilter> filters = new ArrayList<LightFilter>();
@@ -37,7 +37,6 @@ public class Simulation
 				simWidth = width;
 				lightMap = new LightMap(width, 550);
 				lightImage = new BufferedImage(800, 550, BufferedImage.TYPE_INT_RGB);
-				Hub.simWindow.currentCursor = Hub.simWindow.plantSeedCursor;
 			}
 
 		public void tick(double secondsPassed)
@@ -207,7 +206,6 @@ public class Simulation
 									if (plant.contains(point))
 										{
 											currentGenes = plant.getGenesCopy();
-											System.out.println(new String(plant.getGenesCopy().getGenes()));
 										}
 							}
 						else if (Hub.simWindow.currentCursor == Hub.simWindow.killPlantCursor)
@@ -230,11 +228,5 @@ public class Simulation
 							if (plants.get(i).contains(point))
 								plants.get(i).kill();
 					}
-			}
-
-		public void keyPressed(KeyEvent e)
-			{
-				if (e.getKeyChar() == 's')
-					showLighting = !showLighting;
 			}
 	}

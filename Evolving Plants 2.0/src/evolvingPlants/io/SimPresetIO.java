@@ -1,4 +1,4 @@
-package evolvingPlants;
+package evolvingPlants.io;
 
 import java.awt.Color;
 import java.awt.Graphics;
@@ -12,6 +12,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 import javax.swing.JOptionPane;
+
+import evolvingPlants.Hub;
+import evolvingPlants.SimulationWindow;
 
 import tComponents.components.TButton;
 import tComponents.components.TMenu;
@@ -47,7 +50,7 @@ public class SimPresetIO
 					}
 			}
 
-		public void createPreset(String presetName)
+		public void savePreset(String presetName)
 			{
 				SimulationWindow sim = Hub.simWindow;
 				BufferedWriter out = null;
@@ -56,52 +59,43 @@ public class SimPresetIO
 					{
 						File presetFile = new File(saveDirectory + "//" + presetName + ".txt");
 
-						if (presetFile.exists())
-							presetFile = new File(saveDirectory + "//" + presetName + "-.txt");
+						while (presetFile.exists())
+							{
+								presetName = new String(presetName + "-");
+								presetFile = new File(saveDirectory + "//" + presetName + ".txt");
+							}
 
 						out = new BufferedWriter(new FileWriter(presetFile, false));
 						out.write("Plants:");
 						out.newLine();
-						out.write("LeafSize= ");
-						out.write(sim.leafSizeSlider.getValue() + "");
+						out.write("LeafSize= " + sim.leafSizeSlider.getValue());
 						out.newLine();
-						out.write("StalkLength= ");
-						out.write(sim.stalkLengthSlider.getValue() + "");
+						out.write("StalkLength= " + sim.stalkLengthSlider.getValue());
 						out.newLine();
-						out.write("MutationChance= ");
-						out.write(sim.mutantOffspringSlider.getValue() + "");
+						out.write("MutationChance= " + sim.mutantOffspringSlider.getValue());
 						out.newLine();
-						out.write("DNADamage= ");
-						out.write(sim.dnaDamageSlider.getValue() + "");
+						out.write("DNADamage= " + sim.dnaDamageSlider.getValue());
 						out.newLine();
-						out.write("LargePlantSize= ");
-						out.write(sim.largePlantSizeSlider.getValue() + "");
+						out.write("LargePlantSize= " + sim.largePlantSizeSlider.getValue());
 						out.newLine();
-						out.write("LargePlantSpacing= ");
-						out.write(sim.largePlantSpacingSlider.getValue() + "");
+						out.write("LargePlantSpacing= " + sim.largePlantSpacingSlider.getValue());
 						out.newLine();
-						out.write("MediumPlantSize= ");
-						out.write(sim.mediumPlantSizeSlider.getValue() + "");
+						out.write("MediumPlantSize= " + sim.mediumPlantSizeSlider.getValue());
 						out.newLine();
-						out.write("MediumPlantSpacing= ");
-						out.write(sim.mediumPlantSpacingSlider.getValue() + "");
+						out.write("MediumPlantSpacing= " + sim.mediumPlantSpacingSlider.getValue());
 						out.newLine();
-						out.write("SmallPlantSpacing= ");
-						out.write(sim.smallPlantSpacingSlider.getValue() + "");
+						out.write("SmallPlantSpacing= " + sim.smallPlantSpacingSlider.getValue());
 						out.newLine();
 						out.newLine();
 						out.write("Light:");
 						out.newLine();
-						out.write("RedLightIntensity= ");
-						out.write(sim.redLightSlider.getValue() + "");
+						out.write("RedLightIntensity= " + sim.redLightSlider.getValue());
 						out.newLine();
-						out.write("GreenLightIntensity= ");
-						out.write(sim.greenLightSlider.getValue() + "");
+						out.write("GreenLightIntensity= " + sim.greenLightSlider.getValue());
 						out.newLine();
-						out.write("BlueLightIntensity= ");
-						out.write(sim.blueLightSlider.getValue() + "");
+						out.write("BlueLightIntensity= " + sim.blueLightSlider.getValue());
 						out.newLine();
-						out.write(sim.leafOpacitySlider.getValue() + "");
+						out.write("BlueLightIntensity= " + sim.leafOpacitySlider.getValue());
 					}
 				catch (Exception e)
 					{
@@ -177,7 +171,8 @@ public class SimPresetIO
 		private final void createDefaultPresetFile()
 			{
 
-				//TODO have preset files within .jar and extract to folder when missing.
+				// TODO have preset files within .jar and extract to folder when
+				// missing.
 				// URL inputUrl =
 				// getClass().getResource("/absolute/path/of/source/in/jar/file");
 				// File dest = new File("/path/to/destination/file");
@@ -200,9 +195,9 @@ public class SimPresetIO
 						out.newLine();
 						out.write("StalkLength= 20.0");
 						out.newLine();
-						out.write("MutationChance= 25.0");
+						out.write("MutationChance= 35.0");
 						out.newLine();
-						out.write("DNADamage= 2.0");
+						out.write("DNADamage= 4.0");
 						out.newLine();
 						out.write("LargePlantSize= 170.0");
 						out.newLine();
@@ -223,7 +218,7 @@ public class SimPresetIO
 						out.newLine();
 						out.write("BlueLightIntensity= 255.0");
 						out.newLine();
-						out.write("LeafTransparency= 1.0");
+						out.write("LeafTransparency= 0.0");
 					}
 				catch (Exception e)
 					{
