@@ -1,6 +1,7 @@
 package evolvingPlants.io;
 
 import java.awt.Color;
+import java.awt.Desktop;
 import java.awt.Graphics;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
@@ -10,6 +11,12 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.StandardWatchEventKinds;
+import java.nio.file.WatchEvent;
+import java.nio.file.WatchKey;
+import java.nio.file.WatchService;
+import java.util.List;
 
 import javax.swing.JOptionPane;
 
@@ -32,6 +39,7 @@ public class SimPresetIO
 					{
 						directory.mkdirs();
 					}
+				new FileWatcher();
 			}
 
 		public final void addPresetsToMenu()
@@ -46,6 +54,20 @@ public class SimPresetIO
 				for (File file : files)
 					{
 						presetMenu.add(newButton(file), false);
+					}
+			}
+
+		public final void openFolder()
+			{
+				File file = new File(saveDirectory);
+				Desktop desktop = Desktop.getDesktop();
+				try
+					{
+						desktop.open(file);
+					}
+				catch (IOException e)
+					{
+						e.printStackTrace();
 					}
 			}
 
@@ -147,7 +169,10 @@ public class SimPresetIO
 					}
 				catch (Exception e)
 					{
-						e.printStackTrace();
+						if (presetName == "default.txt")
+							createDefaultPresetFile();
+
+						loadPreset("default.txt");
 					}
 				finally
 					{
@@ -200,11 +225,11 @@ public class SimPresetIO
 						out.newLine();
 						out.write("LargePlantSize= 170.0");
 						out.newLine();
-						out.write("LargePlantSpacing= 65.0");
+						out.write("LargePlantSpacing= 80.0");
 						out.newLine();
 						out.write("MediumPlantSize= 30.0");
 						out.newLine();
-						out.write("MediumPlantSpacing= 25.0");
+						out.write("MediumPlantSpacing= 18.0");
 						out.newLine();
 						out.write("SmallPlantSpacing= 5.0");
 						out.newLine();
@@ -252,6 +277,37 @@ public class SimPresetIO
 				return new PresetSaveButton(im, file);
 			}
 
+		private class FileWatcher extends Thread
+			{
+				Path this_dir = new File(saveDirectory).toPath();
+
+				private FileWatcher()
+					{
+						start();
+					}
+
+				@Override
+				public final void run()
+					{
+						while (true)
+							try
+								{
+									WatchService watcher = this_dir.getFileSystem().newWatchService();
+									this_dir.register(watcher, StandardWatchEventKinds.ENTRY_CREATE);
+
+									WatchKey watckKey = watcher.take();
+
+									List<WatchEvent<?>> events = watckKey.pollEvents();
+									if (!events.isEmpty())
+										addPresetsToMenu();
+								}
+							catch (Exception e)
+								{
+									System.out.println(e.toString());
+								}
+					}
+			}
+
 		private class PresetSaveButton extends TButton
 			{
 				private File file;
@@ -274,10 +330,7 @@ public class SimPresetIO
 										else if (Hub.simWindow.deletePresetButton.isChecked()
 												&& JOptionPane.showConfirmDialog(Hub.simWindow.getObserver(), "Are you sure you want to delete this preset?", "Delete Confirmation",
 														JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION)
-											{
-												file.delete();
-												addPresetsToMenu();
-											}
+											file.delete();
 									}
 								active = down = false;
 							}

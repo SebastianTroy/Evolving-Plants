@@ -1,6 +1,7 @@
 package evolvingPlants.io;
 
 import java.awt.Color;
+import java.awt.Desktop;
 import java.awt.Graphics;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
@@ -10,6 +11,12 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.StandardWatchEventKinds;
+import java.nio.file.WatchEvent;
+import java.nio.file.WatchKey;
+import java.nio.file.WatchService;
+import java.util.List;
 
 import javax.swing.JOptionPane;
 
@@ -33,6 +40,7 @@ public class GeneIO
 					{
 						directory.mkdirs();
 					}
+				new FileWatcher();
 			}
 
 		public final void addGenesToMenu()
@@ -53,6 +61,10 @@ public class GeneIO
 		public void saveGenes(String geneName)
 			{
 				Genes genes = Hub.simWindow.sim.currentGenes;
+
+				if (genes == null)
+					return;
+
 				BufferedWriter out = null;
 
 				try
@@ -106,8 +118,6 @@ public class GeneIO
 				BufferedReader in = null;
 				Simulation sim = Hub.simWindow.sim;
 
-				Color leafColour;
-
 				try
 					{
 						File geneFile = new File(saveDirectory + "//" + geneName);
@@ -119,7 +129,10 @@ public class GeneIO
 					}
 				catch (Exception e)
 					{
-						e.printStackTrace();
+						if (geneName == "default.txt")
+							createDefaultGenesFile();
+
+						loadGenes("default.txt");
 					}
 				finally
 					{
@@ -131,6 +144,20 @@ public class GeneIO
 							{
 								e.printStackTrace();
 							}
+					}
+			}
+
+		public final void openFolder()
+			{
+				File file = new File(saveDirectory);
+				Desktop desktop = Desktop.getDesktop();
+				try
+					{
+						desktop.open(file);
+					}
+				catch (IOException e)
+					{
+						e.printStackTrace();
 					}
 			}
 
@@ -154,9 +181,7 @@ public class GeneIO
 						File genesFile = new File(saveDirectory + "//default" + ".txt");
 
 						out = new BufferedWriter(new FileWriter(genesFile, false));
-						out.write("Instructions=");
-						for (int i = 0; i < 45; i++)
-							out.write('|');
+						out.write(" ");
 						out.newLine();
 						out.write("Seed Size=100");
 						out.newLine();
@@ -215,6 +240,37 @@ public class GeneIO
 				return new GeneSaveButton(im, file);
 			}
 
+		private class FileWatcher extends Thread
+			{
+				Path this_dir = new File(saveDirectory).toPath();
+
+				private FileWatcher()
+					{
+						start();
+					}
+
+				@Override
+				public final void run()
+					{
+						while (true)
+							try
+								{
+									WatchService watcher = this_dir.getFileSystem().newWatchService();
+									this_dir.register(watcher, StandardWatchEventKinds.ENTRY_CREATE, StandardWatchEventKinds.ENTRY_DELETE);
+
+									WatchKey watckKey = watcher.take();
+
+									List<WatchEvent<?>> events = watckKey.pollEvents();
+									if (!events.isEmpty())
+										addGenesToMenu();
+								}
+							catch (Exception e)
+								{
+									System.out.println(e.toString());
+								}
+					}
+			}
+
 		private class GeneSaveButton extends TButton
 			{
 				private File file;
@@ -237,10 +293,7 @@ public class GeneIO
 										else if (Hub.simWindow.deleteGenesButton.isChecked()
 												&& JOptionPane.showConfirmDialog(Hub.simWindow.getObserver(), "Are you sure you want to delete this gene?", "Delete Confirmation",
 														JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION)
-											{
-												file.delete();
-												addGenesToMenu();
-											}
+											file.delete();
 									}
 								active = down = false;
 							}

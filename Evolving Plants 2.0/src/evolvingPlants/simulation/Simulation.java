@@ -14,19 +14,28 @@ public class Simulation
 	{
 		// Globally fixed variables
 		private static final Color skyBlue = new Color(150, 150, 255);
+
 		// User adjustable variables
 		public double geneCompatability = 0.1; // lower is less compatible
 		public boolean showLighting = false;
+
+		//
 		public double oldWarpSpeed;// Keep track of warp speed when pausing
+		private double timePassed = 0;
+		private boolean rendered = false;
+
 		// Simulation variables
 		public double simWidth, simX = 0;
 		public LightMap lightMap;
 		BufferedImage lightImage;
+
 		// seeds added by user
 		public Genes currentGenes;
 		public ArrayList<Point> seedsToAdd = new ArrayList<Point>(5);
+
 		// Light Filters
 		private ArrayList<LightFilter> filters = new ArrayList<LightFilter>();
+
 		// Seeds and Plants in the simulation
 		private ArrayList<Seed> seeds = new ArrayList<Seed>(20);
 		ArrayList<Plant> plants = new ArrayList<Plant>(40);
@@ -40,6 +49,13 @@ public class Simulation
 
 		public void tick(double secondsPassed)
 			{
+				timePassed += secondsPassed;
+				if (timePassed > 0.03)
+					{
+						timePassed = 0;
+						rendered = false;
+					}
+
 				secondsPassed *= Hub.simWindow.playbackSpeed.getValue();
 
 				for (int i = 0; i < Hub.simWindow.warpSpeedSlider.getValue(); i++)
@@ -65,11 +81,17 @@ public class Simulation
 
 		public void render(Graphics g)
 			{
+				if (rendered)
+					{
+						g.setColor(Color.CYAN);
+						g.fillRect(0, 0, 200, Hub.canvasHeight);
+						g.fillRect(1000, 0, 200, Hub.canvasHeight);
+						return;
+					}
+
 				int simX = (int) this.simX;
 				g.setColor(skyBlue);
 				g.fillRect(200, 0, 800, Plant.plantY);
-				// EXTREMELY SLOW! was expected really, perhaps force a pause of
-				// the sim when showing the lighting?
 				if (showLighting)
 					g.drawImage(lightImage, 200, 0, Hub.simWindow.getObserver());
 				g.setColor(Color.GREEN);
@@ -94,9 +116,12 @@ public class Simulation
 						y2 = Plant.plantY - (int) Hub.simWindow.mediumPlantSizeSlider.getValue();
 						g.drawLine(200, y2, 1000, y2);
 					}
+				
 				g.setColor(Color.CYAN);
 				g.fillRect(0, 0, 200, Hub.canvasHeight);
 				g.fillRect(1000, 0, 200, Hub.canvasHeight);
+
+				rendered = true;
 			}
 
 		public final void addSeed(double x, double y, Genes genes, double energy, int parentSizeCategory)

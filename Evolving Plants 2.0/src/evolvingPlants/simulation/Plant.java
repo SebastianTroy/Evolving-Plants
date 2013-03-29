@@ -121,40 +121,44 @@ public class Plant
 
 						while (genes.currentInstruction() != Genes.END_ALL)
 							if (currentNode != null)
-								switch (genes.nextInstruction(true))
-									{
-										case Genes.ADD_NODE:
-											metabolism++;
-											currentNode.addNode(new Node(currentNode));
-											break;
-										case Genes.CLIMB_NODE_TREE:
-											currentNode = currentNode.getDaughterNode();
-											break;
-										case Genes.DESCEND_NODE_TREE:
-											currentNode = currentNode.getParentNode();
-											break;
-										case Genes.GROW_UP:
-											metabolism++;
-											currentNode.growUp();
-											break;
-										case Genes.GROW_LEFT:
-											metabolism += 0.25;
-											currentNode.growLeft();
-											break;
-										case Genes.GROW_RIGHT:
-											metabolism += 0.25;
-											currentNode.growRight();
-											break;
-										case Genes.GROW_DOWN:
-											metabolism += 0.1;
-											currentNode.growDown();
-											break;
-										case Genes.SKIP:
-											metabolism += 0.20;
-											break;
-										case Genes.END_ALL:
-											currentNode = null;
-									}
+								{
+									// Every instruction ups metabolism
+									metabolism += 0.05;
+									switch (genes.nextInstruction(true))
+										{
+											case Genes.ADD_NODE:
+												metabolism++;
+												currentNode.addNode(new Node(currentNode));
+												break;
+											case Genes.CLIMB_NODE_TREE:
+												currentNode = currentNode.getDaughterNode();
+												break;
+											case Genes.DESCEND_NODE_TREE:
+												currentNode = currentNode.getParentNode();
+												break;
+											case Genes.GROW_UP:
+												metabolism++;
+												currentNode.growUp();
+												break;
+											case Genes.GROW_LEFT:
+												metabolism += 0.25;
+												currentNode.growLeft();
+												break;
+											case Genes.GROW_RIGHT:
+												metabolism += 0.25;
+												currentNode.growRight();
+												break;
+											case Genes.GROW_DOWN:
+												metabolism += 0.1;
+												currentNode.growDown();
+												break;
+											case Genes.SKIP:
+												metabolism += 0.20;
+												break;
+											case Genes.END_ALL:
+												currentNode = null;
+										}
+								}
 							else
 								genes.nextInstruction(false);
 
@@ -341,7 +345,7 @@ public class Plant
 								else
 									return this;
 							}
-						
+
 						private final void calculateLean()
 							{
 								lean -= plantX - x;

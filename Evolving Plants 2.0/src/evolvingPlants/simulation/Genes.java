@@ -1,6 +1,7 @@
 package evolvingPlants.simulation;
 
 import java.awt.Color;
+import java.util.LinkedList;
 
 import tools.ColTools;
 import tools.RandTools;
@@ -25,7 +26,7 @@ public class Genes
 		public static final char END_ALL = '|';
 
 		private int currentInstruction = 0;
-		private char[] instructions = { END_ALL };
+		private LinkedList<Character> instructions = new LinkedList<Character>();
 
 		public Color leafColour;
 		public Color seedColour = ColTools.randColour();
@@ -33,10 +34,10 @@ public class Genes
 
 		public Genes(String genes, double seedEnergy, int leafRed, int leafGreen, int leafBlue)
 			{
-				instructions = genes.toCharArray();
+				for (int i = 0; i < genes.length(); i++)
+					instructions.add(genes.charAt(i));
 				this.seedEnergy = seedEnergy;
 				leafColour = new Color(leafRed, leafGreen, leafBlue);
-
 			}
 
 		public Genes(Genes parent, boolean mutate)
@@ -45,7 +46,7 @@ public class Genes
 				seedColour = parent.seedColour;
 				seedEnergy = parent.seedEnergy;
 				seedEnergyTransfer = parent.seedEnergyTransfer;
-				instructions = new char[parent.instructions.length];
+				instructions = new LinkedList<Character>();
 
 				instructions = aSexual(parent.instructions);
 
@@ -59,7 +60,9 @@ public class Genes
 				seedColour = ColTools.interpolateColours(parentOne.seedColour, parentTwo.seedColour);
 				seedEnergy = (parentOne.seedEnergy + parentTwo.seedEnergy) / 2;
 				seedEnergyTransfer = (parentOne.seedEnergyTransfer + parentTwo.seedEnergyTransfer) / 2;
-				instructions = new char[parentOne.instructions.length];
+				instructions = new LinkedList<Character>();
+
+				// TODO create genes from both parents
 
 				if (areRelated(parentOne.instructions, parentTwo.instructions))
 					instructions = sexual(parentOne.instructions, parentTwo.instructions);
@@ -70,9 +73,9 @@ public class Genes
 		public final int currentInstruction()
 			{
 				int instruction = END_ALL;
-				if (currentInstruction < instructions.length)
+				if (currentInstruction < instructions.size())
 					{
-						instruction = instructions[currentInstruction];
+						instruction = instructions.get(currentInstruction);
 					}
 
 				return instruction;
@@ -81,39 +84,44 @@ public class Genes
 		public final int nextInstruction(boolean growing)
 			{
 				int instruction = END_ALL;
-				if (currentInstruction < instructions.length)
+				if (currentInstruction < instructions.size())
 					{
-						instruction = instructions[currentInstruction];
+						instruction = instructions.get(currentInstruction);
 						currentInstruction++;
 					}
 
 				if (instruction == END_ALL)
-					currentInstruction = instructions.length;
+					currentInstruction = instructions.size();
 
 				return instruction;
 			}
 
 		public final String getGenes()
 			{
-				return new String(instructions);
+				char[] genes = new char[instructions.size()];
+
+				for (int i = 0; i < instructions.size(); i++)
+					genes[i] = instructions.get(i);
+
+				return new String(genes);
 			}
 
-		private final char[] aSexual(char[] parent)
+		private final LinkedList<Character> aSexual(LinkedList<Character> parent)
 			{
-				instructions = new char[parent.length];
+				instructions = new LinkedList<Character>();
 
-				for (int i = 0; i < parent.length; i++)
-					instructions[i] = parent[i];
+				for (int i = 0; i < parent.size(); i++)
+					instructions.add(parent.get(i));
 
 				return instructions;
 			}
 
-		private final char[] sexual(char[] parentOne, char[] parentTwo)
+		private final LinkedList<Character> sexual(LinkedList<Character> parentOne, LinkedList<Character> parentTwo)
 			{
-				instructions = new char[parentOne.length];
+				instructions = new LinkedList<Character>();
 
-				for (int i = 0; i < parentOne.length; i++)
-					instructions[i] = RandTools.getBool() ? parentOne[i] : parentTwo[i];
+				for (int i = 0; i < parentOne.size() && i < parentTwo.size(); i++)
+					instructions.add(RandTools.getBool() ? parentOne.get(i) : parentTwo.get(i));
 
 				return instructions;
 			}
@@ -128,7 +136,7 @@ public class Genes
 
 				// mutate seed colour
 				int[] seedColours = { seedColour.getRed(), seedColour.getGreen(), seedColour.getBlue() };
-				seedColours[RandTools.getInt(0, 2)] += RandTools.getInt(-6, 6);
+				seedColours[RandTools.getInt(0, 2)] += RandTools.getInt(-12, 12);
 				seedColour = ColTools.checkColour(seedColours[0], seedColours[1], seedColours[2]);
 
 				// mutate leaf colour
@@ -137,35 +145,29 @@ public class Genes
 				leafColour = ColTools.checkColour(leafColours[0], leafColours[1], leafColours[2]);
 
 				// Mutate instructions
-				for (int i = 0; i < instructions.length; i++)
+				for (int i = 0; i < instructions.size(); i++)
 					{
 						if (RandTools.randPercent() < Hub.simWindow.dnaDamageSlider.getValue())
-							instructions[i] = getRandomInstruction();
-					}
-			}
-
-		private final char getCheckedInstruction(char instruction)
-			{
-				switch (instruction)
-					{
-						case 'N':
-							return ADD_NODE;
-						case '+':
-							return CLIMB_NODE_TREE;
-						case '-':
-							return DESCEND_NODE_TREE;
-						case '^':
-							return GROW_UP;
-						case '<':
-							return GROW_LEFT;
-						case '>':
-							return GROW_RIGHT;
-						case 'v':
-							return GROW_DOWN;
-						case '|':
-							return END_ALL;
-						default:
-							return SKIP;
+							{
+								// Mutate instruction
+								if (RandTools.randPercent() > 6)
+									{
+										instructions.remove(i);
+										instructions.add(i, getRandomInstruction());
+									}
+								// Insert Extra instruction
+								else if (RandTools.randPercent() > 3)
+									{
+										instructions.add(i, getRandomInstruction());
+										i++;
+									}
+								// else delete instruction
+								else
+									{
+										instructions.remove(i);
+										i--;
+									}
+							}
 					}
 			}
 
@@ -192,21 +194,20 @@ public class Genes
 					}
 			}
 
-		private final boolean areRelated(char[] parentOneCommands, char[] parentTwoCommands)
+		private final boolean areRelated(LinkedList<Character> parentOneCommands, LinkedList<Character> parentTwoCommands)
 			{
 				// Unrelated if too many differences in gene sequence
 				int differences = 0;
-				int acceptableDifference = (int) ((double) parentOneCommands.length * Hub.simWindow.sim.geneCompatability);
-				for (int i = 0; i < parentOneCommands.length; i++)
+				int acceptableDifference = (int) ((double) parentOneCommands.size() * Hub.simWindow.sim.geneCompatability);
+				for (int i = 0; i < parentOneCommands.size(); i++)
 					{
-						if (parentOneCommands[i] != parentTwoCommands[i])
+						if (parentOneCommands.get(i) != parentTwoCommands.get(i))
 							{
 								differences++;
 								if (differences > acceptableDifference)
 									return false;
 							}
 					}
-
 				return true;
 			}
 	}

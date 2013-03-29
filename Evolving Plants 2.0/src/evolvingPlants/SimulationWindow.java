@@ -79,18 +79,20 @@ public class SimulationWindow extends RenderableObject
 		TMenu geneOptionsMenu;
 		private final TTextField geneSaveNameField = new TTextField(0, 0, 160, 25, "My Genes");
 		private final TButton saveGenesButton = new TButton("Save Current Genes");
-		public final TMenu savedGenesMenu = new TMenu(0, 0, 200, 350, TMenu.VERTICAL);
+		public final TMenu savedGenesMenu = new TMenu(0, 0, 200, 340, TMenu.VERTICAL);
 		private RadioButtonsCollection loadDeleteGenesButtons = new RadioButtonsCollection();
 		public final TRadioButton loadGenesButton = new TRadioButton("Load Genes");
 		public final TRadioButton deleteGenesButton = new TRadioButton("Delete Genes");
+		private final TButton openGenesFolderButton = new TButton("Open Folder");
 
 		TMenu presetOptionsMenu;
 		private final TTextField presetSaveNameField = new TTextField(0, 0, 160, 25, "My Settings");
 		private final TButton savePresetButton = new TButton("Save Current Settings");
-		public final TMenu savedPresetsMenu = new TMenu(0, 0, 200, 350, TMenu.VERTICAL);
+		public final TMenu savedPresetsMenu = new TMenu(0, 0, 200, 340, TMenu.VERTICAL);
 		private RadioButtonsCollection loadDeletePresetButtons = new RadioButtonsCollection();
 		public final TRadioButton loadPresetButton = new TRadioButton("Load Presets");
 		public final TRadioButton deletePresetButton = new TRadioButton("Delete Presets");
+		private final TButton openPresetsFolderButton = new TButton("Open Folder");
 
 		@Override
 		protected void initiate()
@@ -107,7 +109,6 @@ public class SimulationWindow extends RenderableObject
 				lightOptionsMenu = new TMenu(0, 0, 200, Hub.canvasHeight, TMenu.VERTICAL);
 				geneOptionsMenu = new TMenu(0, 0, 200, Hub.canvasHeight, TMenu.VERTICAL);
 				presetOptionsMenu = new TMenu(0, 0, 200, Hub.canvasHeight, TMenu.VERTICAL);
-
 				topMenu.setBorderSize(5);
 
 				Toolkit k = Toolkit.getDefaultToolkit();
@@ -202,6 +203,7 @@ public class SimulationWindow extends RenderableObject
 				geneOptionsMenu.add(deleteGenesButton);
 				loadDeleteGenesButtons.add(loadGenesButton);
 				loadDeleteGenesButtons.add(deleteGenesButton);
+				geneOptionsMenu.add(openGenesFolderButton);
 
 				// PresetOptionsMenu set-up. This menu is located on the left
 				presetOptionsMenu.add(presetSaveNameField, false);
@@ -212,6 +214,7 @@ public class SimulationWindow extends RenderableObject
 				presetOptionsMenu.add(deletePresetButton);
 				loadDeletePresetButtons.add(loadPresetButton);
 				loadDeletePresetButtons.add(deletePresetButton);
+				presetOptionsMenu.add(openPresetsFolderButton);
 
 				// LightOptions menu set-up. This menu is located on the left
 				// TODO just make an addFilterButton and create a generic filter
@@ -340,14 +343,16 @@ public class SimulationWindow extends RenderableObject
 				else if (eventSource == savePresetButton)
 					{
 						Hub.presetIO.savePreset(presetSaveNameField.getText());
-						Hub.presetIO.addPresetsToMenu();
 					}
+				else if (eventSource == openPresetsFolderButton)
+					Hub.presetIO.openFolder();
 				// Gene options
 				else if (eventSource == saveGenesButton)
 					{
 						Hub.geneIO.saveGenes(geneSaveNameField.getText());
-						Hub.geneIO.addGenesToMenu();
-					}
+						}
+				else if (eventSource == openGenesFolderButton)
+					Hub.geneIO.openFolder();
 			}
 
 		@Override
