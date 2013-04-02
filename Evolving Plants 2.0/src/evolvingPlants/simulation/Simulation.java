@@ -57,6 +57,10 @@ public class Simulation
 					}
 
 				secondsPassed *= Hub.simWindow.playbackSpeed.getValue();
+				
+				// Cap secondsPassed to stop strange things happening at low frame-rates
+				if (secondsPassed > 0.2)
+					secondsPassed = 0.2;
 
 				for (int i = 0; i < Hub.simWindow.warpSpeedSlider.getValue(); i++)
 					{
@@ -116,7 +120,7 @@ public class Simulation
 						y2 = Plant.plantY - (int) Hub.simWindow.mediumPlantSizeSlider.getValue();
 						g.drawLine(200, y2, 1000, y2);
 					}
-				
+
 				g.setColor(Color.CYAN);
 				g.fillRect(0, 0, 200, Hub.canvasHeight);
 				g.fillRect(1000, 0, 200, Hub.canvasHeight);

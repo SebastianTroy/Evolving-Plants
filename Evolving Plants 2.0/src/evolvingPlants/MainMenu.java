@@ -75,8 +75,8 @@ public class MainMenu extends RenderableObject
 					{
 						if (Hub.simWindow.sim != null)
 							{
-								reset();
 								changeRenderableObject(Hub.simWindow);
+								reset();
 							}
 					}
 				else if (event.getSource() == startSimButton)
@@ -87,8 +87,8 @@ public class MainMenu extends RenderableObject
 					}
 				else if (event.getSource() == editorButton)
 					{
-						// reset();
-						// changeRenderableObject(Hub.editorWindow);
+						changeRenderableObject(Hub.editor);
+						reset();
 					}
 			}
 

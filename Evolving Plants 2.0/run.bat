@@ -1,1 +1,1 @@
-java -jar "Evolving Plants 2.0.jar"
+java -jar "EvolvingPlants2.0.jar"
