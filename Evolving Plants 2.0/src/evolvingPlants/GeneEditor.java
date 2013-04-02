@@ -2,15 +2,8 @@ package evolvingPlants;
 
 import java.awt.Color;
 import java.awt.Graphics;
-import java.awt.Point;
-import java.awt.geom.Point2D;
-import java.util.ArrayList;
-
-import evolvingPlants.simulation.Genes;
-import evolvingPlants.simulation.Plant;
 
 import tCode.RenderableObject;
-import tools.RandTools;
 
 public class GeneEditor extends RenderableObject
 	{

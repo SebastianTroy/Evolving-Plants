@@ -358,8 +358,10 @@ public class Plant
 								if (daughterNodes.size() > 0)
 									for (Node n : daughterNodes)
 										n.setLeaves();
-								else if (parentNode == this || ((parentNode.x != x && parentNode.y != y) || !parentNode.isLeaf))
+								else if (parentNode == this || (parentNode.x != x && parentNode.y != y))
 									isLeaf = true;
+								else if (!parentNode.isLeaf)
+									parentNode.isLeaf = true;
 							}
 
 						private final void setShadow()
@@ -367,7 +369,8 @@ public class Plant
 								if (daughterNodes.size() > 0)
 									for (Node n : daughterNodes)
 										n.setShadow();
-								else if (isLeaf)
+								
+								if (isLeaf)
 									Hub.simWindow.sim.addShadow(x, y, leafSize, shadowColour);
 							}
 
@@ -376,7 +379,8 @@ public class Plant
 								if (daughterNodes.size() > 0)
 									for (Node n : daughterNodes)
 										n.removeShadow();
-								else if (isLeaf)
+								
+								if (isLeaf)
 									Hub.simWindow.sim.removeShadow(x, y, leafSize, shadowColour);
 							}
 
