@@ -358,7 +358,7 @@ public class Plant
 								if (daughterNodes.size() > 0)
 									for (Node n : daughterNodes)
 										n.setLeaves();
-								else if (parentNode == this || (parentNode.x != x && parentNode.y != y) || !parentNode.isLeaf)
+								else if (parentNode == this || ((parentNode.x != x && parentNode.y != y) || !parentNode.isLeaf))
 									isLeaf = true;
 							}
 
