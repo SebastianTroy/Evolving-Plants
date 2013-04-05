@@ -3,6 +3,7 @@ package evolvingPlants;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
@@ -96,12 +97,14 @@ public class SimulationWindow extends RenderableObject
 
 		@Override
 		protected void initiate()
-			{
+			{				
 				simulationScroller.setY(Hub.canvasHeight - 20);
 				simulationScroller.setMaxScrollDistance(sim.simWidth);
 
 				if (sim.simWidth > 800)
 					add(simulationScroller);
+				else
+					remove(simulationScroller);
 
 				simOptionsMenu = new TMenu(1000, 0, 200, Hub.canvasHeight, TMenu.VERTICAL);
 				plantInteractionsMenu = new TMenu(0, 0, 200, Hub.canvasHeight, TMenu.VERTICAL);
@@ -197,8 +200,6 @@ public class SimulationWindow extends RenderableObject
 				geneOptionsMenu.add(geneSaveNameField, false);
 				geneOptionsMenu.add(saveGenesButton);
 				geneOptionsMenu.add(savedGenesMenu, false);
-				Hub.geneIO.addGenesToMenu();
-				Hub.geneIO.loadGenes("default.txt");
 				geneOptionsMenu.add(loadGenesButton);
 				geneOptionsMenu.add(deleteGenesButton);
 				loadDeleteGenesButtons.add(loadGenesButton);
@@ -209,7 +210,6 @@ public class SimulationWindow extends RenderableObject
 				presetOptionsMenu.add(presetSaveNameField, false);
 				presetOptionsMenu.add(savePresetButton);
 				presetOptionsMenu.add(savedPresetsMenu, false);
-				Hub.presetIO.addPresetsToMenu();
 				presetOptionsMenu.add(loadPresetButton);
 				presetOptionsMenu.add(deletePresetButton);
 				loadDeletePresetButtons.add(loadPresetButton);
@@ -258,6 +258,11 @@ public class SimulationWindow extends RenderableObject
 				lightOptionsMenu.add(new TLabel("Leaf Transparency"), false);
 				lightOptionsMenu.add(leafOpacitySlider);
 
+				Hub.geneIO.addGenesToMenu();
+				Hub.geneIO.loadGenes("default.txt");
+
+				Hub.presetIO.addPresetsToMenu();
+
 				setLeftMenu(plantInteractionsMenu);
 				setRightMenu(simOptionsMenu);
 
@@ -271,7 +276,7 @@ public class SimulationWindow extends RenderableObject
 			}
 
 		@Override
-		protected void render(Graphics g)
+		protected void render(Graphics2D g)
 			{
 				sim.render(g);
 			}
@@ -303,7 +308,7 @@ public class SimulationWindow extends RenderableObject
 				if (eventSource == mainMenuButton)
 					changeRenderableObject(Hub.menu);
 				else if (eventSource == resetSimButton)
-					sim = new Simulation((int) sim.simWidth);
+					sim.reset = true;
 				// Change menu's ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 				else if (eventSource == plantInteractionsButton)
 					setLeftMenu(plantInteractionsMenu);

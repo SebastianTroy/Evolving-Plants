@@ -254,6 +254,9 @@ public class Plant
 							{
 								int apparentX = (int) (getX() + simX);
 
+								g.setColor(selected ? Color.LIGHT_GRAY : Color.BLACK);
+								g.drawLine(apparentX, getY(), (int) (parentNode.getX() + simX), parentNode.getY());
+
 								if (!isLeaf)
 									for (Node n : daughterNodes)
 										n.render(g, simX);
@@ -268,8 +271,6 @@ public class Plant
 										g.setColor(selected ? Color.LIGHT_GRAY : Color.BLACK);
 										g.drawOval(x, y, leafSize, leafSize);
 									}
-								g.setColor(selected ? Color.LIGHT_GRAY : Color.BLACK);
-								g.drawLine(apparentX, getY(), (int) (parentNode.getX() + simX), parentNode.getY());
 							}
 
 						private boolean contains(Point p)

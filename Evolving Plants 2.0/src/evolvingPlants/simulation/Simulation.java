@@ -1,9 +1,12 @@
 package evolvingPlants.simulation;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Point;
+import java.awt.Stroke;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
@@ -14,6 +17,8 @@ public class Simulation
 	{
 		// Globally fixed variables
 		private static final Color skyBlue = new Color(150, 150, 255);
+		private static final Color dottedLineColour = new Color(0, 0, 0, 75);
+		private static final Stroke dottedLineStroke = new BasicStroke(1, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[] { 6, 12 }, 0);
 
 		// User adjustable variables
 		public double geneCompatability = 0.1; // lower is less compatible
@@ -23,6 +28,7 @@ public class Simulation
 		public double oldWarpSpeed;// Keep track of warp speed when pausing
 		private double timePassed = 0;
 		private boolean rendered = false;
+		public boolean reset = false;
 
 		// Simulation variables
 		public double simWidth, simX = 0;
@@ -49,6 +55,18 @@ public class Simulation
 
 		public void tick(double secondsPassed)
 			{
+				if (reset)
+					{
+						seedsToAdd.clear();
+						seeds.clear();
+						plants.clear();
+						filters.clear();
+						lightMap = new LightMap((int) simWidth, 550);
+						lightImage = new BufferedImage(800, 550, BufferedImage.TYPE_INT_RGB);
+						
+						reset = false;
+					}
+				
 				timePassed += secondsPassed;
 				if (timePassed > 0.03)
 					{
@@ -57,8 +75,9 @@ public class Simulation
 					}
 
 				secondsPassed *= Hub.simWindow.playbackSpeed.getValue();
-				
-				// Cap secondsPassed to stop strange things happening at low frame-rates
+
+				// Cap secondsPassed to stop strange things happening at low
+				// frame-rates
 				if (secondsPassed > 0.2)
 					secondsPassed = 0.2;
 
@@ -83,7 +102,7 @@ public class Simulation
 					}
 			}
 
-		public void render(Graphics g)
+		public void render(Graphics2D g)
 			{
 				if (rendered)
 					{
@@ -104,6 +123,7 @@ public class Simulation
 					s.render(g, simX + 200);
 				for (Plant p : plants)
 					p.render(g, simX + 200);
+
 				if (Hub.simWindow.stalkLengthSlider.isActive() || Hub.simWindow.largePlantSizeSlider.isActive() || Hub.simWindow.mediumPlantSizeSlider.isActive())
 					{
 						g.setColor(Color.BLACK);
@@ -115,6 +135,15 @@ public class Simulation
 								y -= Hub.simWindow.stalkLengthSlider.getValue();
 							}
 						g.setColor(Color.WHITE);
+						int y2 = Plant.plantY - (int) Hub.simWindow.largePlantSizeSlider.getValue();
+						g.drawLine(200, y2, 1000, y2);
+						y2 = Plant.plantY - (int) Hub.simWindow.mediumPlantSizeSlider.getValue();
+						g.drawLine(200, y2, 1000, y2);
+					}
+				else
+					{
+						g.setColor(dottedLineColour);
+						g.setStroke(dottedLineStroke);
 						int y2 = Plant.plantY - (int) Hub.simWindow.largePlantSizeSlider.getValue();
 						g.drawLine(200, y2, 1000, y2);
 						y2 = Plant.plantY - (int) Hub.simWindow.mediumPlantSizeSlider.getValue();

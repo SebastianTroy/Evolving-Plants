@@ -2,13 +2,19 @@ package evolvingPlants;
 
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Point;
+import java.awt.geom.Point2D;
+import java.util.ArrayList;
+
+import evolvingPlants.simulation.Genes;
 
 import tCode.RenderableObject;
 
 public class GeneEditor extends RenderableObject
-	{
+	{	
 		// Plant variables
-		private double plantX = 700, plantY = 500;
+		private int plantX = 700, plantY = 500, leafSize = 14;
 		private Color leafColour = new Color(175, 175, 175);
 
 		@Override
@@ -26,7 +32,7 @@ public class GeneEditor extends RenderableObject
 			}
 
 		@Override
-		protected void render(Graphics g)
+		protected void render(Graphics2D g)
 			{
 				g.setColor(Color.CYAN);
 				g.fillRect(0, 0, 700, 500);
@@ -35,7 +41,7 @@ public class GeneEditor extends RenderableObject
 				g.setColor(Color.WHITE);
 				g.fillRect(700, 0, 500, 500);
 			}
-/*
+
 		private class NodeTree
 			{
 				private Node baseNode = new Node(plantX, plantY);
@@ -115,7 +121,6 @@ public class GeneEditor extends RenderableObject
 										n.render(g, simX);
 								else
 									{
-										int leafSize = (int) getLeafSize();
 										int x = x - (leafSize / 2);
 										int y = getY() - (leafSize / 2);
 
@@ -125,7 +130,7 @@ public class GeneEditor extends RenderableObject
 										g.drawOval(x, y, leafSize, leafSize);
 									}
 								g.setColor(Color.BLACK);
-								g.drawLine(x, getY(), (int) (parentNode.getX() + simX), parentNode.getY());
+								g.drawLine((int) x, getY(), (int) (parentNode.getX() + simX), parentNode.getY());
 							}
 
 						private boolean contains(Point p)
@@ -238,19 +243,13 @@ public class GeneEditor extends RenderableObject
 
 						final int getX()
 							{
-								if (fractionGrown < 1)
-									return (int) (plantX + ((x - plantX) * fractionGrown));
-
 								return (int) x;
 							}
 
 						final int getY()
 							{
-								if (fractionGrown < 1)
-									return (int) (plantY + ((y - plantY) * fractionGrown));
-
 								return (int) y;
 							}
 					}
-			}*/
+			}
 	}

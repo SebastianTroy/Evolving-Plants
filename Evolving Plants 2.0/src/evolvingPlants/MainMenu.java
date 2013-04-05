@@ -2,6 +2,7 @@ package evolvingPlants;
 
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 
 import tCode.RenderableObject;
 import tComponents.components.TButton;
@@ -56,7 +57,7 @@ public class MainMenu extends RenderableObject
 			{}
 
 		@Override
-		protected void render(Graphics g)
+		protected void render(Graphics2D g)
 			{
 				g.setColor(Color.YELLOW);
 				g.fillRect(0, 0, 1200, 600);
@@ -81,6 +82,7 @@ public class MainMenu extends RenderableObject
 					}
 				else if (event.getSource() == startSimButton)
 					{
+						Hub.simWindow = new SimulationWindow();
 						Hub.simWindow.sim = new Simulation(simWidth);
 						changeRenderableObject(Hub.simWindow);
 						reset();

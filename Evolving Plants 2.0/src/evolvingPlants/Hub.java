@@ -14,7 +14,7 @@ public class Hub extends TCode
 		public static final SimPresetIO presetIO = new SimPresetIO();
 
 		public static final MainMenu menu = new MainMenu();
-		public static final SimulationWindow simWindow = new SimulationWindow();
+		public static SimulationWindow simWindow;
 		public static final GeneEditor editor = new GeneEditor();
 
 		public Hub(int width, int height, boolean framed, boolean resizable)
