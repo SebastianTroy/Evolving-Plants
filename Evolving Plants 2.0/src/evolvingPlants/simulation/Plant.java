@@ -257,10 +257,10 @@ public class Plant
 								g.setColor(selected ? Color.LIGHT_GRAY : Color.BLACK);
 								g.drawLine(apparentX, getY(), (int) (parentNode.getX() + simX), parentNode.getY());
 
-								if (!isLeaf)
+								if (!daughterNodes.isEmpty())
 									for (Node n : daughterNodes)
 										n.render(g, simX);
-								else
+								else if (isLeaf)
 									{
 										int leafSize = (int) getLeafSize();
 										int x = apparentX - (leafSize / 2);

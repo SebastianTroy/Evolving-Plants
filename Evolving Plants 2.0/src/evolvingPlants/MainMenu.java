@@ -74,7 +74,7 @@ public class MainMenu extends RenderableObject
 					}
 				else if (event.getSource() == resumeSimButton)
 					{
-						if (Hub.simWindow.sim != null)
+						if (Hub.simWindow != null && Hub.simWindow.sim != null)
 							{
 								changeRenderableObject(Hub.simWindow);
 								reset();

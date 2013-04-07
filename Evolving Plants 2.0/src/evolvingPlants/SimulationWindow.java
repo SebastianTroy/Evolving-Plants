@@ -115,7 +115,7 @@ public class SimulationWindow extends RenderableObject
 				topMenu.setBorderSize(5);
 
 				Toolkit k = Toolkit.getDefaultToolkit();
-				plantSeedCursor = k.createCustomCursor(Hub.loadImage("seed.png"), new Point(0, 0), "seed");
+				plantSeedCursor = k.createCustomCursor(Hub.loadImage("seedPointer.png"), new Point(0, 0), "seed");
 				getGenesCursor = k.createCustomCursor(Hub.loadImage("dna.png"), new Point(0, 0), "seed");
 				killPlantCursor = k.createCustomCursor(Hub.loadImage("skull.png"), new Point(0, 0), "seed");
 
@@ -354,7 +354,7 @@ public class SimulationWindow extends RenderableObject
 				// Gene options
 				else if (eventSource == saveGenesButton)
 					{
-						Hub.geneIO.saveGenes(geneSaveNameField.getText());
+						Hub.geneIO.saveGenes(sim.currentGenes, geneSaveNameField.getText());
 						}
 				else if (eventSource == openGenesFolderButton)
 					Hub.geneIO.openFolder();

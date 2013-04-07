@@ -45,6 +45,9 @@ public class GeneIO
 
 		public final void addGenesToMenu()
 			{
+				if (Hub.simWindow == null)
+					return;
+				
 				TMenu geneMenu = Hub.simWindow.savedGenesMenu;
 
 				geneMenu.clearTComponents();
@@ -58,10 +61,8 @@ public class GeneIO
 					}
 			}
 
-		public void saveGenes(String geneName)
+		public void saveGenes(Genes genes, String geneName)
 			{
-				Genes genes = Hub.simWindow.sim.currentGenes;
-
 				if (genes == null)
 					return;
 
