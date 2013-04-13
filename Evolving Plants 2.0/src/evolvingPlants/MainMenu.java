@@ -1,7 +1,6 @@
 package evolvingPlants;
 
 import java.awt.Color;
-import java.awt.Graphics;
 import java.awt.Graphics2D;
 
 import tCode.RenderableObject;
@@ -74,7 +73,7 @@ public class MainMenu extends RenderableObject
 					}
 				else if (event.getSource() == resumeSimButton)
 					{
-						if (Hub.simWindow != null && Hub.simWindow.sim != null)
+						if (Hub.simWindow != null && Hub.simWindow.sim != null && Hub.simWindow.sim.simWidth >= 800)
 							{
 								changeRenderableObject(Hub.simWindow);
 								reset();
@@ -89,6 +88,12 @@ public class MainMenu extends RenderableObject
 					}
 				else if (event.getSource() == editorButton)
 					{
+						if (Hub.simWindow == null)
+							{
+								Hub.simWindow = new SimulationWindow();
+								Hub.simWindow.sim = new Simulation(1);
+								changeRenderableObject(Hub.simWindow);
+							}
 						changeRenderableObject(Hub.editor);
 						reset();
 					}

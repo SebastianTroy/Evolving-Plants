@@ -3,6 +3,7 @@ package evolvingPlants;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.event.KeyEvent;
 import java.io.BufferedReader;
 import java.io.File;
@@ -41,10 +42,13 @@ public class GeneEditor extends RenderableObject
 		private TTextField geneEditorField;
 		private final TTextField saveNameField = new TTextField(10, 540, 300, 20, "Save Name Here");
 
-		private final TMenu saveLoadMenu = new TMenu(320, 533, 400, 37, TMenu.HORIZONTAL);
+		private final TMenu saveLoadMenu = new TMenu(320, 533, 500, 37, TMenu.HORIZONTAL);
 		private final TButton saveGenesButton = new TButton("Save Genes");
 		private final TButton loadGenesButton = new TButton("Load Genes");
 		private final TButton openGenesFolderButton = new TButton("Open Genes Folder");
+		private final TButton mainMenuButton = new TButton("Main Menu");
+
+		private final TMenu instructionMenu = new TMenu(0, 0, 400, 500, TMenu.VERTICAL);
 
 		@Override
 		protected void initiate()
@@ -84,12 +88,23 @@ public class GeneEditor extends RenderableObject
 				saveLoadMenu.add(saveGenesButton);
 				saveLoadMenu.add(loadGenesButton);
 				saveLoadMenu.add(openGenesFolderButton);
+				saveLoadMenu.add(mainMenuButton);
 
 				add(saveLoadMenu);
 
 				geneEditorField = new TTextField(10, 510, Hub.canvasWidth - 20, 20, "Insert genetic code here");
 				add(geneEditorField);
 				add(saveNameField);
+
+				add(instructionMenu);
+				instructionMenu.add(getInstructionLabel("Genetic Instructions:"), false);
+				instructionMenu.add(getInstructionLabel("Grow up instruction = ^"), false);
+				instructionMenu.add(getInstructionLabel("Grow down instruction = v"), false);
+				instructionMenu.add(getInstructionLabel("Grow left instruction = <"), false);
+				instructionMenu.add(getInstructionLabel("Grow right instruction = >"), false);
+				instructionMenu.add(getInstructionLabel("Create new node = N"), false);
+				instructionMenu.add(getInstructionLabel("Climb up node tree = +"), false);
+				instructionMenu.add(getInstructionLabel("Climb down node tree = -"), false);
 			}
 
 		@Override
@@ -110,6 +125,14 @@ public class GeneEditor extends RenderableObject
 				g.drawString((Math.abs(lean) / height > 0.6) ? "Plant not Viable, too much lean!" : "Plant Viable", 710, 30);
 
 				examplePlant.baseNode.render(g);
+			}
+
+		private final TLabel getInstructionLabel(String labelText)
+			{
+				TLabel label = new TLabel(labelText);
+				label.setHeight(30);
+
+				return label;
 			}
 
 		private final void updateExamplePlant()
@@ -180,12 +203,14 @@ public class GeneEditor extends RenderableObject
 												ex.printStackTrace();
 											}
 									}
+								updateExamplePlant();
 							}
 
 					}
 				else if (eventSource == openGenesFolderButton)
 					Hub.geneIO.openFolder();
-
+				else if (eventSource == mainMenuButton)
+					changeRenderableObject(Hub.menu);
 			}
 
 		@Override
@@ -193,11 +218,14 @@ public class GeneEditor extends RenderableObject
 			{
 				leafColour = new Color((int) redLeafSlider.getValue(), (int) greenLeafSlider.getValue(), (int) blueLeafSlider.getValue());
 			}
-		
-		//TODO sort out hoe leaves are decided and rendering of Node trees here and in Plant.java
+
+		// TODO sort out hoe leaves are decided and rendering of Node trees here
+		// and in Plant.java
 
 		private class NodeTree
 			{
+				private ArrayList<Point> leafLocations = new ArrayList<Point>(5);
+
 				private Node baseNode = new Node(plantX, plantY);
 
 				private NodeTree(Genes genes)
@@ -328,7 +356,6 @@ public class GeneEditor extends RenderableObject
 						private final void addNode(Node newNode)
 							{
 								daughterNodes.add(newNode);
-								newNode.growUp();
 							}
 
 						private final Node getParentNode()
@@ -356,10 +383,15 @@ public class GeneEditor extends RenderableObject
 								if (daughterNodes.size() > 0)
 									for (Node n : daughterNodes)
 										n.setLeaves();
-								else if (parentNode == this || (parentNode.x != x && parentNode.y != y))
-									isLeaf = true;
-								else if (!parentNode.isLeaf)
-									parentNode.isLeaf = true;
+								else
+									{
+										isLeaf = true;
+										for (Point p : leafLocations)
+											if (p.x == (int) x && p.y == (int) y)
+												isLeaf = false;
+										if (isLeaf)
+											leafLocations.add(new Point((int) x, (int) y));
+									}
 							}
 
 						final int getX()

@@ -2,7 +2,6 @@ package evolvingPlants;
 
 import java.awt.Color;
 import java.awt.Cursor;
-import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;

@@ -112,6 +112,8 @@ public class Plant
 
 		private class NodeTree
 			{
+				private ArrayList<Point> leafLocations = new ArrayList<Point>(5);
+
 				private Node baseNode = new Node(plantX, plantY);
 
 				private NodeTree(Genes genes)
@@ -127,8 +129,10 @@ public class Plant
 									switch (genes.nextInstruction(true))
 										{
 											case Genes.ADD_NODE:
-												metabolism++;
-												currentNode.addNode(new Node(currentNode));
+												metabolism += 0.75;
+												Node newNode = new Node(currentNode);
+												currentNode.addNode(newNode);
+												currentNode = newNode;
 												break;
 											case Genes.CLIMB_NODE_TREE:
 												currentNode = currentNode.getDaughterNode();
@@ -141,11 +145,11 @@ public class Plant
 												currentNode.growUp();
 												break;
 											case Genes.GROW_LEFT:
-												metabolism += 0.25;
+												metabolism += 0.1;
 												currentNode.growLeft();
 												break;
 											case Genes.GROW_RIGHT:
-												metabolism += 0.25;
+												metabolism += 0.1;
 												currentNode.growRight();
 												break;
 											case Genes.GROW_DOWN:
@@ -153,7 +157,8 @@ public class Plant
 												currentNode.growDown();
 												break;
 											case Genes.SKIP:
-												metabolism += 0.20;
+												// wasted gene space is costly!
+												metabolism += 2;
 												break;
 											case Genes.END_ALL:
 												currentNode = null;
@@ -162,6 +167,7 @@ public class Plant
 							else
 								genes.nextInstruction(false);
 
+						baseNode.calculateBounds();
 						baseNode.calculateLean();
 						baseNode.setLeaves();
 						baseNode.parentNode = new Node(plantX, plantY);
@@ -237,9 +243,10 @@ public class Plant
 														/*
 														 * make seed twice as
 														 * energetically
-														 * expensive
+														 * expensive and add
+														 * penalty
 														 */
-														energy -= seedEnergy;
+														energy -= (seedEnergy + 10);
 														seedEnergy = 0;
 														Hub.simWindow.sim.addSeed(getX(), getY(), genes, genes.seedEnergy, sizeCategory);
 													}
@@ -294,15 +301,13 @@ public class Plant
 						private final void growUp()
 							{
 								y -= (int) Hub.simWindow.stalkLengthSlider.getValue();
-								if (height < plantY - y)
-									height = plantY - y;
 								for (Node n : daughterNodes)
 									n.growUp();
 							}
 
 						private final void growDown()
 							{
-								if (y < plantY - Hub.simWindow.stalkLengthSlider.getValue())
+								if (y < plantY)
 									{
 										y += (int) Hub.simWindow.stalkLengthSlider.getValue();
 										for (Node n : daughterNodes)
@@ -315,8 +320,6 @@ public class Plant
 								x -= (int) Hub.simWindow.stalkLengthSlider.getValue();
 								for (Node n : daughterNodes)
 									n.growLeft();
-								if ((int) x < minX)
-									minX = (int) (x - ((int) leafSize / 2));
 							}
 
 						private final void growRight()
@@ -324,14 +327,11 @@ public class Plant
 								x += (int) Hub.simWindow.stalkLengthSlider.getValue();
 								for (Node n : daughterNodes)
 									n.growRight();
-								if ((int) x > maxX)
-									maxX = (int) (x + ((int) leafSize / 2));
 							}
 
 						private final void addNode(Node newNode)
 							{
 								daughterNodes.add(newNode);
-								newNode.growUp();
 							}
 
 						private final Node getParentNode()
@@ -347,6 +347,22 @@ public class Plant
 									return this;
 							}
 
+						private final void calculateBounds()
+							{
+								if (daughterNodes.size() > 0)
+									for (Node n : daughterNodes)
+										n.calculateBounds();
+
+								if (height < plantY - y)
+									height = plantY - y;
+
+								if ((int) x < minX)
+									minX = (int) (x - ((int) leafSize / 2));
+
+								if ((int) x > maxX)
+									maxX = (int) (x + ((int) leafSize / 2));
+							}
+
 						private final void calculateLean()
 							{
 								lean -= plantX - x;
@@ -359,10 +375,15 @@ public class Plant
 								if (daughterNodes.size() > 0)
 									for (Node n : daughterNodes)
 										n.setLeaves();
-								else if (parentNode == this || (parentNode.x != x && parentNode.y != y))
-									isLeaf = true;
-								else if (!parentNode.isLeaf)
-									parentNode.isLeaf = true;
+								else
+									{
+										isLeaf = true;
+										for (Point p : leafLocations)
+											if (p.x == (int) x && p.y == (int) y)
+												isLeaf = false;
+										if (isLeaf)
+											leafLocations.add(new Point((int) x, (int) y));
+									}
 							}
 
 						private final void setShadow()
@@ -370,7 +391,7 @@ public class Plant
 								if (daughterNodes.size() > 0)
 									for (Node n : daughterNodes)
 										n.setShadow();
-								
+
 								if (isLeaf)
 									Hub.simWindow.sim.addShadow(x, y, leafSize, shadowColour);
 							}
@@ -380,7 +401,7 @@ public class Plant
 								if (daughterNodes.size() > 0)
 									for (Node n : daughterNodes)
 										n.removeShadow();
-								
+
 								if (isLeaf)
 									Hub.simWindow.sim.removeShadow(x, y, leafSize, shadowColour);
 							}
