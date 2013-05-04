@@ -125,14 +125,14 @@ public class Plant
 							if (currentNode != null)
 								{
 									// Every instruction ups metabolism
-									metabolism += 0.05;
+									metabolism += 0.1;
 									switch (genes.nextInstruction(true))
 										{
 											case Genes.ADD_NODE:
-												metabolism += 0.75;
 												Node newNode = new Node(currentNode);
 												currentNode.addNode(newNode);
 												currentNode = newNode;
+												currentNode.growUp();
 												break;
 											case Genes.CLIMB_NODE_TREE:
 												currentNode = currentNode.getDaughterNode();
@@ -145,20 +145,19 @@ public class Plant
 												currentNode.growUp();
 												break;
 											case Genes.GROW_LEFT:
-												metabolism += 0.1;
 												currentNode.growLeft();
 												break;
 											case Genes.GROW_RIGHT:
-												metabolism += 0.1;
 												currentNode.growRight();
 												break;
 											case Genes.GROW_DOWN:
-												metabolism += 0.1;
 												currentNode.growDown();
+												metabolism += 0.5;
 												break;
 											case Genes.SKIP:
-												// wasted gene space is costly!
-												metabolism += 2;
+												// wasted gene space is extra costly!
+												// (prevents ultra long empty genomes)
+												metabolism += 0.75;
 												break;
 											case Genes.END_ALL:
 												currentNode = null;

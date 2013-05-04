@@ -31,6 +31,7 @@ public class SimulationWindow extends RenderableObject
 		private final TButton plantInteractionsButton = new TButton("Plant Interactions");
 		private final TButton plantOptionsButton = new TButton("Plant Options");
 		private final TButton lightOptionsButton = new TButton("Light Options");
+		private final TButton filterOptionsButton = new TButton("Filter Options");
 		private final TButton presetOptionsButton = new TButton("Preset Options");
 		private final TButton geneOptionsButton = new TButton("Gene Options");
 
@@ -67,14 +68,17 @@ public class SimulationWindow extends RenderableObject
 		public final TSlider stalkLengthSlider = new TSlider(TSlider.HORIZONTAL);
 
 		public TMenu lightOptionsMenu;
-		private final TSlider filterWidthSlider = new TSlider(TSlider.HORIZONTAL);
-		private final TSlider filterRedLightSlider = new TSlider(TSlider.HORIZONTAL);
-		private final TSlider filterGreenLightSlider = new TSlider(TSlider.HORIZONTAL);
-		private final TSlider filterBlueLightSlider = new TSlider(TSlider.HORIZONTAL);
 		public final TSlider redLightSlider = new TSlider(TSlider.HORIZONTAL);
 		public final TSlider greenLightSlider = new TSlider(TSlider.HORIZONTAL);
 		public final TSlider blueLightSlider = new TSlider(TSlider.HORIZONTAL);
 		public final TSlider leafOpacitySlider = new TSlider(TSlider.HORIZONTAL);
+
+		public TMenu filterOptionsMenu;
+		public final TSlider filterWidthSlider = new TSlider(TSlider.HORIZONTAL);
+		public final TSlider filterRedLightSlider = new TSlider(TSlider.HORIZONTAL);
+		public final TSlider filterGreenLightSlider = new TSlider(TSlider.HORIZONTAL);
+		public final TSlider filterBlueLightSlider = new TSlider(TSlider.HORIZONTAL);
+		private final TButton createFilterButton = new TButton("Create Filter");
 
 		TMenu geneOptionsMenu;
 		private final TTextField geneSaveNameField = new TTextField(0, 0, 160, 25, "My Genes");
@@ -96,7 +100,7 @@ public class SimulationWindow extends RenderableObject
 
 		@Override
 		protected void initiate()
-			{				
+			{
 				simulationScroller.setY(Hub.canvasHeight - 20);
 				simulationScroller.setMaxScrollDistance(sim.simWidth);
 
@@ -109,6 +113,7 @@ public class SimulationWindow extends RenderableObject
 				plantInteractionsMenu = new TMenu(0, 0, 200, Hub.canvasHeight, TMenu.VERTICAL);
 				plantOptionsMenu = new TMenu(0, 0, 200, Hub.canvasHeight, TMenu.VERTICAL);
 				lightOptionsMenu = new TMenu(0, 0, 200, Hub.canvasHeight, TMenu.VERTICAL);
+				filterOptionsMenu = new TMenu(0, 0, 200, Hub.canvasHeight, TMenu.VERTICAL);
 				geneOptionsMenu = new TMenu(0, 0, 200, Hub.canvasHeight, TMenu.VERTICAL);
 				presetOptionsMenu = new TMenu(0, 0, 200, Hub.canvasHeight, TMenu.VERTICAL);
 				topMenu.setBorderSize(5);
@@ -123,6 +128,7 @@ public class SimulationWindow extends RenderableObject
 				topMenu.add(plantInteractionsButton);
 				topMenu.add(plantOptionsButton);
 				topMenu.add(lightOptionsButton);
+				topMenu.add(filterOptionsButton);
 				topMenu.add(geneOptionsButton);
 				topMenu.add(presetOptionsButton);
 
@@ -216,29 +222,6 @@ public class SimulationWindow extends RenderableObject
 				presetOptionsMenu.add(openPresetsFolderButton);
 
 				// LightOptions menu set-up. This menu is located on the left
-				// TODO just make an addFilterButton and create a generic filter
-				// that when clicked on can be edited by a menu on the right.
-
-				// TLabel filterOptionsLabel = new
-				// TLabel("Light Filter Options");
-				// filterOptionsLabel.setFontSize(15);
-				// filterOptionsLabel.setBackgroundColour(new Color(0, 200,
-				// 200));
-				// lightOptionsMenu.addTComponent(filterOptionsLabel, false);
-				// lightOptionsMenu.addTComponent(new TLabel("Filter Width"),
-				// false);
-				// filterWidthSlider.setRange(0, sim.simWidth);
-				// lightOptionsMenu.addTComponent(filterWidthSlider);
-				// filterRedLightSlider.setSliderImage(0,
-				// Hub.loadImage("redSun.png"));
-				// filterGreenLightSlider.setSliderImage(0,
-				// Hub.loadImage("greenSun.png"));
-				// filterBlueLightSlider.setSliderImage(0,
-				// Hub.loadImage("blueSun.png"));
-				// lightOptionsMenu.addTComponent(filterRedLightSlider);
-				// lightOptionsMenu.addTComponent(filterGreenLightSlider);
-				// lightOptionsMenu.addTComponent(filterBlueLightSlider);
-
 				TLabel lightOptionsLabel = new TLabel("Sunlight Options");
 				lightOptionsLabel.setFontSize(15);
 				lightOptionsLabel.setBackgroundColour(new Color(0, 200, 200));
@@ -256,6 +239,25 @@ public class SimulationWindow extends RenderableObject
 				lightOptionsMenu.add(blueLightSlider);
 				lightOptionsMenu.add(new TLabel("Leaf Transparency"), false);
 				lightOptionsMenu.add(leafOpacitySlider);
+
+				// FilterOptions menu set-up. This menu is located on the left
+				TLabel filterOptionsLabel = new TLabel("Light Filter Options");
+				filterOptionsLabel.setFontSize(15);
+				filterOptionsLabel.setBackgroundColour(new Color(0, 200, 200));
+				filterOptionsMenu.add(filterOptionsLabel, false);
+				filterOptionsMenu.add(new TLabel("Filter Width"), false);
+				filterWidthSlider.setRange(0, sim.simWidth);
+				filterOptionsMenu.add(filterWidthSlider);
+				filterRedLightSlider.setSliderImage(0, Hub.loadImage("redFilter.png"));
+				filterGreenLightSlider.setSliderImage(0, Hub.loadImage("greenFilter.png"));
+				filterBlueLightSlider.setSliderImage(0, Hub.loadImage("blueFilter.png"));
+				filterRedLightSlider.setRange(0, 255);
+				filterGreenLightSlider.setRange(0, 255);
+				filterBlueLightSlider.setRange(0, 255);
+				filterOptionsMenu.add(filterRedLightSlider);
+				filterOptionsMenu.add(filterGreenLightSlider);
+				filterOptionsMenu.add(filterBlueLightSlider);
+				filterOptionsMenu.add(createFilterButton);
 
 				Hub.geneIO.addGenesToMenu();
 				Hub.geneIO.loadGenes("default.txt");
@@ -315,6 +317,8 @@ public class SimulationWindow extends RenderableObject
 					setLeftMenu(plantOptionsMenu);
 				else if (eventSource == lightOptionsButton)
 					setLeftMenu(lightOptionsMenu);
+				else if (eventSource == filterOptionsButton)
+					setLeftMenu(filterOptionsMenu);
 				else if (eventSource == geneOptionsButton)
 					setLeftMenu(geneOptionsMenu);
 				else if (eventSource == presetOptionsButton)
@@ -343,6 +347,11 @@ public class SimulationWindow extends RenderableObject
 						sim.showLighting = !sim.showLighting;
 						showLightButton.setLabel(sim.showLighting ? "Hide light" : "Show Light", true);
 					}
+				// Filter options
+				else if (eventSource == createFilterButton)
+					{
+						sim.addFilter = true;
+					}
 				// Preset options
 				else if (eventSource == savePresetButton)
 					{
@@ -354,7 +363,7 @@ public class SimulationWindow extends RenderableObject
 				else if (eventSource == saveGenesButton)
 					{
 						Hub.geneIO.saveGenes(sim.currentGenes, geneSaveNameField.getText());
-						}
+					}
 				else if (eventSource == openGenesFolderButton)
 					Hub.geneIO.openFolder();
 			}

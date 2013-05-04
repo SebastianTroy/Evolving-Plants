@@ -242,6 +242,7 @@ public class GeneEditor extends RenderableObject
 												Node newNode = new Node(currentNode);
 												currentNode.addNode(newNode);
 												currentNode = newNode;
+												currentNode.growUp();
 												break;
 											case Genes.CLIMB_NODE_TREE:
 												currentNode = currentNode.getDaughterNode();

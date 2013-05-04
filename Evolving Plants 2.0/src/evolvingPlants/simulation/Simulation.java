@@ -10,6 +10,8 @@ import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 
+import tools.ColTools;
+
 import evolvingPlants.Hub;
 
 public class Simulation
@@ -40,6 +42,7 @@ public class Simulation
 		public ArrayList<Point> seedsToAdd = new ArrayList<Point>(5);
 
 		// Light Filters
+		public boolean addFilter = false;
 		private ArrayList<LightFilter> filters = new ArrayList<LightFilter>();
 
 		// Seeds and Plants in the simulation
@@ -63,10 +66,18 @@ public class Simulation
 						filters.clear();
 						lightMap = new LightMap((int) simWidth, 550);
 						lightImage = new BufferedImage(800, 550, BufferedImage.TYPE_INT_RGB);
-						
+
 						reset = false;
 					}
-				
+
+				if (addFilter)
+					{
+						Color filterColour = ColTools.checkColour((int) Hub.simWindow.filterRedLightSlider.getValue(), (int) Hub.simWindow.filterGreenLightSlider.getValue(),
+								(int) Hub.simWindow.filterBlueLightSlider.getValue());
+						filters.add(new LightFilter(5, 250, (int) Hub.simWindow.filterWidthSlider.getValue(), filterColour));
+						addFilter = false;
+					}
+
 				timePassed += secondsPassed;
 				if (timePassed > 0.03)
 					{
@@ -106,7 +117,7 @@ public class Simulation
 			{
 				if (paused)
 					return;
-				
+
 				if (rendered)
 					{
 						g.setColor(Color.CYAN);
@@ -126,6 +137,8 @@ public class Simulation
 					s.render(g, simX + 200);
 				for (Plant p : plants)
 					p.render(g, simX + 200);
+				for (LightFilter f : filters)
+					f.render(g, simX + 200);
 
 				if (Hub.simWindow.stalkLengthSlider.isActive() || Hub.simWindow.largePlantSizeSlider.isActive() || Hub.simWindow.mediumPlantSizeSlider.isActive())
 					{
@@ -152,6 +165,9 @@ public class Simulation
 						y2 = Plant.plantY - (int) Hub.simWindow.mediumPlantSizeSlider.getValue();
 						g.drawLine(200, y2, 1000, y2);
 					}
+				
+				for (LightFilter f : filters)
+					f.render(g, simX);
 
 				g.setColor(Color.CYAN);
 				g.fillRect(0, 0, 200, Hub.canvasHeight);
@@ -159,12 +175,14 @@ public class Simulation
 
 				rendered = true;
 			}
-		
+
 		public final void unpause()
 			{
 				if (!paused)
 					return;
-				
+
+				paused = false;
+
 				Hub.simWindow.warpSpeedSlider.setValue(oldWarpSpeed);
 			}
 
@@ -172,7 +190,9 @@ public class Simulation
 			{
 				if (paused)
 					return;
-				
+
+				paused = true;
+
 				oldWarpSpeed = Hub.simWindow.warpSpeedSlider.getValue();
 				Hub.simWindow.warpSpeedSlider.setValue(0);
 			}

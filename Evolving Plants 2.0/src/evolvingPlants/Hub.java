@@ -23,7 +23,7 @@ public class Hub extends TCode
 				frame.icons.add(loadImage("icon.png"));
 				programName = "Evolving Plants 2.0";
 				versionNumber = "0.2_0";
-				DEBUG = false;
+				DEBUG = true;
 				begin(menu);
 			}
 
