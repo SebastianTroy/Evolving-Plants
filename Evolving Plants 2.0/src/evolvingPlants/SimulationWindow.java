@@ -333,12 +333,12 @@ public class SimulationWindow extends RenderableObject
 					{
 						if (!sim.showLighting)
 							{
-								sim.oldWarpSpeed = warpSpeedSlider.getValue();
+								sim.pause();
 								warpSpeedSlider.setPercent(0);
 								sim.updateLighting();
 							}
 						else
-							warpSpeedSlider.setValue(sim.oldWarpSpeed);
+							sim.unpause();
 
 						sim.showLighting = !sim.showLighting;
 						showLightButton.setLabel(sim.showLighting ? "Hide light" : "Show Light", true);

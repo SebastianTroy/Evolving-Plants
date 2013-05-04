@@ -24,7 +24,8 @@ public class Simulation
 		public boolean showLighting = false;
 
 		//
-		public double oldWarpSpeed;// Keep track of warp speed when pausing
+		private boolean paused = false;
+		private double oldWarpSpeed;// Keep track of warp speed when pausing
 		private double timePassed = 0;
 		private boolean rendered = false;
 		public boolean reset = false;
@@ -103,6 +104,9 @@ public class Simulation
 
 		public void render(Graphics2D g)
 			{
+				if (paused)
+					return;
+				
 				if (rendered)
 					{
 						g.setColor(Color.CYAN);
@@ -154,6 +158,23 @@ public class Simulation
 				g.fillRect(1000, 0, 200, Hub.canvasHeight);
 
 				rendered = true;
+			}
+		
+		public final void unpause()
+			{
+				if (!paused)
+					return;
+				
+				Hub.simWindow.warpSpeedSlider.setValue(oldWarpSpeed);
+			}
+
+		public final void pause()
+			{
+				if (paused)
+					return;
+				
+				oldWarpSpeed = Hub.simWindow.warpSpeedSlider.getValue();
+				Hub.simWindow.warpSpeedSlider.setValue(0);
 			}
 
 		public final void addSeed(double x, double y, Genes genes, double energy, int parentSizeCategory)

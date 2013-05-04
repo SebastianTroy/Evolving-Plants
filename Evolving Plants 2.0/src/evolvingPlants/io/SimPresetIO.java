@@ -143,10 +143,13 @@ public class SimPresetIO
 
 				try
 					{
+						sim.sim.pause();
+						
 						File presetFile = new File(saveDirectory + "//" + presetName);
 
 						in = new BufferedReader(new FileReader(presetFile));
 						in.readLine();// Plants
+						sim.plantOptionsMenu.setX(-200);
 						/**/sim.add(sim.plantOptionsMenu);
 						sim.leafSizeSlider.setValue(readValueFromLine(in.readLine()));
 						sim.stalkLengthSlider.setValue(readValueFromLine(in.readLine()));
@@ -160,12 +163,15 @@ public class SimPresetIO
 						/**/sim.remove(sim.plantOptionsMenu);
 						in.readLine();// /n
 						in.readLine();// Light
+						sim.lightOptionsMenu.setX(-200);
 						/**/sim.add(sim.lightOptionsMenu);
 						sim.redLightSlider.setValue(readValueFromLine(in.readLine()));
 						sim.greenLightSlider.setValue(readValueFromLine(in.readLine()));
 						sim.blueLightSlider.setValue(readValueFromLine(in.readLine()));
 						sim.leafOpacitySlider.setValue(readValueFromLine(in.readLine()));
 						/**/sim.remove(sim.lightOptionsMenu);
+						
+						sim.sim.unpause();
 					}
 				catch (Exception e)
 					{
@@ -184,6 +190,8 @@ public class SimPresetIO
 							{
 								e.printStackTrace();
 							}
+						
+						sim.sim.unpause();
 					}
 			}
 
