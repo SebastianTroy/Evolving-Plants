@@ -25,6 +25,10 @@ public class Plant
 
 		public boolean alive = true, selected = false;
 
+		/*
+		 * Seedlings do not have a shadow, so the shadow is initially set to
+		 * "BLACK" which the lighting engine interprets as no shadow.
+		 */
 		private Color shadowColour = new Color(0, 0, 0);
 		private boolean shadowsSet = false;
 
@@ -140,6 +144,9 @@ public class Plant
 											case Genes.DESCEND_NODE_TREE:
 												currentNode = currentNode.getParentNode();
 												break;
+											case Genes.NODE_CAN_SEED:
+												currentNode.canSeed = !currentNode.canSeed;
+												break;
 											case Genes.GROW_UP:
 												metabolism++;
 												currentNode.growUp();
@@ -155,8 +162,10 @@ public class Plant
 												metabolism += 0.5;
 												break;
 											case Genes.SKIP:
-												// wasted gene space is extra costly!
-												// (prevents ultra long empty genomes)
+												// wasted gene space is extra
+												// costly!
+												// (prevents ultra long empty
+												// genomes)
 												metabolism += 0.75;
 												break;
 											case Genes.END_ALL:
@@ -201,7 +210,7 @@ public class Plant
 					{
 						private double x, y;
 
-						private boolean isLeaf = false;
+						private boolean isLeaf = false, canSeed = true;
 						private double seedEnergy = 0;
 
 						private Node parentNode;
@@ -230,7 +239,7 @@ public class Plant
 										energy += Hub.simWindow.sim.photosynthesizeAt(getX() + RandTools.getDouble((int) leafSize / -2, (int) leafSize / 2), (int) y, genes.leafColour, shadowColour)
 												* secondsPassed;
 
-										if (fractionGrown == 1)
+										if (fractionGrown == 1 && canSeed)
 											{
 												if (energy > genes.seedEnergyTransfer * secondsPassed)
 													{
@@ -239,13 +248,7 @@ public class Plant
 													}
 												if (seedEnergy > genes.seedEnergy)
 													{
-														/*
-														 * make seed twice as
-														 * energetically
-														 * expensive and add
-														 * penalty
-														 */
-														energy -= (seedEnergy + 10);
+														energy -= seedEnergy;
 														seedEnergy = 0;
 														Hub.simWindow.sim.addSeed(getX(), getY(), genes, genes.seedEnergy, sizeCategory);
 													}

@@ -5,14 +5,12 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 
-import tools.ColTools;
-
 import evolvingPlants.Hub;
 
 public class LightFilter
 	{
-		public int x, y, width;
-		private Color filterColour;
+		int x, y, width;
+		Color filterColour;
 		private BufferedImage filterColourMap;
 
 		public LightFilter(int x, int y, int width, Color filterColour)

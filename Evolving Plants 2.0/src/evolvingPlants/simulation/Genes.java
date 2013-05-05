@@ -18,6 +18,7 @@ public class Genes
 		public static final char ADD_NODE = 'N';
 		public static final char CLIMB_NODE_TREE = '+';
 		public static final char DESCEND_NODE_TREE = '-';
+		public static final char NODE_CAN_SEED = 'S';
 		public static final char GROW_UP = '^';
 		public static final char GROW_LEFT = '<';
 		public static final char GROW_RIGHT = '>';
@@ -189,6 +190,8 @@ public class Genes
 							return GROW_RIGHT;
 						case 6:
 							return GROW_DOWN;
+						case 7:
+							return NODE_CAN_SEED;
 						default:
 							return SKIP;
 					}

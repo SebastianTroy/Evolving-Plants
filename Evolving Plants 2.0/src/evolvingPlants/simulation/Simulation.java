@@ -74,8 +74,11 @@ public class Simulation
 					{
 						Color filterColour = ColTools.checkColour((int) Hub.simWindow.filterRedLightSlider.getValue(), (int) Hub.simWindow.filterGreenLightSlider.getValue(),
 								(int) Hub.simWindow.filterBlueLightSlider.getValue());
-						filters.add(new LightFilter(5, 250, (int) Hub.simWindow.filterWidthSlider.getValue(), filterColour));
+						LightFilter newFilter = new LightFilter(5, 250, (int) Hub.simWindow.filterWidthSlider.getValue(), filterColour);
+						filters.add(newFilter);
 						addFilter = false;
+						
+						lightMap.addShadow(newFilter.x, newFilter.y, newFilter.width, newFilter.filterColour);
 					}
 
 				timePassed += secondsPassed;
@@ -115,9 +118,6 @@ public class Simulation
 
 		public void render(Graphics2D g)
 			{
-				if (paused)
-					return;
-
 				if (rendered)
 					{
 						g.setColor(Color.CYAN);

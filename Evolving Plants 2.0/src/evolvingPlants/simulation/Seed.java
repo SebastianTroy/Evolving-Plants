@@ -7,7 +7,7 @@ import evolvingPlants.Hub;
 
 public class Seed
 	{
-		double x, y, energy, distance = -1, speed;
+		double x, y, energy, seedSurvivalTime, distance = -1, speed;
 		public boolean exists = true, falling = true;
 		Genes genes;
 		private int parentSizeCategory;
@@ -17,6 +17,7 @@ public class Seed
 				this.x = x;
 				this.y = y;
 				this.energy = energy;
+				seedSurvivalTime = (Math.log(energy / 500) + 2.25) * 3;
 				this.parentSizeCategory = parentSizeCategory;
 				genes = new Genes(parent, true);
 			}
@@ -26,11 +27,14 @@ public class Seed
 				this.x = x;
 				this.y = y;
 				this.energy = energy;
+				seedSurvivalTime = (Math.log(energy / 500) + 2.25) * 3;
 				genes = new Genes(parentOne, parentTwo);
 			}
 
 		public final void tick(double secondsPassed)
 			{
+				seedSurvivalTime -= secondsPassed;
+
 				if (falling)
 					{
 						if (distance < 0)
@@ -48,25 +52,25 @@ public class Seed
 						y += 90 * secondsPassed;
 
 						if (y > Plant.plantY)
-							falling = false;
+							{
+								if (getX() < 0 || getX() > Hub.simWindow.sim.simWidth)
+									exists = false;
+
+								falling = false;
+							}
 					}
 				else if (exists)
-					if (getX() < 0 || getX() > Hub.simWindow.sim.simWidth)
-						exists = false;
-					else
-						{
-							energy -= 50 * secondsPassed;
+					{
+						if (seedSurvivalTime < 0)
+							exists = false;
 
-							if (energy < 0)
+						// If is space to germinate
+						else if (Hub.simWindow.sim.isSpaceAt(getX(), parentSizeCategory))
+							{
+								Hub.simWindow.sim.addPlant(new Plant(this));
 								exists = false;
-
-							// If is space to germinate
-							if (Hub.simWindow.sim.isSpaceAt(getX(), parentSizeCategory))
-								{
-									Hub.simWindow.sim.addPlant(new Plant(this));
-									exists = false;
-								}
-						}
+							}
+					}
 			}
 
 		public final void render(Graphics g, int simX)
@@ -77,7 +81,7 @@ public class Seed
 				int apparentX = (int) (getX() + simX);
 
 				g.setColor(genes.seedColour);
-				g.fillOval(apparentX, (int) y, (int) (energy / 10), (int) (energy / 10));
+				g.fillOval(apparentX, (int) y, (int) (seedSurvivalTime), (int) (seedSurvivalTime));
 			}
 
 		public final int getX()
