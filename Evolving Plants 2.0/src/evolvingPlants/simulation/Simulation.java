@@ -43,6 +43,7 @@ public class Simulation
 
 		// Light Filters
 		public boolean addFilter = false;
+		private LightFilter filterBeingMoved = null;
 		private ArrayList<LightFilter> filters = new ArrayList<LightFilter>();
 
 		// Seeds and Plants in the simulation
@@ -77,8 +78,27 @@ public class Simulation
 						LightFilter newFilter = new LightFilter(5, 250, (int) Hub.simWindow.filterWidthSlider.getValue(), filterColour);
 						filters.add(newFilter);
 						addFilter = false;
-						
-						lightMap.addShadow(newFilter.x, newFilter.y, newFilter.width, newFilter.filterColour);
+
+						lightMap.addShadow(newFilter.x, newFilter.y, newFilter.width, newFilter.shadowColour);
+					}
+
+				for (int i = 0; i < filters.size();)
+					{
+						LightFilter f = filters.get(i);
+
+						if (!f.exists)
+							{
+								lightMap.removeShadow(f.x, f.y, f.width, f.shadowColour);
+								filters.remove(i);
+							}
+						else
+							i++;
+						if (f.movedTo != null)
+							{
+								lightMap.removeShadow(f.x, f.y, f.width, f.shadowColour);
+								f.moved();
+								lightMap.addShadow(f.x, f.y, f.width, f.shadowColour);
+							}
 					}
 
 				timePassed += secondsPassed;
@@ -165,9 +185,6 @@ public class Simulation
 						y2 = Plant.plantY - (int) Hub.simWindow.mediumPlantSizeSlider.getValue();
 						g.drawLine(200, y2, 1000, y2);
 					}
-				
-				for (LightFilter f : filters)
-					f.render(g, simX);
 
 				g.setColor(Color.CYAN);
 				g.fillRect(0, 0, 200, Hub.canvasHeight);
@@ -311,13 +328,27 @@ public class Simulation
 									if (plants.get(i).contains(point))
 										plants.get(i).kill();
 							}
+						else if (Hub.simWindow.currentCursor == Hub.simWindow.moveFilterCursor)
+							{
+								Point adjustedPoint = new Point((int) (e.getX() + -simX - 200), e.getY());
+
+								for (LightFilter f : filters)
+									if (f.containsPoint(adjustedPoint))
+										filterBeingMoved = f;
+							}
+						else if (Hub.simWindow.currentCursor == Hub.simWindow.deleteFilterCursor)
+							{
+								Point adjustedPoint = new Point((int) (e.getX() + -simX - 200), e.getY());
+								for (LightFilter f : filters)
+									if (f.containsPoint(adjustedPoint))
+										f.exists = false;
+							}
 					}
 			}
 
 		public void mouseDragged(MouseEvent e)
 			{
-				Point point = e.getPoint();
-				point.x -= simX + 200;
+				Point point =new Point((int) (e.getX() + -simX - 200), e.getY());
 
 				if (Hub.simWindow.currentCursor == Hub.simWindow.killPlantCursor)
 					{
@@ -325,5 +356,16 @@ public class Simulation
 							if (plants.get(i).contains(point))
 								plants.get(i).kill();
 					}
+				
+				if (filterBeingMoved != null)
+					filterBeingMoved.moving(point);
+			}
+
+		public void mouseReleased(MouseEvent e)
+			{
+				if (filterBeingMoved != null)
+					filterBeingMoved.moving(new Point((int) (e.getX() + -simX - 200), e.getY()));
+
+				filterBeingMoved = null;
 			}
 	}

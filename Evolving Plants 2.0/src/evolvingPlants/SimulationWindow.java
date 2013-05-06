@@ -28,7 +28,7 @@ public class SimulationWindow extends RenderableObject
 		private final TScrollBar simulationScroller = new TScrollBar(200, 0, 800, 800, TScrollBar.HORIZONTAL, new Rectangle(200, 0, 800, 550));
 
 		final TMenu topMenu = new TMenu(200, 0, 800, 70, TMenu.HORIZONTAL);
-		private final TButton plantInteractionsButton = new TButton("Plant Interactions");
+		private final TButton plantInteractionsButton = new TButton("Interactions");
 		private final TButton plantOptionsButton = new TButton("Plant Options");
 		private final TButton lightOptionsButton = new TButton("Light Options");
 		private final TButton filterOptionsButton = new TButton("Filter Options");
@@ -44,15 +44,19 @@ public class SimulationWindow extends RenderableObject
 		private final TButton resetSimButton = new TButton("Reset Simulation");
 		private final TButton mainMenuButton = new TButton("Main Menu");
 
-		TMenu plantInteractionsMenu;
-		private RadioButtonsCollection plantInteractionButtons = new RadioButtonsCollection();
+		TMenu interactionsMenu;
+		private RadioButtonsCollection interactionButtons = new RadioButtonsCollection();
 		private TRadioButton selectPlantButton = new TRadioButton("Select Plants");
 		private TRadioButton plantSeedButton = new TRadioButton("Plant Seeds");
 		private TRadioButton getGenesButton = new TRadioButton("Extract Genes");
 		private TRadioButton killPlantsButton = new TRadioButton("Kill Plants");
+		private TRadioButton moveFilterButton = new TRadioButton("Move Filters");
+		private TRadioButton deleteFilterButton = new TRadioButton("Delete Filters");
 		public Cursor plantSeedCursor;
 		public Cursor getGenesCursor;
 		public Cursor killPlantCursor;
+		public Cursor moveFilterCursor;
+		public Cursor deleteFilterCursor;
 		public Cursor currentCursor = getObserver().getCursor();
 
 		public TMenu plantOptionsMenu;
@@ -110,7 +114,7 @@ public class SimulationWindow extends RenderableObject
 					remove(simulationScroller);
 
 				simOptionsMenu = new TMenu(1000, 0, 200, Hub.canvasHeight, TMenu.VERTICAL);
-				plantInteractionsMenu = new TMenu(0, 0, 200, Hub.canvasHeight, TMenu.VERTICAL);
+				interactionsMenu = new TMenu(0, 0, 200, Hub.canvasHeight, TMenu.VERTICAL);
 				plantOptionsMenu = new TMenu(0, 0, 200, Hub.canvasHeight, TMenu.VERTICAL);
 				lightOptionsMenu = new TMenu(0, 0, 200, Hub.canvasHeight, TMenu.VERTICAL);
 				filterOptionsMenu = new TMenu(0, 0, 200, Hub.canvasHeight, TMenu.VERTICAL);
@@ -120,8 +124,10 @@ public class SimulationWindow extends RenderableObject
 
 				Toolkit k = Toolkit.getDefaultToolkit();
 				plantSeedCursor = k.createCustomCursor(Hub.loadImage("seedPointer.png"), new Point(0, 0), "seed");
-				getGenesCursor = k.createCustomCursor(Hub.loadImage("dna.png"), new Point(0, 0), "seed");
-				killPlantCursor = k.createCustomCursor(Hub.loadImage("skull.png"), new Point(0, 0), "seed");
+				getGenesCursor = k.createCustomCursor(Hub.loadImage("dna.png"), new Point(0, 0), "genes");
+				killPlantCursor = k.createCustomCursor(Hub.loadImage("skull.png"), new Point(0, 0), "kill");
+				deleteFilterCursor = k.createCustomCursor(Hub.loadImage("bin.png"), new Point(0, 0), "move");
+				moveFilterCursor = k.createCustomCursor(Hub.loadImage("fourWayArrow.png"), new Point(0, 0), "delete");
 
 				// Top menu set-up.
 				add(topMenu);
@@ -134,14 +140,18 @@ public class SimulationWindow extends RenderableObject
 
 				// PlantInteractions menu set-up. This menu is located on the
 				// left
-				plantInteractionButtons.add(selectPlantButton);
-				plantInteractionButtons.add(plantSeedButton);
-				plantInteractionButtons.add(getGenesButton);
-				plantInteractionButtons.add(killPlantsButton);
-				plantInteractionsMenu.add(selectPlantButton);
-				plantInteractionsMenu.add(plantSeedButton);
-				plantInteractionsMenu.add(getGenesButton);
-				plantInteractionsMenu.add(killPlantsButton);
+				interactionButtons.add(selectPlantButton);
+				interactionButtons.add(plantSeedButton);
+				interactionButtons.add(getGenesButton);
+				interactionButtons.add(killPlantsButton);
+				interactionButtons.add(moveFilterButton);
+				interactionButtons.add(deleteFilterButton);
+				interactionsMenu.add(selectPlantButton);
+				interactionsMenu.add(plantSeedButton);
+				interactionsMenu.add(getGenesButton);
+				interactionsMenu.add(killPlantsButton);
+				interactionsMenu.add(moveFilterButton);
+				interactionsMenu.add(deleteFilterButton);
 
 				// SimOptions menu set-up. This menu is located on the right
 				warpSpeedSlider.setRange(0, 50);
@@ -264,7 +274,7 @@ public class SimulationWindow extends RenderableObject
 
 				Hub.presetIO.addPresetsToMenu();
 
-				setLeftMenu(plantInteractionsMenu);
+				setLeftMenu(interactionsMenu);
 				setRightMenu(simOptionsMenu);
 
 				Hub.presetIO.loadPreset("default.txt");
@@ -312,7 +322,7 @@ public class SimulationWindow extends RenderableObject
 					sim.reset = true;
 				// Change menu's ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 				else if (eventSource == plantInteractionsButton)
-					setLeftMenu(plantInteractionsMenu);
+					setLeftMenu(interactionsMenu);
 				else if (eventSource == plantOptionsButton)
 					setLeftMenu(plantOptionsMenu);
 				else if (eventSource == lightOptionsButton)
@@ -332,6 +342,10 @@ public class SimulationWindow extends RenderableObject
 					currentCursor = getGenesCursor;
 				else if (eventSource == killPlantsButton)
 					currentCursor = killPlantCursor;
+				else if (eventSource == moveFilterButton)
+					currentCursor = moveFilterCursor;
+				else if (eventSource == deleteFilterButton)
+					currentCursor = deleteFilterCursor;
 				// Update light
 				else if (eventSource == showLightButton)
 					{
@@ -411,6 +425,12 @@ public class SimulationWindow extends RenderableObject
 		public void mousePressed(MouseEvent e)
 			{
 				sim.mousePressed(e);
+			}
+
+		@Override
+		public void mouseReleased(MouseEvent e)
+			{
+				sim.mouseReleased(e);
 			}
 
 		@Override
