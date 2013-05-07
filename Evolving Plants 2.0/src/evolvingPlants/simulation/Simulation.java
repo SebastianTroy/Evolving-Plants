@@ -80,6 +80,8 @@ public class Simulation
 						addFilter = false;
 
 						lightMap.addShadow(newFilter.x, newFilter.y, newFilter.width, newFilter.shadowColour);
+						if (showLighting)
+							updateLighting();
 					}
 
 				for (int i = 0; i < filters.size();)
@@ -117,6 +119,10 @@ public class Simulation
 
 				for (int i = 0; i < Hub.simWindow.warpSpeedSlider.getValue(); i++)
 					{
+						// update lighting
+						if (showLighting)
+							updateLighting();
+
 						// Add new seedlings to Array
 						for (Point p : seedsToAdd)
 							addSeed(p.getX(), p.getY(), currentGenes, currentGenes.seedEnergy, Plant.SMALL);
@@ -348,7 +354,7 @@ public class Simulation
 
 		public void mouseDragged(MouseEvent e)
 			{
-				Point point =new Point((int) (e.getX() + -simX - 200), e.getY());
+				Point point = new Point((int) (e.getX() + -simX - 200), e.getY());
 
 				if (Hub.simWindow.currentCursor == Hub.simWindow.killPlantCursor)
 					{
@@ -356,7 +362,7 @@ public class Simulation
 							if (plants.get(i).contains(point))
 								plants.get(i).kill();
 					}
-				
+
 				if (filterBeingMoved != null)
 					filterBeingMoved.moving(point);
 			}
@@ -364,7 +370,11 @@ public class Simulation
 		public void mouseReleased(MouseEvent e)
 			{
 				if (filterBeingMoved != null)
-					filterBeingMoved.moving(new Point((int) (e.getX() + -simX - 200), e.getY()));
+					{
+						filterBeingMoved.moving(new Point((int) (e.getX() + -simX - 200), e.getY()));
+						if (showLighting)
+							updateLighting();
+					}
 
 				filterBeingMoved = null;
 			}
