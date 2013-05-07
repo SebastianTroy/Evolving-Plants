@@ -88,6 +88,15 @@ public class Simulation
 					{
 						LightFilter f = filters.get(i);
 
+						if (f.movedTo != null)
+							{
+								lightMap.removeShadow(f.x, f.y, f.width, f.shadowColour);
+								f.moved();
+								lightMap.addShadow(f.x, f.y, f.width, f.shadowColour);
+
+								if (showLighting)
+									updateLighting();
+							}
 						if (!f.exists)
 							{
 								lightMap.removeShadow(f.x, f.y, f.width, f.shadowColour);
@@ -95,12 +104,6 @@ public class Simulation
 							}
 						else
 							i++;
-						if (f.movedTo != null)
-							{
-								lightMap.removeShadow(f.x, f.y, f.width, f.shadowColour);
-								f.moved();
-								lightMap.addShadow(f.x, f.y, f.width, f.shadowColour);
-							}
 					}
 
 				timePassed += secondsPassed;
@@ -119,7 +122,7 @@ public class Simulation
 
 				for (int i = 0; i < Hub.simWindow.warpSpeedSlider.getValue(); i++)
 					{
-						// update lighting
+						/*REALLY SUPER SLOW*/
 						if (showLighting)
 							updateLighting();
 
@@ -372,8 +375,6 @@ public class Simulation
 				if (filterBeingMoved != null)
 					{
 						filterBeingMoved.moving(new Point((int) (e.getX() + -simX - 200), e.getY()));
-						if (showLighting)
-							updateLighting();
 					}
 
 				filterBeingMoved = null;
