@@ -404,6 +404,8 @@ public class SimulationWindow extends RenderableObject
 						playbackSpeed.setValue(0);
 						sim.lightMap.setRedLight(redLightSlider.getValue());
 						playbackSpeed.setValue(simSpeed);
+						if (sim.showLighting)
+							sim.updateLighting();
 					}
 				else if (eventSource == greenLightSlider && (e.getScrollType() == TScrollEvent.FINAL_VALUE || e.getScrollType() == TScrollEvent.VALUE_SET_INTERNALLY))
 					{
@@ -411,6 +413,8 @@ public class SimulationWindow extends RenderableObject
 						playbackSpeed.setValue(0);
 						sim.lightMap.setGreenLight(greenLightSlider.getValue());
 						playbackSpeed.setValue(simSpeed);
+						if (sim.showLighting)
+							sim.updateLighting();
 					}
 				else if (eventSource == blueLightSlider && (e.getScrollType() == TScrollEvent.FINAL_VALUE || e.getScrollType() == TScrollEvent.VALUE_SET_INTERNALLY))
 					{
@@ -418,6 +422,8 @@ public class SimulationWindow extends RenderableObject
 						playbackSpeed.setValue(0);
 						sim.lightMap.setBlueLight(blueLightSlider.getValue());
 						playbackSpeed.setValue(simSpeed);
+						if (sim.showLighting)
+							sim.updateLighting();
 					}
 			}
 

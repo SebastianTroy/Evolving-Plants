@@ -47,7 +47,7 @@ public class GeneIO
 			{
 				if (Hub.simWindow == null)
 					return;
-				
+
 				TMenu geneMenu = Hub.simWindow.savedGenesMenu;
 
 				geneMenu.clearTComponents();
@@ -69,15 +69,15 @@ public class GeneIO
 				BufferedWriter out = null;
 
 				try
-					{
+					{						
 						File geneFile = new File(saveDirectory + "//" + geneName + ".txt");
 
 						while (geneFile.exists())
 							{
-								geneName = new String(geneName + "-");
+								geneName += '-';
 								geneFile = new File(saveDirectory + "//" + geneName + ".txt");
 							}
-
+						
 						out = new BufferedWriter(new FileWriter(geneFile, false));
 						out.write(genes.getGenes());
 						out.newLine();
@@ -94,7 +94,6 @@ public class GeneIO
 						out.write("White (0, 0, 0), means no light absorbed. Black (255, 255, 255), means all light absorbed");
 						out.newLine();
 						out.write("The optimum absorbance is 200 units of light, this can be a mix of the three colours");
-
 					}
 				catch (Exception e)
 					{

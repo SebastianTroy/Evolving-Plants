@@ -29,15 +29,19 @@ public class GeneEditor extends RenderableObject
 
 		// Plant variables
 		private int plantX = 950, plantY = 500, leafSize = 14;
-		private Color leafColour = new Color(175, 175, 175);
+		private Color leafColour = new Color(175, 175, 175), oppositeColour = new Color(80, 80, 80), lightColour = Color.WHITE;
 		private NodeTree examplePlant = new NodeTree(new Genes(" ", 100, 175, 175, 175));
-		private double height = 0, lean = 0;
+		private NodeTree.Node lastSelectedNode;
+		private double height = 0, lean = 0, energyGained = 200, metabolism = 0.1;
 
 		public final TMenu plantOptionsMenu = new TMenu(450, 0, 250, 500, TMenu.VERTICAL);
 		public final TSlider seedSizeSlider = new TSlider(TSlider.HORIZONTAL);
 		public final TSlider redLeafSlider = new TSlider(TSlider.HORIZONTAL);
 		public final TSlider greenLeafSlider = new TSlider(TSlider.HORIZONTAL);
 		public final TSlider blueLeafSlider = new TSlider(TSlider.HORIZONTAL);
+		public final TSlider redLightSlider = new TSlider(TSlider.HORIZONTAL);
+		public final TSlider greenLightSlider = new TSlider(TSlider.HORIZONTAL);
+		public final TSlider blueLightSlider = new TSlider(TSlider.HORIZONTAL);
 
 		private TTextField geneEditorField;
 		private final TTextField saveNameField = new TTextField(10, 540, 300, 20, "Save Name Here");
@@ -68,6 +72,12 @@ public class GeneEditor extends RenderableObject
 				redLeafSlider.setSliderImage(0, Hub.loadImage("redLeaf.png"));
 				greenLeafSlider.setSliderImage(0, Hub.loadImage("greenLeaf.png"));
 				blueLeafSlider.setSliderImage(0, Hub.loadImage("blueLeaf.png"));
+				redLightSlider.setRange(0, 255);
+				greenLightSlider.setRange(0, 255);
+				blueLightSlider.setRange(0, 255);
+				redLightSlider.setSliderImage(0, Hub.loadImage("redSun.png"));
+				greenLightSlider.setSliderImage(0, Hub.loadImage("greenSun.png"));
+				blueLightSlider.setSliderImage(0, Hub.loadImage("blueSun.png"));
 
 				TLabel plantOptionsLabel = new TLabel("Plant Options");
 				plantOptionsLabel.setFontSize(15);
@@ -78,9 +88,21 @@ public class GeneEditor extends RenderableObject
 				plantOptionsMenu.add(greenLeafSlider);
 				plantOptionsMenu.add(blueLeafSlider);
 
+				TLabel simOptionsLabel = new TLabel("Light Options");
+				simOptionsLabel.setFontSize(15);
+				simOptionsLabel.setBackgroundColour(new Color(0, 200, 200));
+				plantOptionsMenu.add(simOptionsLabel, false);
+				plantOptionsMenu.add(redLightSlider);
+				plantOptionsMenu.add(greenLightSlider);
+				plantOptionsMenu.add(blueLightSlider);
+
 				redLeafSlider.setValue(175.0);
 				greenLeafSlider.setValue(175.0);
 				blueLeafSlider.setValue(175.0);
+
+				redLightSlider.setValue(255);
+				greenLightSlider.setValue(255);
+				blueLightSlider.setValue(255);
 
 				add(plantOptionsMenu);
 
@@ -103,8 +125,10 @@ public class GeneEditor extends RenderableObject
 				instructionMenu.add(getInstructionLabel("Grow left instruction = <"), false);
 				instructionMenu.add(getInstructionLabel("Grow right instruction = >"), false);
 				instructionMenu.add(getInstructionLabel("Create new node = N"), false);
+				instructionMenu.add(getInstructionLabel("Toggle if node can seed = S"), false);
 				instructionMenu.add(getInstructionLabel("Climb up node tree = +"), false);
 				instructionMenu.add(getInstructionLabel("Climb down node tree = -"), false);
+				instructionMenu.add(getInstructionLabel("Stop reading instructions = |"), false);
 			}
 
 		@Override
@@ -118,11 +142,13 @@ public class GeneEditor extends RenderableObject
 				g.fillRect(0, 0, 700, 500);
 				g.setColor(Color.DARK_GRAY);
 				g.fillRect(0, 500, Hub.canvasWidth, 100);
-				g.setColor(Color.WHITE);
+				g.setColor(lightColour);
 				g.fillRect(700, 0, 500, 500);
 
 				g.setColor(Color.BLACK);
 				g.drawString((Math.abs(lean) / height > 0.6) ? "Plant not Viable, too much lean!" : "Plant Viable", 710, 30);
+				g.drawString("Energy/Sec: " + energyGained, 520, 400);
+				g.drawString("Metabolism: " + metabolism, 520, 415);
 
 				examplePlant.baseNode.render(g);
 			}
@@ -137,6 +163,7 @@ public class GeneEditor extends RenderableObject
 
 		private final void updateExamplePlant()
 			{
+				metabolism = 0;
 				examplePlant = new NodeTree(new Genes(geneEditorField.getText(), seedSizeSlider.getValue(), (int) redLeafSlider.getValue(), (int) greenLeafSlider.getValue(),
 						(int) blueLeafSlider.getValue()));
 			}
@@ -183,7 +210,7 @@ public class GeneEditor extends RenderableObject
 
 										in = new BufferedReader(new FileReader(geneFile));
 
-										saveNameField.setText(chooser.getSelectedFile().getName());
+										saveNameField.setText(chooser.getSelectedFile().getName().substring(0, chooser.getSelectedFile().getName().length() - 4));
 										geneEditorField.setText(readStringFromLine(in.readLine()));
 										seedSizeSlider.setValue(readValueFromLine(in.readLine()));
 										redLeafSlider.setValue(readValueFromLine(in.readLine()));
@@ -217,10 +244,17 @@ public class GeneEditor extends RenderableObject
 		public final void tScrollEvent(TScrollEvent e)
 			{
 				leafColour = new Color((int) redLeafSlider.getValue(), (int) greenLeafSlider.getValue(), (int) blueLeafSlider.getValue());
-			}
+				oppositeColour = new Color(255 - (int) redLeafSlider.getValue(), 255 - (int) greenLeafSlider.getValue(), 255 - (int) blueLeafSlider.getValue());
+				lightColour = new Color((int) redLightSlider.getValue(), (int) greenLightSlider.getValue(), (int) blueLightSlider.getValue());
 
-		// TODO sort out hoe leaves are decided and rendering of Node trees here
-		// and in Plant.java
+				energyGained = 0;
+				energyGained += Math.max(0, (lightColour.getRed() - leafColour.getRed()));
+				energyGained += Math.max(0, (lightColour.getGreen() - leafColour.getGreen()));
+				energyGained += Math.max(0, (lightColour.getBlue() - leafColour.getBlue()));
+
+				if (energyGained > 200)
+					energyGained = Math.max(0, 200 - (energyGained - 200));
+			}
 
 		private class NodeTree
 			{
@@ -230,46 +264,52 @@ public class GeneEditor extends RenderableObject
 
 				private NodeTree(Genes genes)
 					{
+						boolean finishedReading = false;
 						baseNode.growUp();
 						Node currentNode = baseNode;
 
-						while (genes.currentInstruction() != Genes.END_ALL)
-							if (currentNode != null)
-								{
-									switch (genes.nextInstruction(true))
-										{
-											case Genes.ADD_NODE:
-												Node newNode = new Node(currentNode);
-												currentNode.addNode(newNode);
-												currentNode = newNode;
-												currentNode.growUp();
-												break;
-											case Genes.CLIMB_NODE_TREE:
-												currentNode = currentNode.getDaughterNode();
-												break;
-											case Genes.DESCEND_NODE_TREE:
-												currentNode = currentNode.getParentNode();
-												break;
-											case Genes.GROW_UP:
-												currentNode.growUp();
-												break;
-											case Genes.GROW_LEFT:
-												currentNode.growLeft();
-												break;
-											case Genes.GROW_RIGHT:
-												currentNode.growRight();
-												break;
-											case Genes.GROW_DOWN:
-												currentNode.growDown();
-												break;
-											case Genes.SKIP:
-												break;
-											case Genes.END_ALL:
-												currentNode = null;
-										}
-								}
-							else
-								genes.nextInstruction(false);
+						while (!finishedReading)
+							{
+								metabolism += 0.1;
+								switch (genes.nextInstruction())
+									{
+										case Genes.ADD_NODE:
+											Node newNode = new Node(currentNode);
+											currentNode.addNode(newNode);
+											currentNode = newNode;
+											currentNode.growUp();
+											break;
+										case Genes.CLIMB_NODE_TREE:
+											currentNode = currentNode.getDaughterNode();
+											break;
+										case Genes.DESCEND_NODE_TREE:
+											currentNode = currentNode.getParentNode();
+											break;
+										case Genes.NODE_CAN_SEED:
+											currentNode.canSeed = !currentNode.canSeed;
+											break;
+										case Genes.GROW_UP:
+											metabolism++;
+											currentNode.growUp();
+											break;
+										case Genes.GROW_LEFT:
+											currentNode.growLeft();
+											break;
+										case Genes.GROW_RIGHT:
+											currentNode.growRight();
+											break;
+										case Genes.GROW_DOWN:
+											metabolism += 0.5;
+											currentNode.growDown();
+											break;
+										case Genes.SKIP:
+											metabolism += 0.75;
+											break;
+										case Genes.END_ALL:
+											lastSelectedNode = currentNode;
+											finishedReading = true;
+									}
+							}
 
 						baseNode.calculateLean();
 						baseNode.setLeaves();
@@ -282,7 +322,7 @@ public class GeneEditor extends RenderableObject
 
 						private double x, y;
 
-						private boolean isLeaf = false;
+						private boolean isLeaf = false, canSeed = true;
 
 						private Node parentNode;
 						private ArrayList<Node> daughterNodes = new ArrayList<Node>();
@@ -306,16 +346,29 @@ public class GeneEditor extends RenderableObject
 								if (!daughterNodes.isEmpty())
 									for (Node n : daughterNodes)
 										n.render(g);
-								if (isLeaf)
 									{
 										int x = (int) this.x - (leafSize / 2);
 										int y = getY() - (leafSize / 2);
 
-										g.setColor(leafColour);
-										g.fillOval(x, y, leafSize, leafSize);
-										g.setColor(Color.BLACK);
-										g.drawOval(x, y, leafSize, leafSize);
+										if (isLeaf)
+											{
+												g.setColor(leafColour);
+												g.fillOval(x, y, leafSize, leafSize);
+												g.setColor(Color.BLACK);
+												g.drawOval(x, y, leafSize, leafSize);
+												if (canSeed)
+													{
+														g.setColor(oppositeColour);
+														g.fillOval(x + leafSize / 4, y + leafSize / 4, leafSize / 2, leafSize / 2);
+													}
+											}
+										if (this == lastSelectedNode)
+											{
+												g.setColor(Color.BLACK);
+												g.drawOval(x - 3, y - 3, leafSize + 6, leafSize + 6);
+											}
 									}
+
 								g.setColor(Color.BLACK);
 								g.drawLine((int) x, getY(), (int) (parentNode.getX()), parentNode.getY());
 							}

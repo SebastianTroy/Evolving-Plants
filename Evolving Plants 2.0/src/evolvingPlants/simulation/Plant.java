@@ -122,58 +122,57 @@ public class Plant
 
 				private NodeTree(Genes genes)
 					{
+						boolean finishedReading = false;
+
 						baseNode.growUp();
 						Node currentNode = baseNode;
 
-						while (genes.currentInstruction() != Genes.END_ALL)
-							if (currentNode != null)
-								{
-									// Every instruction ups metabolism
-									metabolism += 0.1;
-									switch (genes.nextInstruction(true))
-										{
-											case Genes.ADD_NODE:
-												Node newNode = new Node(currentNode);
-												currentNode.addNode(newNode);
-												currentNode = newNode;
-												currentNode.growUp();
-												break;
-											case Genes.CLIMB_NODE_TREE:
-												currentNode = currentNode.getDaughterNode();
-												break;
-											case Genes.DESCEND_NODE_TREE:
-												currentNode = currentNode.getParentNode();
-												break;
-											case Genes.NODE_CAN_SEED:
-												currentNode.canSeed = !currentNode.canSeed;
-												break;
-											case Genes.GROW_UP:
-												metabolism++;
-												currentNode.growUp();
-												break;
-											case Genes.GROW_LEFT:
-												currentNode.growLeft();
-												break;
-											case Genes.GROW_RIGHT:
-												currentNode.growRight();
-												break;
-											case Genes.GROW_DOWN:
-												currentNode.growDown();
-												metabolism += 0.5;
-												break;
-											case Genes.SKIP:
-												// wasted gene space is extra
-												// costly!
-												// (prevents ultra long empty
-												// genomes)
-												metabolism += 0.75;
-												break;
-											case Genes.END_ALL:
-												currentNode = null;
-										}
-								}
-							else
-								genes.nextInstruction(false);
+						while (!finishedReading)
+							{
+								// Every instruction ups metabolism
+								metabolism += 0.1;
+								switch (genes.nextInstruction())
+									{
+										case Genes.ADD_NODE:
+											Node newNode = new Node(currentNode);
+											currentNode.addNode(newNode);
+											currentNode = newNode;
+											currentNode.growUp();
+											break;
+										case Genes.CLIMB_NODE_TREE:
+											currentNode = currentNode.getDaughterNode();
+											break;
+										case Genes.DESCEND_NODE_TREE:
+											currentNode = currentNode.getParentNode();
+											break;
+										case Genes.NODE_CAN_SEED:
+											currentNode.canSeed = !currentNode.canSeed;
+											break;
+										case Genes.GROW_UP:
+											metabolism++;
+											currentNode.growUp();
+											break;
+										case Genes.GROW_LEFT:
+											currentNode.growLeft();
+											break;
+										case Genes.GROW_RIGHT:
+											currentNode.growRight();
+											break;
+										case Genes.GROW_DOWN:
+											currentNode.growDown();
+											metabolism += 0.5;
+											break;
+										case Genes.SKIP:
+											// wasted gene space is extra
+											// costly!
+											// (prevents ultra long empty
+											// genomes)
+											metabolism += 0.75;
+											break;
+										case Genes.END_ALL:
+											finishedReading = true;
+									}
+							}
 
 						baseNode.calculateBounds();
 						baseNode.calculateLean();

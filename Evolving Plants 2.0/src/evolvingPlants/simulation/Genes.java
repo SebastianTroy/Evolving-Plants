@@ -71,18 +71,7 @@ public class Genes
 				mutate();
 			}
 
-		public final int currentInstruction()
-			{
-				int instruction = END_ALL;
-				if (currentInstruction < instructions.size())
-					{
-						instruction = instructions.get(currentInstruction);
-					}
-
-				return instruction;
-			}
-
-		public final int nextInstruction(boolean growing)
+		public final int nextInstruction()
 			{
 				int instruction = END_ALL;
 				if (currentInstruction < instructions.size())

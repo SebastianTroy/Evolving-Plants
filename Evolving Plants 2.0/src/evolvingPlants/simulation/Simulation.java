@@ -75,7 +75,7 @@ public class Simulation
 					{
 						Color filterColour = ColTools.checkColour((int) Hub.simWindow.filterRedLightSlider.getValue(), (int) Hub.simWindow.filterGreenLightSlider.getValue(),
 								(int) Hub.simWindow.filterBlueLightSlider.getValue());
-						LightFilter newFilter = new LightFilter(5, 250, (int) Hub.simWindow.filterWidthSlider.getValue(), filterColour);
+						LightFilter newFilter = new LightFilter((int) -simX + 5, 250, (int) Hub.simWindow.filterWidthSlider.getValue(), filterColour);
 						filters.add(newFilter);
 						addFilter = false;
 
