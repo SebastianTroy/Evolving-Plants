@@ -65,13 +65,15 @@ public class MainMenu extends RenderableObject
 		@Override
 		public void tActionEvent(TActionEvent event)
 			{
-				if (event.getSource() == newSimButton)
+				Object source = event.getSource();
+				
+				if (source == newSimButton)
 					{
 						mainMenu.setX(0);
 						newSimMenu.setX(640);
 						simWidth = (int) simWidthSlider.getValue(0);
 					}
-				else if (event.getSource() == resumeSimButton)
+				else if (source == resumeSimButton)
 					{
 						if (Hub.simWindow != null && Hub.simWindow.sim != null && Hub.simWindow.sim.simWidth >= 800)
 							{
@@ -79,14 +81,14 @@ public class MainMenu extends RenderableObject
 								reset();
 							}
 					}
-				else if (event.getSource() == startSimButton)
+				else if (source == startSimButton)
 					{
 						Hub.simWindow = new SimulationWindow();
 						Hub.simWindow.sim = new Simulation(simWidth);
 						changeRenderableObject(Hub.simWindow);
 						reset();
 					}
-				else if (event.getSource() == editorButton)
+				else if (source == editorButton)
 					{
 						if (Hub.simWindow == null)
 							{
