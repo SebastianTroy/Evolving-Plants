@@ -11,11 +11,7 @@ import evolvingPlants.Hub;
 
 public class Plant
 	{
-		public static final int LARGE = 0;
-		public static final int MEDIUM = 1;
-		public static final int SMALL = 2;
-
-		public int plantX, minX, maxX, leafSize, sizeCategory;
+		public int plantX, minX, maxX, leafSize;
 		public static final int plantY = 550;
 
 		private double height = 0, lean = 0, energy, metabolism = 1, fractionGrown = 0;
@@ -32,12 +28,27 @@ public class Plant
 		private Color shadowColour = new Color(0, 0, 0);
 		private boolean shadowsSet = false;
 
-		public Plant(Seed seed)
+		public Plant(Genes parentGenes, int x)
 			{
-				plantX = (int) seed.x;
+				plantX = x;
 				minX = maxX = plantX;
-				genes = seed.genes;
-				energy = seed.energy;
+				genes = parentGenes;
+				energy = parentGenes.seedEnergy;
+				leafSize = (int) Hub.simWindow.leafSizeSlider.getValue();
+
+				nodeTree = new NodeTree(genes);
+
+				minX -= leafSize / 2;
+				maxX += leafSize / 2;
+				height += leafSize / 2;
+			}
+
+		public Plant(Plant parent, int x)
+			{
+				plantX = x + RandTools.getInt(-40, 40);
+				minX = maxX = plantX;
+				genes = parent.genes;
+				energy = parent.genes.seedEnergy;
 				leafSize = (int) Hub.simWindow.leafSizeSlider.getValue();
 
 				nodeTree = new NodeTree(genes);
@@ -181,13 +192,6 @@ public class Plant
 
 						if (Math.abs(lean) / height > 0.6)
 							alive = false;
-
-						if (height > Hub.simWindow.largePlantSizeSlider.getValue())
-							sizeCategory = LARGE;
-						else if (height > Hub.simWindow.mediumPlantSizeSlider.getValue())
-							sizeCategory = MEDIUM;
-						else
-							sizeCategory = SMALL;
 					}
 
 				private final void setShadows()
@@ -249,7 +253,7 @@ public class Plant
 													{
 														energy -= seedEnergy;
 														seedEnergy = 0;
-														Hub.simWindow.sim.addSeed(getX(), getY(), genes, genes.seedEnergy, sizeCategory);
+														//Hub.simWindow.sim.plantsToAdd.add(new Plant(Plant.this, getX()));
 													}
 											}
 									}

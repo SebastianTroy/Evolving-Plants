@@ -37,9 +37,9 @@ public class Simulation
 		public LightMap lightMap;
 		BufferedImage lightImage;
 
-		// seeds added by user
+		// plants added by user
 		public Genes currentGenes;
-		public ArrayList<Point> seedsToAdd = new ArrayList<Point>(5);
+		public ArrayList<Point> plantsAddedByUser = new ArrayList<Point>(5);
 
 		// Light Filters
 		public boolean addFilter = false;
@@ -47,7 +47,7 @@ public class Simulation
 		private ArrayList<LightFilter> filters = new ArrayList<LightFilter>();
 
 		// Seeds and Plants in the simulation
-		private ArrayList<Seed> seeds = new ArrayList<Seed>(20);
+		ArrayList<Plant> plantsToAdd = new ArrayList<Plant>(40);
 		ArrayList<Plant> plants = new ArrayList<Plant>(40);
 
 		public Simulation(int width)
@@ -61,8 +61,8 @@ public class Simulation
 			{
 				if (reset)
 					{
-						seedsToAdd.clear();
-						seeds.clear();
+						plantsAddedByUser.clear();
+						plantsToAdd.clear();
 						plants.clear();
 						filters.clear();
 						lightMap = new LightMap((int) simWidth, 550);
@@ -122,24 +122,25 @@ public class Simulation
 
 				for (int i = 0; i < Hub.simWindow.warpSpeedSlider.getValue(); i++)
 					{
+						//----------------------------------
 						/*REALLY SUPER SLOW*/
 						if (showLighting)
 							updateLighting();
-
+						/*REALLY SUPER SLOW*/
+						//----------------------------------
+						
 						// Add new seedlings to Array
-						for (Point p : seedsToAdd)
-							addSeed(p.getX(), p.getY(), currentGenes, currentGenes.seedEnergy, Plant.SMALL);
-						seedsToAdd.clear();
-						// Remove germinated seeds
-						for (int s = 0; s < seeds.size(); s++)
-							if (seeds.get(s).exists == false)
-								seeds.remove(s);
+						for (Point p : plantsAddedByUser)
+							plants.add(new Plant(currentGenes, (int) p.getX()));
+						plantsAddedByUser.clear();
+						// Add new seedlings to Array
+						for (Plant p : plantsToAdd)
+							plants.add(new Plant(p, p.plantX));
+						plantsAddedByUser.clear();
 						// Remove dead plants
 						for (int p = 0; p < plants.size(); p++)
 							if (plants.get(p).alive == false)
 								plants.remove(p);
-						for (Seed s : seeds)
-							s.tick(secondsPassed);
 						for (Plant p : plants)
 							p.tick(secondsPassed);
 					}
@@ -162,8 +163,6 @@ public class Simulation
 					g.drawImage(lightImage, 200, 0, Hub.simWindow.getObserver());
 				g.setColor(Color.GREEN);
 				g.fillRect(200, 550, 800, 50);
-				for (Seed s : seeds)
-					s.render(g, simX + 200);
 				for (Plant p : plants)
 					p.render(g, simX + 200);
 				for (LightFilter f : filters)
@@ -223,45 +222,9 @@ public class Simulation
 				Hub.simWindow.warpSpeedSlider.setValue(0);
 			}
 
-		public final void addSeed(double x, double y, Genes genes, double energy, int parentSizeCategory)
-			{
-				seeds.add(new Seed(x, y, genes, energy, parentSizeCategory));
-			}
-
 		public final void addPlant(Plant newPlant)
 			{
-				if (isSpaceAt(newPlant.plantX, newPlant.sizeCategory))
 					plants.add(newPlant);
-			}
-
-		public final boolean isSpaceAt(double x, int sizeCategory)
-			{
-				int smallSpacing = (int) Hub.simWindow.smallPlantSpacingSlider.getValue();
-				int mediumSpacing = (int) Hub.simWindow.mediumPlantSpacingSlider.getValue();
-				int largeSpacing = (int) Hub.simWindow.largePlantSpacingSlider.getValue();
-				switch (sizeCategory)
-					{
-						case Plant.SMALL:
-							for (Plant p : plants)
-								if (Math.abs(p.plantX - x) < smallSpacing)
-									return false;
-							break;
-						case Plant.MEDIUM:
-							for (Plant p : plants)
-								if (p.sizeCategory != Plant.SMALL)
-									if (Math.abs(p.plantX - x) < mediumSpacing)
-										return false;
-							break;
-						case Plant.LARGE:
-							for (Plant p : plants)
-								if (p.sizeCategory == Plant.LARGE)
-									if (Math.abs(p.plantX - x) < largeSpacing)
-										return false;
-							break;
-						default:
-							return false;
-					}
-				return true;
 			}
 
 		public final void addShadow(double nodeX, double nodeY, int leafSize, Color leafColour)
@@ -313,7 +276,7 @@ public class Simulation
 
 						if (Hub.simWindow.currentCursor == Hub.simWindow.plantSeedCursor)
 							{
-								seedsToAdd.add(point);
+								plantsAddedByUser.add(point);
 							}
 						else if (Hub.simWindow.currentCursor == Cursor.getDefaultCursor())
 							{
