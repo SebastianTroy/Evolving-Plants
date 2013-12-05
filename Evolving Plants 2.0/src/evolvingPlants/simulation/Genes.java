@@ -9,7 +9,7 @@ import evolvingPlants.Hub;
 
 /**
  * A plant has Genes with a fixed number of instructions on how to grow, these
- * can mutate
+ * can mutate in both length and content
  * 
  * @author Sebastian Troy
  */
