@@ -63,7 +63,7 @@ public class Genes
 				seedEnergyTransfer = (parentOne.seedEnergyTransfer + parentTwo.seedEnergyTransfer) / 2;
 				instructions = new LinkedList<Character>();
 
-				// TODO create genes from both parents
+				instructions = sexual(parentOne.instructions, parentTwo.instructions);
 
 				if (areRelated(parentOne.instructions, parentTwo.instructions))
 					instructions = sexual(parentOne.instructions, parentTwo.instructions);
@@ -112,7 +112,7 @@ public class Genes
 
 				for (int i = 0; i < parentOne.size() && i < parentTwo.size(); i++)
 					instructions.add(RandTools.getBool() ? parentOne.get(i) : parentTwo.get(i));
-
+				
 				return instructions;
 			}
 
