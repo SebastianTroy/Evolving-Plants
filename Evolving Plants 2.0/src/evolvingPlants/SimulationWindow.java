@@ -63,11 +63,6 @@ public class SimulationWindow extends RenderableObject
 		public final TSlider mutantOffspringSlider = new TSlider(TSlider.HORIZONTAL);
 		public final TSlider dnaDamageSlider = new TSlider(TSlider.HORIZONTAL);
 		public final TButton showLightButton = new TButton("Show light");
-		public final TSlider largePlantSizeSlider = new TSlider(TSlider.HORIZONTAL);
-		public final TSlider largePlantSpacingSlider = new TSlider(TSlider.HORIZONTAL);
-		public final TSlider mediumPlantSizeSlider = new TSlider(TSlider.HORIZONTAL);
-		public final TSlider mediumPlantSpacingSlider = new TSlider(TSlider.HORIZONTAL);
-		public final TSlider smallPlantSpacingSlider = new TSlider(TSlider.HORIZONTAL);
 		public final TSlider leafSizeSlider = new TSlider(TSlider.HORIZONTAL);
 		public final TSlider stalkLengthSlider = new TSlider(TSlider.HORIZONTAL);
 
@@ -181,35 +176,6 @@ public class SimulationWindow extends RenderableObject
 				plantOptionsMenu.add(new TLabel("Damage to mutant DNA (%)"), false);
 				dnaDamageSlider.setRange(0, 15);
 				plantOptionsMenu.add(dnaDamageSlider);
-
-				TLabel largePlantsLabel = new TLabel("Large Plants");
-				largePlantsLabel.setFontSize(15);
-				largePlantsLabel.setBackgroundColour(new Color(0, 200, 200));
-				plantOptionsMenu.add(largePlantsLabel, false);
-				plantOptionsMenu.add(new TLabel("Plant is large if bigger than:"), false);
-				largePlantSizeSlider.setRange(0, Hub.canvasHeight);
-				plantOptionsMenu.add(largePlantSizeSlider);
-				plantOptionsMenu.add(new TLabel("Large plant spacing"), false);
-				largePlantSpacingSlider.setRange(1, 100);
-				plantOptionsMenu.add(largePlantSpacingSlider);
-
-				TLabel mediumPlantsLabel = new TLabel("Medium Plants");
-				mediumPlantsLabel.setFontSize(15);
-				mediumPlantsLabel.setBackgroundColour(new Color(0, 200, 200));
-				plantOptionsMenu.add(mediumPlantsLabel, false);
-				plantOptionsMenu.add(new TLabel("Plant is medium if bigger than:"), false);
-				plantOptionsMenu.add(mediumPlantSizeSlider);
-				plantOptionsMenu.add(new TLabel("Medium plant spacing"), false);
-				mediumPlantSpacingSlider.setRange(1, 50);
-				plantOptionsMenu.add(mediumPlantSpacingSlider);
-
-				TLabel smallPlantsLabel = new TLabel("Small Plants");
-				smallPlantsLabel.setFontSize(15);
-				smallPlantsLabel.setBackgroundColour(new Color(0, 200, 200));
-				plantOptionsMenu.add(smallPlantsLabel, false);
-				plantOptionsMenu.add(new TLabel("Small plant spacing"), false);
-				smallPlantSpacingSlider.setRange(1, 25);
-				plantOptionsMenu.add(smallPlantSpacingSlider);
 
 				// GeneOptionsMenu set-up. This menu is located on the left
 				geneOptionsMenu.add(geneSaveNameField, false);
@@ -394,9 +360,6 @@ public class SimulationWindow extends RenderableObject
 						if (sim.showLighting)
 							sim.updateLighting();
 					}
-				// Update plant size category limits
-				else if (eventSource == largePlantSizeSlider)
-					mediumPlantSizeSlider.setRange(0, (int) largePlantSizeSlider.getValue());
 				// update light
 				else if (eventSource == redLightSlider && (e.getScrollType() == TScrollEvent.FINAL_VALUE || e.getScrollType() == TScrollEvent.VALUE_SET_INTERNALLY))
 					{

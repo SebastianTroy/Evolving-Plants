@@ -136,7 +136,7 @@ public class Simulation
 						// Add new seedlings to Array
 						for (Plant p : plantsToAdd)
 							plants.add(new Plant(p, p.plantX));
-						plantsAddedByUser.clear();
+						plantsToAdd.clear();
 						// Remove dead plants
 						for (int p = 0; p < plants.size(); p++)
 							if (plants.get(p).alive == false)
@@ -167,32 +167,6 @@ public class Simulation
 					p.render(g, simX + 200);
 				for (LightFilter f : filters)
 					f.render(g, simX + 200);
-
-				if (Hub.simWindow.stalkLengthSlider.isActive() || Hub.simWindow.largePlantSizeSlider.isActive() || Hub.simWindow.mediumPlantSizeSlider.isActive())
-					{
-						g.setColor(Color.BLACK);
-						double y = Plant.plantY;
-						while (y > 0)
-							{
-								int y2 = (int) y;
-								g.drawLine(200, y2, 1000, y2);
-								y -= Hub.simWindow.stalkLengthSlider.getValue();
-							}
-						g.setColor(Color.WHITE);
-						int y2 = Plant.plantY - (int) Hub.simWindow.largePlantSizeSlider.getValue();
-						g.drawLine(200, y2, 1000, y2);
-						y2 = Plant.plantY - (int) Hub.simWindow.mediumPlantSizeSlider.getValue();
-						g.drawLine(200, y2, 1000, y2);
-					}
-				else
-					{
-						g.setColor(dottedLineColour);
-						g.setStroke(dottedLineStroke);
-						int y2 = Plant.plantY - (int) Hub.simWindow.largePlantSizeSlider.getValue();
-						g.drawLine(200, y2, 1000, y2);
-						y2 = Plant.plantY - (int) Hub.simWindow.mediumPlantSizeSlider.getValue();
-						g.drawLine(200, y2, 1000, y2);
-					}
 
 				g.setColor(Color.CYAN);
 				g.fillRect(0, 0, 200, Hub.canvasHeight);

@@ -30,8 +30,7 @@ public class Genes
 		private LinkedList<Character> instructions = new LinkedList<Character>();
 
 		public Color leafColour;
-		public Color seedColour = ColTools.randColour();
-		public double seedEnergy, seedEnergyTransfer = 50;
+		public double seedEnergy;
 
 		public Genes(String genes, double seedEnergy, int leafRed, int leafGreen, int leafBlue)
 			{
@@ -44,9 +43,7 @@ public class Genes
 		public Genes(Genes parent, boolean mutate)
 			{
 				leafColour = parent.leafColour;
-				seedColour = parent.seedColour;
 				seedEnergy = parent.seedEnergy;
-				seedEnergyTransfer = parent.seedEnergyTransfer;
 				instructions = new LinkedList<Character>();
 
 				instructions = aSexual(parent.instructions);
@@ -58,9 +55,7 @@ public class Genes
 		public Genes(Genes parentOne, Genes parentTwo)
 			{
 				leafColour = ColTools.interpolateColours(parentOne.leafColour, parentTwo.leafColour);
-				seedColour = ColTools.interpolateColours(parentOne.seedColour, parentTwo.seedColour);
 				seedEnergy = (parentOne.seedEnergy + parentTwo.seedEnergy) / 2;
-				seedEnergyTransfer = (parentOne.seedEnergyTransfer + parentTwo.seedEnergyTransfer) / 2;
 				instructions = new LinkedList<Character>();
 
 				instructions = sexual(parentOne.instructions, parentTwo.instructions);
@@ -122,12 +117,6 @@ public class Genes
 					return;
 
 				seedEnergy += RandTools.getDouble(-10, 10);
-				seedEnergyTransfer += RandTools.getDouble(-1, 1);
-
-				// mutate seed colour
-				int[] seedColours = { seedColour.getRed(), seedColour.getGreen(), seedColour.getBlue() };
-				seedColours[RandTools.getInt(0, 2)] += RandTools.getInt(-12, 12);
-				seedColour = ColTools.checkColour(seedColours[0], seedColours[1], seedColours[2]);
 
 				// mutate leaf colour
 				int[] leafColours = { leafColour.getRed(), leafColour.getGreen(), leafColour.getBlue() };

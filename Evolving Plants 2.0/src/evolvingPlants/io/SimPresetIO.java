@@ -97,16 +97,6 @@ public class SimPresetIO
 						out.newLine();
 						out.write("DNADamage= " + sim.dnaDamageSlider.getValue());
 						out.newLine();
-						out.write("LargePlantSize= " + sim.largePlantSizeSlider.getValue());
-						out.newLine();
-						out.write("LargePlantSpacing= " + sim.largePlantSpacingSlider.getValue());
-						out.newLine();
-						out.write("MediumPlantSize= " + sim.mediumPlantSizeSlider.getValue());
-						out.newLine();
-						out.write("MediumPlantSpacing= " + sim.mediumPlantSpacingSlider.getValue());
-						out.newLine();
-						out.write("SmallPlantSpacing= " + sim.smallPlantSpacingSlider.getValue());
-						out.newLine();
 						out.newLine();
 						out.write("Light:");
 						out.newLine();
@@ -155,11 +145,6 @@ public class SimPresetIO
 						sim.stalkLengthSlider.setValue(readValueFromLine(in.readLine()));
 						sim.mutantOffspringSlider.setValue(readValueFromLine(in.readLine()));
 						sim.dnaDamageSlider.setValue(readValueFromLine(in.readLine()));
-						sim.largePlantSizeSlider.setValue(readValueFromLine(in.readLine()));
-						sim.largePlantSpacingSlider.setValue(readValueFromLine(in.readLine()));
-						sim.mediumPlantSizeSlider.setValue(readValueFromLine(in.readLine()));
-						sim.mediumPlantSpacingSlider.setValue(readValueFromLine(in.readLine()));
-						sim.smallPlantSpacingSlider.setValue(readValueFromLine(in.readLine()));
 						/**/sim.remove(sim.plantOptionsMenu);
 						in.readLine();// /n
 						in.readLine();// Light
@@ -230,16 +215,6 @@ public class SimPresetIO
 						out.write("MutationChance= 35.0");
 						out.newLine();
 						out.write("DNADamage= 4.0");
-						out.newLine();
-						out.write("LargePlantSize= 170.0");
-						out.newLine();
-						out.write("LargePlantSpacing= 80.0");
-						out.newLine();
-						out.write("MediumPlantSize= 30.0");
-						out.newLine();
-						out.write("MediumPlantSpacing= 18.0");
-						out.newLine();
-						out.write("SmallPlantSpacing= 5.0");
 						out.newLine();
 						out.newLine();
 						out.write("Light:");

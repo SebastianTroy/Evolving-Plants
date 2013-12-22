@@ -14,7 +14,7 @@ public class Plant
 		public int plantX, minX, maxX, leafSize;
 		public static final int plantY = 550;
 
-		private double height = 0, lean = 0, energy, metabolism = 1, fractionGrown = 0;
+		private double height = 0, lean = 0, energy, metabolism = 1, fractionGrown = 0, timeToNextSeed = 5;
 		private Genes genes;
 
 		private NodeTree nodeTree;
@@ -33,7 +33,7 @@ public class Plant
 				plantX = x;
 				minX = maxX = plantX;
 				genes = parentGenes;
-				energy = parentGenes.seedEnergy;
+				energy = parentGenes.seedEnergy / 3;
 				leafSize = (int) Hub.simWindow.leafSizeSlider.getValue();
 
 				nodeTree = new NodeTree(genes);
@@ -45,10 +45,10 @@ public class Plant
 
 		public Plant(Plant parent, int x)
 			{
-				plantX = x + RandTools.getInt(-40, 40);
+				plantX = x;
 				minX = maxX = plantX;
-				genes = parent.genes;
-				energy = parent.genes.seedEnergy;
+				genes = new Genes(parent.genes, true);
+				energy = genes.seedEnergy / 3;
 				leafSize = (int) Hub.simWindow.leafSizeSlider.getValue();
 
 				nodeTree = new NodeTree(genes);
@@ -77,6 +77,19 @@ public class Plant
 						nodeTree.setShadows();
 						shadowsSet = true;
 						fractionGrown = 1;
+					}
+				else
+					// fully grown, called every tick once full grown
+					{
+						// every second that the plant is alive have 1 offspring
+						if (timeToNextSeed < 0 && energy > genes.seedEnergy)
+							{
+								Hub.simWindow.sim.plantsToAdd.add(new Plant(this, RandTools.getInt(minX - 40, maxX + 40)));
+								energy -= genes.seedEnergy;
+								timeToNextSeed = 5;
+							}
+						else
+							timeToNextSeed -= secondsPassed;
 					}
 				if (alive && energy > 0) // Alive
 					{
@@ -214,7 +227,6 @@ public class Plant
 						private double x, y;
 
 						private boolean isLeaf = false, canSeed = true;
-						private double seedEnergy = 0;
 
 						private Node parentNode;
 						private ArrayList<Node> daughterNodes = new ArrayList<Node>();
@@ -240,22 +252,7 @@ public class Plant
 										// NOTE: seedlings do not have shadows
 										// hence BLACK shadow
 										energy += Hub.simWindow.sim.photosynthesizeAt(getX() + RandTools.getDouble((int) leafSize / -2, (int) leafSize / 2), (int) y, genes.leafColour, shadowColour)
-												* secondsPassed;
-
-										if (fractionGrown == 1 && canSeed)
-											{
-												if (energy > genes.seedEnergyTransfer * secondsPassed)
-													{
-														seedEnergy += genes.seedEnergyTransfer * secondsPassed;
-														energy -= genes.seedEnergyTransfer * secondsPassed;
-													}
-												if (seedEnergy > genes.seedEnergy)
-													{
-														energy -= seedEnergy;
-														seedEnergy = 0;
-														//Hub.simWindow.sim.plantsToAdd.add(new Plant(Plant.this, getX()));
-													}
-											}
+												* secondsPassed * fractionGrown;
 									}
 								else
 									for (Node n : daughterNodes)
