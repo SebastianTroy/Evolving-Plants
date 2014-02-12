@@ -100,7 +100,7 @@ public class SimulationWindow extends RenderableObject
 		@Override
 		protected void initiate()
 			{
-				simulationScroller.setY(Hub.canvasHeight - 20);
+				simulationScroller.setY(Main.canvasHeight - 20);
 				simulationScroller.setMaxScrollDistance(sim.simWidth);
 
 				if (sim.simWidth > 800)
@@ -108,21 +108,21 @@ public class SimulationWindow extends RenderableObject
 				else
 					remove(simulationScroller);
 
-				simOptionsMenu = new TMenu(1000, 0, 200, Hub.canvasHeight, TMenu.VERTICAL);
-				interactionsMenu = new TMenu(0, 0, 200, Hub.canvasHeight, TMenu.VERTICAL);
-				plantOptionsMenu = new TMenu(0, 0, 200, Hub.canvasHeight, TMenu.VERTICAL);
-				lightOptionsMenu = new TMenu(0, 0, 200, Hub.canvasHeight, TMenu.VERTICAL);
-				filterOptionsMenu = new TMenu(0, 0, 200, Hub.canvasHeight, TMenu.VERTICAL);
-				geneOptionsMenu = new TMenu(0, 0, 200, Hub.canvasHeight, TMenu.VERTICAL);
-				presetOptionsMenu = new TMenu(0, 0, 200, Hub.canvasHeight, TMenu.VERTICAL);
+				simOptionsMenu = new TMenu(1000, 0, 200, Main.canvasHeight, TMenu.VERTICAL);
+				interactionsMenu = new TMenu(0, 0, 200, Main.canvasHeight, TMenu.VERTICAL);
+				plantOptionsMenu = new TMenu(0, 0, 200, Main.canvasHeight, TMenu.VERTICAL);
+				lightOptionsMenu = new TMenu(0, 0, 200, Main.canvasHeight, TMenu.VERTICAL);
+				filterOptionsMenu = new TMenu(0, 0, 200, Main.canvasHeight, TMenu.VERTICAL);
+				geneOptionsMenu = new TMenu(0, 0, 200, Main.canvasHeight, TMenu.VERTICAL);
+				presetOptionsMenu = new TMenu(0, 0, 200, Main.canvasHeight, TMenu.VERTICAL);
 				topMenu.setBorderSize(5);
 
 				Toolkit k = Toolkit.getDefaultToolkit();
-				plantSeedCursor = k.createCustomCursor(Hub.loadImage("seedPointer.png"), new Point(0, 0), "seed");
-				getGenesCursor = k.createCustomCursor(Hub.loadImage("dna.png"), new Point(0, 0), "genes");
-				killPlantCursor = k.createCustomCursor(Hub.loadImage("skull.png"), new Point(0, 0), "kill");
-				deleteFilterCursor = k.createCustomCursor(Hub.loadImage("bin.png"), new Point(0, 0), "move");
-				moveFilterCursor = k.createCustomCursor(Hub.loadImage("fourWayArrow.png"), new Point(0, 0), "delete");
+				plantSeedCursor = k.createCustomCursor(Main.loadImage("seedPointer.png"), new Point(0, 0), "seed");
+				getGenesCursor = k.createCustomCursor(Main.loadImage("dna.png"), new Point(0, 0), "genes");
+				killPlantCursor = k.createCustomCursor(Main.loadImage("skull.png"), new Point(0, 0), "kill");
+				deleteFilterCursor = k.createCustomCursor(Main.loadImage("bin.png"), new Point(0, 0), "move");
+				moveFilterCursor = k.createCustomCursor(Main.loadImage("fourWayArrow.png"), new Point(0, 0), "delete");
 
 				// Top menu set-up.
 				add(topMenu);
@@ -207,9 +207,9 @@ public class SimulationWindow extends RenderableObject
 				redLightSlider.setRange(0, 255);
 				greenLightSlider.setRange(0, 255);
 				blueLightSlider.setRange(0, 255);
-				redLightSlider.setSliderImage(0, Hub.loadImage("redSun.png"));
-				greenLightSlider.setSliderImage(0, Hub.loadImage("greenSun.png"));
-				blueLightSlider.setSliderImage(0, Hub.loadImage("blueSun.png"));
+				redLightSlider.setSliderImage(0, Main.loadImage("redSun.png"));
+				greenLightSlider.setSliderImage(0, Main.loadImage("greenSun.png"));
+				blueLightSlider.setSliderImage(0, Main.loadImage("blueSun.png"));
 				lightOptionsMenu.add(redLightSlider);
 				lightOptionsMenu.add(greenLightSlider);
 				lightOptionsMenu.add(blueLightSlider);
@@ -224,9 +224,9 @@ public class SimulationWindow extends RenderableObject
 				filterOptionsMenu.add(new TLabel("Filter Width"), false);
 				filterWidthSlider.setRange(0, sim.simWidth);
 				filterOptionsMenu.add(filterWidthSlider);
-				filterRedLightSlider.setSliderImage(0, Hub.loadImage("redFilter.png"));
-				filterGreenLightSlider.setSliderImage(0, Hub.loadImage("greenFilter.png"));
-				filterBlueLightSlider.setSliderImage(0, Hub.loadImage("blueFilter.png"));
+				filterRedLightSlider.setSliderImage(0, Main.loadImage("redFilter.png"));
+				filterGreenLightSlider.setSliderImage(0, Main.loadImage("greenFilter.png"));
+				filterBlueLightSlider.setSliderImage(0, Main.loadImage("blueFilter.png"));
 				filterRedLightSlider.setRange(0, 255);
 				filterGreenLightSlider.setRange(0, 255);
 				filterBlueLightSlider.setRange(0, 255);
@@ -235,15 +235,15 @@ public class SimulationWindow extends RenderableObject
 				filterOptionsMenu.add(filterBlueLightSlider);
 				filterOptionsMenu.add(createFilterButton);
 
-				Hub.geneIO.addGenesToMenu();
-				Hub.geneIO.loadGenes("default.txt");
+				Main.geneIO.addGenesToMenu();
+				Main.geneIO.loadGenes("default.txt");
 
-				Hub.presetIO.addPresetsToMenu();
+				Main.presetIO.addPresetsToMenu();
 
 				setLeftMenu(interactionsMenu);
 				setRightMenu(simOptionsMenu);
 
-				Hub.presetIO.loadPreset("default.txt");
+				Main.presetIO.loadPreset("default.txt");
 			}
 
 		@Override
@@ -263,7 +263,7 @@ public class SimulationWindow extends RenderableObject
 				remove(currentLeftSideMenu);
 				currentLeftSideMenu = newMenu;
 				currentLeftSideMenu.setLocation(0, 0);
-				currentLeftSideMenu.setDimensions(200, Hub.canvasHeight);
+				currentLeftSideMenu.setDimensions(200, Main.canvasHeight);
 				add(currentLeftSideMenu);
 			}
 
@@ -272,7 +272,7 @@ public class SimulationWindow extends RenderableObject
 				remove(currentRightSideMenu);
 				currentRightSideMenu = newMenu;
 				currentRightSideMenu.setLocation(1000, 0);
-				currentRightSideMenu.setDimensions(200, Hub.canvasHeight / 2);
+				currentRightSideMenu.setDimensions(200, Main.canvasHeight / 2);
 				add(currentRightSideMenu);
 			}
 
@@ -283,7 +283,7 @@ public class SimulationWindow extends RenderableObject
 
 				// Important buttons
 				if (eventSource == mainMenuButton)
-					changeRenderableObject(Hub.menu);
+					changeRenderableObject(Main.menu);
 				else if (eventSource == resetSimButton)
 					sim.reset = true;
 				// Change menu's ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -335,17 +335,17 @@ public class SimulationWindow extends RenderableObject
 				// Preset options
 				else if (eventSource == savePresetButton)
 					{
-						Hub.presetIO.savePreset(presetSaveNameField.getText());
+						Main.presetIO.savePreset(presetSaveNameField.getText());
 					}
 				else if (eventSource == openPresetsFolderButton)
-					Hub.presetIO.openFolder();
+					Main.presetIO.openFolder();
 				// Gene options
 				else if (eventSource == saveGenesButton)
 					{
-						Hub.geneIO.saveGenes(sim.currentGenes, geneSaveNameField.getText());
+						Main.geneIO.saveGenes(sim.currentGenes, geneSaveNameField.getText());
 					}
 				else if (eventSource == openGenesFolderButton)
-					Hub.geneIO.openFolder();
+					Main.geneIO.openFolder();
 			}
 
 		@Override

@@ -6,7 +6,7 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.image.BufferedImage;
 
-import evolvingPlants.Hub;
+import evolvingPlants.Main;
 
 public class LightFilter
 	{
@@ -52,7 +52,7 @@ public class LightFilter
 				if (x + width < -simX + 200 || x > -simX + 1000)
 					return;
 
-				g.drawImage(filterColourMap, x + simX, y, Hub.simWindow.getObserver());
+				g.drawImage(filterColourMap, x + simX, y, Main.simWindow.getObserver());
 				g.setColor(Color.LIGHT_GRAY);
 				g.fillOval(x - 5 + simX, y - 5, 10, 10);
 				g.fillOval(x + width - 5 + simX, y - 5, 10, 10);
@@ -73,7 +73,7 @@ public class LightFilter
 
 		public final void moving(Point p)
 			{
-				if (p.x > Hub.simWindow.sim.simWidth || p.x + width< 0 || p.y > 550 || p.y < 0)
+				if (p.x > Main.simWindow.sim.simWidth || p.x + width< 0 || p.y > 550 || p.y < 0)
 					{
 						exists = false;
 						return;

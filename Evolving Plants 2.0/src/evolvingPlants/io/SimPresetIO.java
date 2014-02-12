@@ -22,14 +22,14 @@ import javax.swing.JOptionPane;
 
 import tComponents.components.TButton;
 import tComponents.components.TMenu;
-import evolvingPlants.Hub;
+import evolvingPlants.Main;
 import evolvingPlants.SimulationWindow;
 
 public class SimPresetIO
 	{
 		private String saveDirectory = System.getProperty("user.home") + "//Evolving Plants//Presets";
 
-		private final BufferedImage saveImage = Hub.loadImage("save.jpeg");
+		private final BufferedImage saveImage = Main.loadImage("save.jpeg");
 
 		public SimPresetIO()
 			{
@@ -44,7 +44,7 @@ public class SimPresetIO
 
 		public final void addPresetsToMenu()
 			{
-				TMenu presetMenu = Hub.simWindow.savedPresetsMenu;
+				TMenu presetMenu = Main.simWindow.savedPresetsMenu;
 
 				presetMenu.clearTComponents();
 
@@ -73,7 +73,7 @@ public class SimPresetIO
 
 		public void savePreset(String presetName)
 			{
-				SimulationWindow sim = Hub.simWindow;
+				SimulationWindow sim = Main.simWindow;
 				BufferedWriter out = null;
 
 				try
@@ -129,7 +129,7 @@ public class SimPresetIO
 		public void loadPreset(String presetName)
 			{
 				BufferedReader in = null;
-				SimulationWindow sim = Hub.simWindow;
+				SimulationWindow sim = Main.simWindow;
 
 				try
 					{
@@ -308,10 +308,10 @@ public class SimPresetIO
 							{
 								if (down)
 									{
-										if (Hub.simWindow.loadPresetButton.isChecked())
+										if (Main.simWindow.loadPresetButton.isChecked())
 											loadPreset(file.getName());
-										else if (Hub.simWindow.deletePresetButton.isChecked()
-												&& JOptionPane.showConfirmDialog(Hub.simWindow.getObserver(), "Are you sure you want to delete this preset?", "Delete Confirmation",
+										else if (Main.simWindow.deletePresetButton.isChecked()
+												&& JOptionPane.showConfirmDialog(Main.simWindow.getObserver(), "Are you sure you want to delete this preset?", "Delete Confirmation",
 														JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION)
 											file.delete();
 									}

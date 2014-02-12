@@ -29,8 +29,8 @@ public class MainMenu extends RenderableObject
 		@Override
 		protected void initiate()
 			{
-				mainMenu = new TMenu(200, 0, 600, Hub.canvasHeight, TMenu.VERTICAL);
-				newSimMenu = new TMenu(1200, 0, 500, Hub.canvasHeight, TMenu.VERTICAL);
+				mainMenu = new TMenu(200, 0, 600, Main.canvasHeight, TMenu.VERTICAL);
+				newSimMenu = new TMenu(1200, 0, 500, Main.canvasHeight, TMenu.VERTICAL);
 
 				add(mainMenu);
 				mainMenu.add(newSimButton);
@@ -75,28 +75,28 @@ public class MainMenu extends RenderableObject
 					}
 				else if (source == resumeSimButton)
 					{
-						if (Hub.simWindow != null && Hub.simWindow.sim != null && Hub.simWindow.sim.simWidth >= 800)
+						if (Main.simWindow != null && Main.simWindow.sim != null && Main.simWindow.sim.simWidth >= 800)
 							{
-								changeRenderableObject(Hub.simWindow);
+								changeRenderableObject(Main.simWindow);
 								reset();
 							}
 					}
 				else if (source == startSimButton)
 					{
-						Hub.simWindow = new SimulationWindow();
-						Hub.simWindow.sim = new Simulation(simWidth);
-						changeRenderableObject(Hub.simWindow);
+						Main.simWindow = new SimulationWindow();
+						Main.simWindow.sim = new Simulation(simWidth);
+						changeRenderableObject(Main.simWindow);
 						reset();
 					}
 				else if (source == editorButton)
 					{
-						if (Hub.simWindow == null)
+						if (Main.simWindow == null)
 							{
-								Hub.simWindow = new SimulationWindow();
-								Hub.simWindow.sim = new Simulation(1);
-								changeRenderableObject(Hub.simWindow);
+								Main.simWindow = new SimulationWindow();
+								Main.simWindow.sim = new Simulation(1);
+								changeRenderableObject(Main.simWindow);
 							}
-						changeRenderableObject(Hub.editor);
+						changeRenderableObject(Main.editor);
 						reset();
 					}
 			}

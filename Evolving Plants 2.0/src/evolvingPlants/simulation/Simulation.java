@@ -12,7 +12,7 @@ import java.util.ArrayList;
 
 import tools.ColTools;
 
-import evolvingPlants.Hub;
+import evolvingPlants.Main;
 
 public class Simulation
 	{
@@ -73,9 +73,9 @@ public class Simulation
 
 				if (addFilter)
 					{
-						Color filterColour = ColTools.checkColour((int) Hub.simWindow.filterRedLightSlider.getValue(), (int) Hub.simWindow.filterGreenLightSlider.getValue(),
-								(int) Hub.simWindow.filterBlueLightSlider.getValue());
-						LightFilter newFilter = new LightFilter((int) -simX + 5, 250, (int) Hub.simWindow.filterWidthSlider.getValue(), filterColour);
+						Color filterColour = ColTools.checkColour((int) Main.simWindow.filterRedLightSlider.getValue(), (int) Main.simWindow.filterGreenLightSlider.getValue(),
+								(int) Main.simWindow.filterBlueLightSlider.getValue());
+						LightFilter newFilter = new LightFilter((int) -simX + 5, 250, (int) Main.simWindow.filterWidthSlider.getValue(), filterColour);
 						filters.add(newFilter);
 						addFilter = false;
 
@@ -113,14 +113,14 @@ public class Simulation
 						rendered = false;
 					}
 
-				secondsPassed *= Hub.simWindow.playbackSpeed.getValue();
+				secondsPassed *= Main.simWindow.playbackSpeed.getValue();
 
 				// Cap secondsPassed to stop strange things happening at low
 				// frame-rates
 				if (secondsPassed > 0.2)
 					secondsPassed = 0.2;
 
-				for (int i = 0; i < Hub.simWindow.warpSpeedSlider.getValue(); i++)
+				for (int i = 0; i < Main.simWindow.warpSpeedSlider.getValue(); i++)
 					{
 						//----------------------------------
 						/*REALLY SUPER SLOW*/
@@ -151,8 +151,8 @@ public class Simulation
 				if (rendered)
 					{
 						g.setColor(Color.CYAN);
-						g.fillRect(0, 0, 200, Hub.canvasHeight);
-						g.fillRect(1000, 0, 200, Hub.canvasHeight);
+						g.fillRect(0, 0, 200, Main.canvasHeight);
+						g.fillRect(1000, 0, 200, Main.canvasHeight);
 						return;
 					}
 
@@ -160,7 +160,7 @@ public class Simulation
 				g.setColor(skyBlue);
 				g.fillRect(200, 0, 800, Plant.plantY);
 				if (showLighting)
-					g.drawImage(lightImage, 200, 0, Hub.simWindow.getObserver());
+					g.drawImage(lightImage, 200, 0, Main.simWindow.getObserver());
 				g.setColor(Color.GREEN);
 				g.fillRect(200, 550, 800, 50);
 				for (Plant p : plants)
@@ -169,8 +169,8 @@ public class Simulation
 					f.render(g, simX + 200);
 
 				g.setColor(Color.CYAN);
-				g.fillRect(0, 0, 200, Hub.canvasHeight);
-				g.fillRect(1000, 0, 200, Hub.canvasHeight);
+				g.fillRect(0, 0, 200, Main.canvasHeight);
+				g.fillRect(1000, 0, 200, Main.canvasHeight);
 
 				rendered = true;
 			}
@@ -182,7 +182,7 @@ public class Simulation
 
 				paused = false;
 
-				Hub.simWindow.warpSpeedSlider.setValue(oldWarpSpeed);
+				Main.simWindow.warpSpeedSlider.setValue(oldWarpSpeed);
 			}
 
 		public final void pause()
@@ -192,8 +192,8 @@ public class Simulation
 
 				paused = true;
 
-				oldWarpSpeed = Hub.simWindow.warpSpeedSlider.getValue();
-				Hub.simWindow.warpSpeedSlider.setValue(0);
+				oldWarpSpeed = Main.simWindow.warpSpeedSlider.getValue();
+				Main.simWindow.warpSpeedSlider.setValue(0);
 			}
 
 		public final void addPlant(Plant newPlant)
@@ -248,11 +248,11 @@ public class Simulation
 						Point point = e.getPoint();
 						point.x -= simX + 200;
 
-						if (Hub.simWindow.currentCursor == Hub.simWindow.plantSeedCursor)
+						if (Main.simWindow.currentCursor == Main.simWindow.plantSeedCursor)
 							{
 								plantsAddedByUser.add(point);
 							}
-						else if (Hub.simWindow.currentCursor == Cursor.getDefaultCursor())
+						else if (Main.simWindow.currentCursor == Cursor.getDefaultCursor())
 							{
 								for (Plant plant : plants)
 									if (plant.contains(point))
@@ -260,7 +260,7 @@ public class Simulation
 									else if (plant.selected)
 										plant.selected = false;
 							}
-						else if (Hub.simWindow.currentCursor == Hub.simWindow.getGenesCursor)
+						else if (Main.simWindow.currentCursor == Main.simWindow.getGenesCursor)
 							{
 								for (Plant plant : plants)
 									if (plant.contains(point))
@@ -268,13 +268,13 @@ public class Simulation
 											currentGenes = plant.getGenesCopy();
 										}
 							}
-						else if (Hub.simWindow.currentCursor == Hub.simWindow.killPlantCursor)
+						else if (Main.simWindow.currentCursor == Main.simWindow.killPlantCursor)
 							{
 								for (int i = 0; i < plants.size(); i++)
 									if (plants.get(i).contains(point))
 										plants.get(i).kill();
 							}
-						else if (Hub.simWindow.currentCursor == Hub.simWindow.moveFilterCursor)
+						else if (Main.simWindow.currentCursor == Main.simWindow.moveFilterCursor)
 							{
 								Point adjustedPoint = new Point((int) (e.getX() + -simX - 200), e.getY());
 
@@ -282,7 +282,7 @@ public class Simulation
 									if (f.containsPoint(adjustedPoint))
 										filterBeingMoved = f;
 							}
-						else if (Hub.simWindow.currentCursor == Hub.simWindow.deleteFilterCursor)
+						else if (Main.simWindow.currentCursor == Main.simWindow.deleteFilterCursor)
 							{
 								Point adjustedPoint = new Point((int) (e.getX() + -simX - 200), e.getY());
 								for (LightFilter f : filters)
@@ -296,7 +296,7 @@ public class Simulation
 			{
 				Point point = new Point((int) (e.getX() + -simX - 200), e.getY());
 
-				if (Hub.simWindow.currentCursor == Hub.simWindow.killPlantCursor)
+				if (Main.simWindow.currentCursor == Main.simWindow.killPlantCursor)
 					{
 						for (int i = 0; i < plants.size(); i++)
 							if (plants.get(i).contains(point))

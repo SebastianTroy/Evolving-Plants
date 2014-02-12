@@ -8,7 +8,7 @@ import tCode.TCode;
 import evolvingPlants.io.GeneIO;
 import evolvingPlants.io.SimPresetIO;
 
-public class Hub extends TCode
+public class Main extends TCode
 	{
 		public static final GeneIO geneIO = new GeneIO();
 		public static final SimPresetIO presetIO = new SimPresetIO();
@@ -17,7 +17,7 @@ public class Hub extends TCode
 		public static SimulationWindow simWindow;
 		public static final GeneEditor editor = new GeneEditor();
 
-		public Hub(int width, int height, boolean framed, boolean resizable)
+		public Main(int width, int height, boolean framed, boolean resizable)
 			{
 				super(width, height, framed, resizable);
 				frame.icons.add(loadImage("icon.png"));
@@ -29,14 +29,14 @@ public class Hub extends TCode
 
 		public static void main(String[] args)
 			{
-				new Hub(1200, 600, true, false);
+				new Main(1200, 600, true, false);
 			}
 
 		public static BufferedImage loadImage(String name)
 			{
 				try
 					{
-						return ImageIO.read(Hub.class.getResource("/" + name));
+						return ImageIO.read(Main.class.getResource("/" + name));
 					}
 				catch (Exception e)
 					{

@@ -68,16 +68,16 @@ public class GeneEditor extends RenderableObject
 				redLeafSlider.setRange(0, 255);
 				greenLeafSlider.setRange(0, 255);
 				blueLeafSlider.setRange(0, 255);
-				seedSizeSlider.setSliderImage(0, Hub.loadImage("seed.png"));
-				redLeafSlider.setSliderImage(0, Hub.loadImage("redLeaf.png"));
-				greenLeafSlider.setSliderImage(0, Hub.loadImage("greenLeaf.png"));
-				blueLeafSlider.setSliderImage(0, Hub.loadImage("blueLeaf.png"));
+				seedSizeSlider.setSliderImage(0, Main.loadImage("seed.png"));
+				redLeafSlider.setSliderImage(0, Main.loadImage("redLeaf.png"));
+				greenLeafSlider.setSliderImage(0, Main.loadImage("greenLeaf.png"));
+				blueLeafSlider.setSliderImage(0, Main.loadImage("blueLeaf.png"));
 				redLightSlider.setRange(0, 255);
 				greenLightSlider.setRange(0, 255);
 				blueLightSlider.setRange(0, 255);
-				redLightSlider.setSliderImage(0, Hub.loadImage("redSun.png"));
-				greenLightSlider.setSliderImage(0, Hub.loadImage("greenSun.png"));
-				blueLightSlider.setSliderImage(0, Hub.loadImage("blueSun.png"));
+				redLightSlider.setSliderImage(0, Main.loadImage("redSun.png"));
+				greenLightSlider.setSliderImage(0, Main.loadImage("greenSun.png"));
+				blueLightSlider.setSliderImage(0, Main.loadImage("blueSun.png"));
 
 				TLabel plantOptionsLabel = new TLabel("Plant Options");
 				plantOptionsLabel.setFontSize(15);
@@ -114,7 +114,7 @@ public class GeneEditor extends RenderableObject
 
 				add(saveLoadMenu);
 
-				geneEditorField = new TTextField(10, 510, Hub.canvasWidth - 20, 20, "Insert genetic code here");
+				geneEditorField = new TTextField(10, 510, Main.canvasWidth - 20, 20, "Insert genetic code here");
 				add(geneEditorField);
 				add(saveNameField);
 
@@ -141,7 +141,7 @@ public class GeneEditor extends RenderableObject
 				g.setColor(Color.CYAN);
 				g.fillRect(0, 0, 700, 500);
 				g.setColor(Color.DARK_GRAY);
-				g.fillRect(0, 500, Hub.canvasWidth, 100);
+				g.fillRect(0, 500, Main.canvasWidth, 100);
 				g.setColor(lightColour);
 				g.fillRect(700, 0, 500, 500);
 
@@ -193,7 +193,7 @@ public class GeneEditor extends RenderableObject
 
 				if (eventSource == saveGenesButton)
 					{
-						Hub.geneIO.saveGenes(
+						Main.geneIO.saveGenes(
 								new Genes(geneEditorField.getText(), seedSizeSlider.getValue(), (int) redLeafSlider.getValue(), (int) greenLeafSlider.getValue(), (int) blueLeafSlider.getValue()),
 								saveNameField.getText());
 					}
@@ -235,9 +235,9 @@ public class GeneEditor extends RenderableObject
 
 					}
 				else if (eventSource == openGenesFolderButton)
-					Hub.geneIO.openFolder();
+					Main.geneIO.openFolder();
 				else if (eventSource == mainMenuButton)
-					changeRenderableObject(Hub.menu);
+					changeRenderableObject(Main.menu);
 			}
 
 		@Override

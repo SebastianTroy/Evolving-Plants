@@ -22,7 +22,7 @@ import javax.swing.JOptionPane;
 
 import tComponents.components.TButton;
 import tComponents.components.TMenu;
-import evolvingPlants.Hub;
+import evolvingPlants.Main;
 import evolvingPlants.simulation.Genes;
 import evolvingPlants.simulation.Simulation;
 
@@ -30,7 +30,7 @@ public class GeneIO
 	{
 		private String saveDirectory = System.getProperty("user.home") + "//Evolving Plants//Genes";
 
-		private final BufferedImage saveImage = Hub.loadImage("save.jpeg");
+		private final BufferedImage saveImage = Main.loadImage("save.jpeg");
 
 		public GeneIO()
 			{
@@ -45,10 +45,10 @@ public class GeneIO
 
 		public final void addGenesToMenu()
 			{
-				if (Hub.simWindow == null)
+				if (Main.simWindow == null)
 					return;
 
-				TMenu geneMenu = Hub.simWindow.savedGenesMenu;
+				TMenu geneMenu = Main.simWindow.savedGenesMenu;
 
 				geneMenu.clearTComponents();
 
@@ -116,7 +116,7 @@ public class GeneIO
 		public void loadGenes(String geneName)
 			{
 				BufferedReader in = null;
-				Simulation sim = Hub.simWindow.sim;
+				Simulation sim = Main.simWindow.sim;
 
 				try
 					{
@@ -288,10 +288,10 @@ public class GeneIO
 							{
 								if (down)
 									{
-										if (Hub.simWindow.loadGenesButton.isChecked())
+										if (Main.simWindow.loadGenesButton.isChecked())
 											loadGenes(file.getName());
-										else if (Hub.simWindow.deleteGenesButton.isChecked()
-												&& JOptionPane.showConfirmDialog(Hub.simWindow.getObserver(), "Are you sure you want to delete this gene?", "Delete Confirmation",
+										else if (Main.simWindow.deleteGenesButton.isChecked()
+												&& JOptionPane.showConfirmDialog(Main.simWindow.getObserver(), "Are you sure you want to delete this gene?", "Delete Confirmation",
 														JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION)
 											file.delete();
 									}

@@ -5,7 +5,7 @@ import java.util.LinkedList;
 
 import tools.ColTools;
 import tools.RandTools;
-import evolvingPlants.Hub;
+import evolvingPlants.Main;
 
 /**
  * A plant has Genes with a fixed number of instructions on how to grow, these
@@ -113,7 +113,7 @@ public class Genes
 
 		private final void mutate()
 			{
-				if (RandTools.randPercent() > Hub.simWindow.mutantOffspringSlider.getValue())
+				if (RandTools.randPercent() > Main.simWindow.mutantOffspringSlider.getValue())
 					return;
 
 				seedEnergy += RandTools.getDouble(-10, 10);
@@ -126,7 +126,7 @@ public class Genes
 				// Mutate instructions
 				for (int i = 0; i < instructions.size(); i++)
 					{
-						if (RandTools.randPercent() < Hub.simWindow.dnaDamageSlider.getValue())
+						if (RandTools.randPercent() < Main.simWindow.dnaDamageSlider.getValue())
 							{
 								// Mutate instruction
 								if (RandTools.randPercent() > 6)
@@ -179,7 +179,7 @@ public class Genes
 			{
 				// Unrelated if too many differences in gene sequence
 				int differences = 0;
-				int acceptableDifference = (int) ((double) parentOneCommands.size() * Hub.simWindow.sim.geneCompatability);
+				int acceptableDifference = (int) ((double) parentOneCommands.size() * Main.simWindow.sim.geneCompatability);
 				for (int i = 0; i < parentOneCommands.size(); i++)
 					{
 						if (parentOneCommands.get(i) != parentTwoCommands.get(i))

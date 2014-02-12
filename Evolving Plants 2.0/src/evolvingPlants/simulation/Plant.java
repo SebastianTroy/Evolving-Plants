@@ -7,7 +7,7 @@ import java.awt.geom.Point2D;
 import java.util.ArrayList;
 
 import tools.RandTools;
-import evolvingPlants.Hub;
+import evolvingPlants.Main;
 
 public class Plant
 	{
@@ -34,7 +34,7 @@ public class Plant
 				minX = maxX = plantX;
 				genes = parentGenes;
 				energy = parentGenes.seedEnergy / 3;
-				leafSize = (int) Hub.simWindow.leafSizeSlider.getValue();
+				leafSize = (int) Main.simWindow.leafSizeSlider.getValue();
 
 				nodeTree = new NodeTree(genes);
 
@@ -49,7 +49,7 @@ public class Plant
 				minX = maxX = plantX;
 				genes = new Genes(parent.genes, true);
 				energy = genes.seedEnergy / 3;
-				leafSize = (int) Hub.simWindow.leafSizeSlider.getValue();
+				leafSize = (int) Main.simWindow.leafSizeSlider.getValue();
 
 				nodeTree = new NodeTree(genes);
 
@@ -69,7 +69,7 @@ public class Plant
 					}
 				else if (fractionGrown > 1) // full grown - only called once
 					{
-						double leafOpacity = 1.0 - (Hub.simWindow.leafOpacitySlider.getValue() / 100.0);
+						double leafOpacity = 1.0 - (Main.simWindow.leafOpacitySlider.getValue() / 100.0);
 						int r = (int) ((255 - genes.leafColour.getRed()) * leafOpacity);
 						int g = (int) ((255 - genes.leafColour.getGreen()) * leafOpacity);
 						int b = (int) ((255 - genes.leafColour.getBlue()) * leafOpacity);
@@ -84,7 +84,7 @@ public class Plant
 						// every second that the plant is alive have 1 offspring
 						if (timeToNextSeed < 0 && energy > genes.seedEnergy)
 							{
-								Hub.simWindow.sim.plantsToAdd.add(new Plant(this, RandTools.getInt(minX - 40, maxX + 40)));
+								Main.simWindow.sim.plantsToAdd.add(new Plant(this, RandTools.getInt(minX - 40, maxX + 40)));
 								energy -= genes.seedEnergy;
 								timeToNextSeed = 5;
 							}
@@ -251,7 +251,7 @@ public class Plant
 									{
 										// NOTE: seedlings do not have shadows
 										// hence BLACK shadow
-										energy += Hub.simWindow.sim.photosynthesizeAt(getX() + RandTools.getDouble((int) leafSize / -2, (int) leafSize / 2), (int) y, genes.leafColour, shadowColour)
+										energy += Main.simWindow.sim.photosynthesizeAt(getX() + RandTools.getDouble((int) leafSize / -2, (int) leafSize / 2), (int) y, genes.leafColour, shadowColour)
 												* secondsPassed * fractionGrown;
 									}
 								else
@@ -302,7 +302,7 @@ public class Plant
 
 						private final void growUp()
 							{
-								y -= (int) Hub.simWindow.stalkLengthSlider.getValue();
+								y -= (int) Main.simWindow.stalkLengthSlider.getValue();
 								for (Node n : daughterNodes)
 									n.growUp();
 							}
@@ -311,7 +311,7 @@ public class Plant
 							{
 								if (y < plantY)
 									{
-										y += (int) Hub.simWindow.stalkLengthSlider.getValue();
+										y += (int) Main.simWindow.stalkLengthSlider.getValue();
 										for (Node n : daughterNodes)
 											n.growDown();
 									}
@@ -319,14 +319,14 @@ public class Plant
 
 						private final void growLeft()
 							{
-								x -= (int) Hub.simWindow.stalkLengthSlider.getValue();
+								x -= (int) Main.simWindow.stalkLengthSlider.getValue();
 								for (Node n : daughterNodes)
 									n.growLeft();
 							}
 
 						private final void growRight()
 							{
-								x += (int) Hub.simWindow.stalkLengthSlider.getValue();
+								x += (int) Main.simWindow.stalkLengthSlider.getValue();
 								for (Node n : daughterNodes)
 									n.growRight();
 							}
@@ -395,7 +395,7 @@ public class Plant
 										n.setShadow();
 
 								if (isLeaf)
-									Hub.simWindow.sim.addShadow(x, y, leafSize, shadowColour);
+									Main.simWindow.sim.addShadow(x, y, leafSize, shadowColour);
 							}
 
 						private final void removeShadow()
@@ -405,7 +405,7 @@ public class Plant
 										n.removeShadow();
 
 								if (isLeaf)
-									Hub.simWindow.sim.removeShadow(x, y, leafSize, shadowColour);
+									Main.simWindow.sim.removeShadow(x, y, leafSize, shadowColour);
 							}
 
 						final int getX()
