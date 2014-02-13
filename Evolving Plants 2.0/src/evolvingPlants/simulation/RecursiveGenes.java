@@ -12,18 +12,18 @@ public class RecursiveGenes
 		private static final int MAX_RECURSIONS = 10;
 		private static final int MAX_UNPACKABLES = 5;
 
-		public static final Character GROW = 'a';
-		public static final Character ROTATE_LEFT = 'b';
-		public static final Character ROTATE_RIGHT = 'c';
-		public static final Character START_NODE = '{';
-		public static final Character END_NODE = '}';
-		public static final Character NOTHING = '_';
+		public static final char GROW = 'a';
+		public static final char ROTATE_LEFT = 'b';
+		public static final char ROTATE_RIGHT = 'c';
+		public static final char START_NODE = '{';
+		public static final char END_NODE = '}';
+		public static final char NOTHING = '_';
 
 		@SuppressWarnings("unchecked")
 		private final LinkedList<Character>[] genes = new LinkedList[MAX_UNPACKABLES];
 
 		private boolean genesUnpacked = false;
-		private final String unpackedGenes = "";
+		private final LinkedList<Character> unpackedGenes = new LinkedList<Character>();
 
 		public RecursiveGenes()
 			{
@@ -36,18 +36,25 @@ public class RecursiveGenes
 				genes[0].addFirst(GROW);
 			}
 
-		public RecursiveGenes(LinkedList<Character>[] parentGenes)
+		public RecursiveGenes(RecursiveGenes parentGenes)
 			{
-				// For each set of genes (or as many allowed by the MAX_UNPACKABLES variable)
-				for (int i = 0; i < MAX_UNPACKABLES || i < parentGenes.length; i++)
-					{
-						this.genes[i] = new LinkedList<Character>();
-						for (int i2 = 0; i2 < parentGenes[i].size(); i2++)
-							this.genes[i].addLast(parentGenes[i2].pop());
-					}
+				this(parentGenes, true);
 			}
 
-		public final String getGenes()
+		public RecursiveGenes(RecursiveGenes parentGenes, boolean mutate)
+			{
+				// For each set of genes (or as many allowed by the MAX_UNPACKABLES variable)
+				for (int i = 0; i < MAX_UNPACKABLES || i < parentGenes.genes.length; i++)
+					{
+						this.genes[i] = new LinkedList<Character>();
+						for (int charIndex = 0; charIndex < parentGenes.genes[i].size(); charIndex++)
+							this.genes[i].addLast(parentGenes.genes[charIndex].pop());
+					}
+
+				// TODO implement mutation
+			}
+
+		public final LinkedList<Character> getGenes()
 			{
 				if (!genesUnpacked)
 					unpackGenes();
@@ -57,7 +64,6 @@ public class RecursiveGenes
 		private final void unpackGenes()
 			{
 				// Construct the entire genome by unpacking A (the first gene)
-				LinkedList<Character> unpackedGenes = new LinkedList<Character>();
 				unpackedGenes.addAll(genes[0]);
 
 				boolean completed;
@@ -93,15 +99,37 @@ public class RecursiveGenes
 							recursions = MAX_RECURSIONS;
 					}
 
+				int numStartNodes = 0;
+				int numEndNodes = 0;
+
 				// Go through the unpacked genes and remove any surplus unpackables
-				for (int i = 0; i < unpackedGenes.size(); i++)
+				for (int i = 0; i < unpackedGenes.size();)
 					{
-						char c = unpackedGenes.get(i);
-						if (!Character.isUpperCase(c))
+						Character c = unpackedGenes.get(i);
+						if (Character.isUpperCase(c))
 							// Add the next character to our string of genes
-							this.unpackedGenes.concat(Character.toString(c));
+							unpackedGenes.remove(i);
+						else if (c == START_NODE)
+							{
+								numStartNodes++;
+								i++;
+							}
+						else if (c == END_NODE)
+							{
+								numEndNodes++;
+								// If inviable, stop checking the genes
+								if (numEndNodes > numStartNodes)
+									i = unpackedGenes.size();
+								i++;
+							}
+						else
+							i++;
 					}
-				
+
+				// If the brackets don't balance out, break the genes
+				if (numStartNodes != numEndNodes)
+					unpackedGenes.clear();
+
 				// Recored that the genes have been unpacked
 				genesUnpacked = true;
 			}
