@@ -6,6 +6,7 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 
 import tCode.RenderableObject;
@@ -19,6 +20,7 @@ import tComponents.components.TTextField;
 import tComponents.utils.RadioButtonsCollection;
 import tComponents.utils.events.TActionEvent;
 import tComponents.utils.events.TScrollEvent;
+import evolvingPlants.simulation.RecursiveGenes;
 import evolvingPlants.simulation.Simulation;
 
 public class SimulationWindow extends RenderableObject
@@ -67,16 +69,12 @@ public class SimulationWindow extends RenderableObject
 		public final TSlider stalkLengthSlider = new TSlider(TSlider.HORIZONTAL);
 
 		public TMenu lightOptionsMenu;
-		public final TSlider redLightSlider = new TSlider(TSlider.HORIZONTAL);
-		public final TSlider greenLightSlider = new TSlider(TSlider.HORIZONTAL);
-		public final TSlider blueLightSlider = new TSlider(TSlider.HORIZONTAL);
+		public final TSlider lightSlider = new TSlider(TSlider.HORIZONTAL);
 		public final TSlider leafOpacitySlider = new TSlider(TSlider.HORIZONTAL);
 
 		public TMenu filterOptionsMenu;
 		public final TSlider filterWidthSlider = new TSlider(TSlider.HORIZONTAL);
-		public final TSlider filterRedLightSlider = new TSlider(TSlider.HORIZONTAL);
-		public final TSlider filterGreenLightSlider = new TSlider(TSlider.HORIZONTAL);
-		public final TSlider filterBlueLightSlider = new TSlider(TSlider.HORIZONTAL);
+		public final TSlider filterOpacitySlider = new TSlider(TSlider.HORIZONTAL);
 		private final TButton createFilterButton = new TButton("Create Filter");
 
 		TMenu geneOptionsMenu;
@@ -204,15 +202,10 @@ public class SimulationWindow extends RenderableObject
 				lightOptionsMenu.add(lightOptionsLabel, false);
 				lightOptionsMenu.add(showLightButton);
 				lightOptionsMenu.add(new TLabel("Light Intensity"), false);
-				redLightSlider.setRange(0, 255);
-				greenLightSlider.setRange(0, 255);
-				blueLightSlider.setRange(0, 255);
-				redLightSlider.setSliderImage(0, Main.loadImage("redSun.png"));
-				greenLightSlider.setSliderImage(0, Main.loadImage("greenSun.png"));
-				blueLightSlider.setSliderImage(0, Main.loadImage("blueSun.png"));
-				lightOptionsMenu.add(redLightSlider);
-				lightOptionsMenu.add(greenLightSlider);
-				lightOptionsMenu.add(blueLightSlider);
+				lightSlider.setRange(0, 255);
+				lightSlider.setValue(255);
+				lightSlider.setSliderImage(0, Main.loadImage("redSun.png"));
+				lightOptionsMenu.add(lightSlider);
 				lightOptionsMenu.add(new TLabel("Leaf Transparency"), false);
 				lightOptionsMenu.add(leafOpacitySlider);
 
@@ -224,21 +217,16 @@ public class SimulationWindow extends RenderableObject
 				filterOptionsMenu.add(new TLabel("Filter Width"), false);
 				filterWidthSlider.setRange(0, sim.simWidth);
 				filterOptionsMenu.add(filterWidthSlider);
-				filterRedLightSlider.setSliderImage(0, Main.loadImage("redFilter.png"));
-				filterGreenLightSlider.setSliderImage(0, Main.loadImage("greenFilter.png"));
-				filterBlueLightSlider.setSliderImage(0, Main.loadImage("blueFilter.png"));
-				filterRedLightSlider.setRange(0, 255);
-				filterGreenLightSlider.setRange(0, 255);
-				filterBlueLightSlider.setRange(0, 255);
-				filterOptionsMenu.add(filterRedLightSlider);
-				filterOptionsMenu.add(filterGreenLightSlider);
-				filterOptionsMenu.add(filterBlueLightSlider);
+				filterOpacitySlider.setSliderImage(0, Main.loadImage("redFilter.png"));
+				filterOpacitySlider.setRange(0, 255);
+				filterOptionsMenu.add(filterOpacitySlider);
 				filterOptionsMenu.add(createFilterButton);
 
 				Main.geneIO.addGenesToMenu();
-				Main.geneIO.loadGenes("default.txt");
+				//Main.geneIO.loadGenes("default.txt");
+				sim.currentGenes = new RecursiveGenes();
 
-				Main.presetIO.addPresetsToMenu();
+				//Main.presetIO.addPresetsToMenu();
 
 				setLeftMenu(interactionsMenu);
 				setRightMenu(simOptionsMenu);
@@ -274,6 +262,13 @@ public class SimulationWindow extends RenderableObject
 				currentRightSideMenu.setLocation(1000, 0);
 				currentRightSideMenu.setDimensions(200, Main.canvasHeight / 2);
 				add(currentRightSideMenu);
+			}
+		
+
+		@Override
+		public final void keyPressed(KeyEvent e)
+			{
+				sim.tick = true;
 			}
 
 		@Override
@@ -361,29 +356,11 @@ public class SimulationWindow extends RenderableObject
 							sim.updateLighting();
 					}
 				// update light
-				else if (eventSource == redLightSlider && (e.getScrollType() == TScrollEvent.FINAL_VALUE || e.getScrollType() == TScrollEvent.VALUE_SET_INTERNALLY))
+				else if (eventSource == lightSlider && (e.getScrollType() == TScrollEvent.FINAL_VALUE || e.getScrollType() == TScrollEvent.VALUE_SET_INTERNALLY))
 					{
 						double simSpeed = playbackSpeed.getValue();
 						playbackSpeed.setValue(0);
-						sim.lightMap.setRedLight(redLightSlider.getValue());
-						playbackSpeed.setValue(simSpeed);
-						if (sim.showLighting)
-							sim.updateLighting();
-					}
-				else if (eventSource == greenLightSlider && (e.getScrollType() == TScrollEvent.FINAL_VALUE || e.getScrollType() == TScrollEvent.VALUE_SET_INTERNALLY))
-					{
-						double simSpeed = playbackSpeed.getValue();
-						playbackSpeed.setValue(0);
-						sim.lightMap.setGreenLight(greenLightSlider.getValue());
-						playbackSpeed.setValue(simSpeed);
-						if (sim.showLighting)
-							sim.updateLighting();
-					}
-				else if (eventSource == blueLightSlider && (e.getScrollType() == TScrollEvent.FINAL_VALUE || e.getScrollType() == TScrollEvent.VALUE_SET_INTERNALLY))
-					{
-						double simSpeed = playbackSpeed.getValue();
-						playbackSpeed.setValue(0);
-						sim.lightMap.setBlueLight(blueLightSlider.getValue());
+						sim.lightMap.setLight(lightSlider.getValue());
 						playbackSpeed.setValue(simSpeed);
 						if (sim.showLighting)
 							sim.updateLighting();

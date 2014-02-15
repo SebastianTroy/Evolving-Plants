@@ -1,130 +1,101 @@
 package evolvingPlants.simulation;
 
-import java.awt.Color;
 import java.awt.image.BufferedImage;
 
 import tools.ColTools;
 
 public class LightMap
 	{
-		private static final int RED = 0;
-		private static final int GREEN = 1;
-		private static final int BLUE = 2;
-
-		private int[][][] lightData;
-		private int[] baseLightColours = { 255, 255, 255 };
+		private int[][] lightData;
+		private int baseLight = 0;
 		
 		BufferedImage lightMap = new BufferedImage(800, 550, BufferedImage.TYPE_INT_RGB);
 
-		private int width, height, depth = 3;
+		private int width, height;
 
 		public LightMap(int width, int height)
 			{
 				this.width = width;
 				this.height = height;
 
-				lightData = new int[width][height][3];
+				lightData = new int[width][height];
 
 				for (int x = 0; x < width; x++)
 					for (int y = 0; y < height; y++)
-						for (int c = 0; c < depth; c++)
-							lightData[x][y][c] = baseLightColours[c];
+							lightData[x][y] = baseLight;
 			}
 
-		public void setRedLight(double newRed)
+		public void setLight(double newLightValue)
 			{
-				if (newRed == baseLightColours[RED])
+				if (newLightValue == baseLight)
 					return;
 				
-				int difference = (int) newRed - baseLightColours[RED];
+				int difference = (int) newLightValue - baseLight;
 
 				for (int x = 0; x < width; x++)
 					for (int y = 0; y < height; y++)
-						lightData[x][y][RED] += difference;
+						lightData[x][y] += difference;
 
-				baseLightColours[RED] = (int) newRed;
+				baseLight = (int) newLightValue;
 			}
 
-		public void setGreenLight(double newGreen)
+		/**
+		 * 
+		 * @param shadowX
+		 * @param shadowY
+		 * @param shadowWidth
+		 * @param leafOpacity - How much light the leaf casting the shadow blocks, 0 being none, 255 being all
+		 */
+		public final void addShadow(int shadowX, int shadowY, int shadowWidth, int leafOpacity)
 			{
-				if (newGreen == baseLightColours[GREEN])
-					return;
-
-				int difference = (int) newGreen - baseLightColours[GREEN];
-
-				for (int x = 0; x < width; x++)
-					for (int y = 0; y < height; y++)
-						lightData[x][y][GREEN] += difference;
-
-				baseLightColours[GREEN] = (int) newGreen;
-			}
-
-		public void setBlueLight(double newBlue)
-			{
-				if (newBlue == baseLightColours[BLUE])
-					return;
-
-				int difference = (int) newBlue - baseLightColours[BLUE];
-
-				for (int x = 0; x < width; x++)
-					for (int y = 0; y < height; y++)
-						lightData[x][y][BLUE] += difference;
-
-				baseLightColours[BLUE] = (int) newBlue;
-			}
-
-		public final void addShadow(int shadowX, int shadowY, int shadowWidth, Color shadowColour)
-			{
-				int[] shadowCols = new int[3];
-				shadowCols[RED] = shadowColour.getRed();
-				shadowCols[GREEN] = shadowColour.getGreen();
-				shadowCols[BLUE] = shadowColour.getBlue();
-
 				if (shadowX + shadowWidth > width)
 					shadowWidth = width - shadowX;
 
 				for (int x = Math.max(0, shadowX); x < shadowX + shadowWidth; x++)
 					for (int y = Math.max(0, shadowY); y < height; y++)
-						for (int c = 0; c < depth; c++)
-							lightData[x][y][c] -= shadowCols[c];
+							lightData[x][y] -= leafOpacity;
 			}
 
-		public final void removeShadow(int shadowX, int shadowY, int shadowWidth, Color shadowColour)
+		/**
+		 * 
+		 * @param shadowX
+		 * @param shadowY
+		 * @param shadowWidth
+		 * @param leafOpacity - How much light the leaf casting the shadow blocked, 0 being none, 255 being all
+		 */
+		public final void removeShadow(int shadowX, int shadowY, int shadowWidth, int leafOpacity)
 			{
-				int[] shadowCols = new int[3];
-				shadowCols[RED] = shadowColour.getRed();
-				shadowCols[GREEN] = shadowColour.getGreen();
-				shadowCols[BLUE] = shadowColour.getBlue();
-
 				if (shadowX + shadowWidth > width)
 					shadowWidth = width - shadowX;
 
 				for (int x = Math.max(0, shadowX); x < shadowX + shadowWidth; x++)
 					for (int y = Math.max(0, shadowY); y < height; y++)
-						for (int c = 0; c < depth; c++)
-							lightData[x][y][c] += shadowCols[c];
+							lightData[x][y] += leafOpacity;
 			}
 
 		public final BufferedImage getLightImage(BufferedImage image, int xPos)
 			{
 				for (int x = xPos; x < xPos + image.getWidth() && x < width; x++)
 					for (int y = 0; y < image.getHeight(); y++)
-						image.setRGB(x - xPos, y, ColTools.checkColour(lightData[x][y][RED], lightData[x][y][GREEN], lightData[x][y][BLUE]).getRGB());
+						image.setRGB(x - xPos, y, ColTools.checkColour(lightData[x][y], lightData[x][y], lightData[x][y]).getRGB());
 
 				return image;
 			}
 
-		public int[] getLightMinusShadowAt(int x, int y, Color shadowColor)
+		/**
+		 * 
+		 * @param x
+		 * @param y
+		 * @param leafOpacity - How much light the leaf casting the shadow is blocking, 0 being none, 255 being all
+		 * @return
+		 */
+		public int getLightMinusShadowAt(int x, int y, int leafOpacity)
 			{
-				int[] lightCols = { 0, 0, 0 };
-
 				if (x > 0 && x < width && y > 0 && y < height)
 					{
-						lightCols[RED] = lightData[x][y][RED] + shadowColor.getRed();
-						lightCols[GREEN] = lightData[x][y][GREEN] + shadowColor.getGreen();
-						lightCols[BLUE] = lightData[x][y][BLUE] + shadowColor.getBlue();
+						return lightData[x][y] + leafOpacity;
 					}
 
-				return lightCols;
+				return 0;
 			}
 	}

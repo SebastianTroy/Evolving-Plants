@@ -21,7 +21,7 @@ import tComponents.components.TSlider;
 import tComponents.components.TTextField;
 import tComponents.utils.events.TActionEvent;
 import tComponents.utils.events.TScrollEvent;
-import evolvingPlants.simulation.Genes;
+import evolvingPlants.simulation.RecursiveGenes;
 
 public class GeneEditor extends RenderableObject
 	{
@@ -30,7 +30,7 @@ public class GeneEditor extends RenderableObject
 		// Plant variables
 		private int plantX = 950, plantY = 500, leafSize = 14;
 		private Color leafColour = new Color(175, 175, 175), oppositeColour = new Color(80, 80, 80), lightColour = Color.WHITE;
-		private NodeTree examplePlant = new NodeTree(new Genes(" ", 100, 175, 175, 175));
+		private NodeTree examplePlant = new NodeTree(new RecursiveGenes());
 		private NodeTree.Node lastSelectedNode;
 		private double height = 0, lean = 0, energyGained = 200, metabolism = 0.1;
 
@@ -164,8 +164,10 @@ public class GeneEditor extends RenderableObject
 		private final void updateExamplePlant()
 			{
 				metabolism = 0;
-				examplePlant = new NodeTree(new Genes(geneEditorField.getText(), seedSizeSlider.getValue(), (int) redLeafSlider.getValue(), (int) greenLeafSlider.getValue(),
-						(int) blueLeafSlider.getValue()));
+				//TODO update example plant
+				// examplePlant = new NodeTree(new RecursiveGenes(geneEditorField.getText(), seedSizeSlider.getValue(), (int) redLeafSlider.getValue(), (int)
+				// greenLeafSlider.getValue(),
+				// (int) blueLeafSlider.getValue()));
 			}
 
 		private final String readStringFromLine(String text)
@@ -193,9 +195,11 @@ public class GeneEditor extends RenderableObject
 
 				if (eventSource == saveGenesButton)
 					{
-						Main.geneIO.saveGenes(
-								new Genes(geneEditorField.getText(), seedSizeSlider.getValue(), (int) redLeafSlider.getValue(), (int) greenLeafSlider.getValue(), (int) blueLeafSlider.getValue()),
-								saveNameField.getText());
+						// TODO update GeneIO and save genes
+						// Main.geneIO.saveGenes(
+						// new RecursiveGenes(geneEditorField.getText(), seedSizeSlider.getValue(), (int) redLeafSlider.getValue(), (int)
+						// greenLeafSlider.getValue(), (int) blueLeafSlider.getValue()),
+						// saveNameField.getText());
 					}
 				else if (eventSource == loadGenesButton)
 					{
@@ -262,58 +266,9 @@ public class GeneEditor extends RenderableObject
 
 				private Node baseNode = new Node(plantX, plantY);
 
-				private NodeTree(Genes genes)
+				private NodeTree(RecursiveGenes genes)
 					{
-						boolean finishedReading = false;
-						baseNode.growUp();
-						Node currentNode = baseNode;
-
-						while (!finishedReading)
-							{
-								metabolism += 0.1;
-								switch (genes.nextInstruction())
-									{
-										case Genes.ADD_NODE:
-											Node newNode = new Node(currentNode);
-											currentNode.addNode(newNode);
-											currentNode = newNode;
-											currentNode.growUp();
-											break;
-										case Genes.CLIMB_NODE_TREE:
-											currentNode = currentNode.getDaughterNode();
-											break;
-										case Genes.DESCEND_NODE_TREE:
-											currentNode = currentNode.getParentNode();
-											break;
-										case Genes.NODE_CAN_SEED:
-											currentNode.canSeed = !currentNode.canSeed;
-											break;
-										case Genes.GROW_UP:
-											metabolism++;
-											currentNode.growUp();
-											break;
-										case Genes.GROW_LEFT:
-											currentNode.growLeft();
-											break;
-										case Genes.GROW_RIGHT:
-											currentNode.growRight();
-											break;
-										case Genes.GROW_DOWN:
-											metabolism += 0.5;
-											currentNode.growDown();
-											break;
-										case Genes.SKIP:
-											metabolism += 0.75;
-											break;
-										case Genes.END_ALL:
-											lastSelectedNode = currentNode;
-											finishedReading = true;
-									}
-							}
-
-						baseNode.calculateLean();
-						baseNode.setLeaves();
-						baseNode.parentNode = new Node(plantX, plantY);
+						//TODO recreate based on NodeTree in the Plant class
 					}
 
 				private class Node

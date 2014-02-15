@@ -100,11 +100,7 @@ public class SimPresetIO
 						out.newLine();
 						out.write("Light:");
 						out.newLine();
-						out.write("RedLightIntensity= " + sim.redLightSlider.getValue());
-						out.newLine();
-						out.write("GreenLightIntensity= " + sim.greenLightSlider.getValue());
-						out.newLine();
-						out.write("BlueLightIntensity= " + sim.blueLightSlider.getValue());
+						out.write("LightIntensity= " + sim.lightSlider.getValue());
 						out.newLine();
 						out.write("LeafTransparency= " + sim.leafOpacitySlider.getValue());
 					}
@@ -150,9 +146,7 @@ public class SimPresetIO
 						in.readLine();// Light
 						sim.lightOptionsMenu.setX(-200);
 						/**/sim.add(sim.lightOptionsMenu);
-						sim.redLightSlider.setValue(readValueFromLine(in.readLine()));
-						sim.greenLightSlider.setValue(readValueFromLine(in.readLine()));
-						sim.blueLightSlider.setValue(readValueFromLine(in.readLine()));
+						sim.lightSlider.setValue(readValueFromLine(in.readLine()));
 						sim.leafOpacitySlider.setValue(readValueFromLine(in.readLine()));
 						/**/sim.remove(sim.lightOptionsMenu);
 						

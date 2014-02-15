@@ -8,30 +8,27 @@ import java.awt.image.BufferedImage;
 
 import evolvingPlants.Main;
 
-public class LightFilter
+public class LightFilter // TODO refactor to Shadow
 	{
 		int x, y, width;
-		Color shadowColour;
+		int shadowColour;// TODO refactor to filter transparency 0 = transparent, 255 = opaque
 		private BufferedImage filterColourMap;
 		
 		public Point movedTo = null;
 
 		public boolean exists = true;
 
-		public LightFilter(int x, int y, int width, Color filterColour)
+		public LightFilter(int x, int y, int width, int filterTransparency)
 			{
 				this.x = x;
 				this.y = y;
 				this.width = width;
 
-				int red = (int) (255 - filterColour.getRed());
-				int green = (int) (255 - filterColour.getGreen());
-				int blue = (int) (255 - filterColour.getBlue());
-				shadowColour = new Color(red, green, blue);
+				shadowColour = filterTransparency;
 
 				filterColourMap = new BufferedImage(width, 4, BufferedImage.TYPE_INT_ARGB);
 				Graphics g = filterColourMap.getGraphics();
-				g.setColor(filterColour);
+				g.setColor(new Color(filterTransparency,filterTransparency,filterTransparency));
 				g.fillRect(0, 0, width, 4);
 				g.dispose();
 			}

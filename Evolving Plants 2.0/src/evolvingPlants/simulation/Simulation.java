@@ -1,16 +1,13 @@
 package evolvingPlants.simulation;
 
-import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Graphics2D;
 import java.awt.Point;
-import java.awt.Stroke;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
-
-import tools.ColTools;
 
 import evolvingPlants.Main;
 
@@ -18,8 +15,6 @@ public class Simulation
 	{
 		// Globally fixed variables
 		private static final Color skyBlue = new Color(150, 150, 255);
-		private static final Color dottedLineColour = new Color(0, 0, 0, 75);
-		private static final Stroke dottedLineStroke = new BasicStroke(1, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[] { 6, 12 }, 0);
 
 		// User adjustable variables
 		public double geneCompatability = 0.1; // lower is less compatible
@@ -38,7 +33,7 @@ public class Simulation
 		BufferedImage lightImage;
 
 		// plants added by user
-		public Genes currentGenes;
+		public RecursiveGenes currentGenes;
 		public ArrayList<Point> plantsAddedByUser = new ArrayList<Point>(5);
 
 		// Light Filters
@@ -47,8 +42,8 @@ public class Simulation
 		private ArrayList<LightFilter> filters = new ArrayList<LightFilter>();
 
 		// Seeds and Plants in the simulation
-		ArrayList<Plant> plantsToAdd = new ArrayList<Plant>(40);
-		ArrayList<Plant> plants = new ArrayList<Plant>(40);
+		ArrayList<RecursivePlant> plantsToAdd = new ArrayList<RecursivePlant>(40);
+		ArrayList<RecursivePlant> plants = new ArrayList<RecursivePlant>(40);
 
 		public Simulation(int width)
 			{
@@ -59,6 +54,8 @@ public class Simulation
 
 		public void tick(double secondsPassed)
 			{
+				// TODO stop using secondsPassed except to limit ticks per second
+
 				if (reset)
 					{
 						plantsAddedByUser.clear();
@@ -73,9 +70,7 @@ public class Simulation
 
 				if (addFilter)
 					{
-						Color filterColour = ColTools.checkColour((int) Main.simWindow.filterRedLightSlider.getValue(), (int) Main.simWindow.filterGreenLightSlider.getValue(),
-								(int) Main.simWindow.filterBlueLightSlider.getValue());
-						LightFilter newFilter = new LightFilter((int) -simX + 5, 250, (int) Main.simWindow.filterWidthSlider.getValue(), filterColour);
+						LightFilter newFilter = new LightFilter((int) -simX + 5, 250, (int) Main.simWindow.filterWidthSlider.getValue(), (int) Main.simWindow.filterOpacitySlider.getValue());
 						filters.add(newFilter);
 						addFilter = false;
 
@@ -122,29 +117,39 @@ public class Simulation
 
 				for (int i = 0; i < Main.simWindow.warpSpeedSlider.getValue(); i++)
 					{
-						//----------------------------------
-						/*REALLY SUPER SLOW*/
+						// ----------------------------------
+						/* REALLY SUPER SLOW */
 						if (showLighting)
 							updateLighting();
-						/*REALLY SUPER SLOW*/
-						//----------------------------------
-						
+						/* REALLY SUPER SLOW */
+						// ----------------------------------
+
 						// Add new seedlings to Array
 						for (Point p : plantsAddedByUser)
-							plants.add(new Plant(currentGenes, (int) p.getX()));
+							plants.add(new RecursivePlant(currentGenes, (int) p.getX()));
 						plantsAddedByUser.clear();
 						// Add new seedlings to Array
-						for (Plant p : plantsToAdd)
-							plants.add(new Plant(p, p.plantX));
+						for (RecursivePlant p : plantsToAdd)
+							plants.add(p);
 						plantsToAdd.clear();
 						// Remove dead plants
 						for (int p = 0; p < plants.size(); p++)
-							if (plants.get(p).alive == false)
-								plants.remove(p);
-						for (Plant p : plants)
-							p.tick(secondsPassed);
+							if (!plants.get(p).alive)
+								{
+									plants.remove(p);
+									p--;
+								}
+						if (tick)
+							{
+								// Process all living plants
+								for (RecursivePlant p : plants)
+									p.tick();
+							}
+						tick = false;
 					}
 			}
+
+		public boolean tick = false;
 
 		public void render(Graphics2D g)
 			{
@@ -158,12 +163,12 @@ public class Simulation
 
 				int simX = (int) this.simX;
 				g.setColor(skyBlue);
-				g.fillRect(200, 0, 800, Plant.plantY);
+				g.fillRect(200, 0, 800, RecursivePlant.plantY);
 				if (showLighting)
 					g.drawImage(lightImage, 200, 0, Main.simWindow.getObserver());
 				g.setColor(Color.GREEN);
 				g.fillRect(200, 550, 800, 50);
-				for (Plant p : plants)
+				for (RecursivePlant p : plants)
 					p.render(g, simX + 200);
 				for (LightFilter f : filters)
 					f.render(g, simX + 200);
@@ -196,44 +201,21 @@ public class Simulation
 				Main.simWindow.warpSpeedSlider.setValue(0);
 			}
 
-		public final void addPlant(Plant newPlant)
+		public final void addPlant(RecursivePlant newPlant)
 			{
-					plants.add(newPlant);
+				plants.add(newPlant);
 			}
 
-		public final void addShadow(double nodeX, double nodeY, int leafSize, Color leafColour)
+		public final void addShadow(double nodeX, double nodeY, int leafSize, int leafTransparency)
 			{
 				int x = (int) nodeX - (leafSize / 2);
-				lightMap.addShadow(x, (int) nodeY, leafSize, leafColour);
+				lightMap.addShadow(x, (int) nodeY, leafSize, leafTransparency);
 			}
 
-		public final void removeShadow(double nodeX, double nodeY, int leafSize, Color leafColour)
+		public final void removeShadow(double nodeX, double nodeY, int leafSize, int leafTransparency)
 			{
 				int x = (int) nodeX - (leafSize / 2);
-				lightMap.removeShadow(x, (int) nodeY, leafSize, leafColour);
-			}
-
-		public double photosynthesizeAt(double x, int y, Color leafColour, Color shadowColour)
-			{
-				double energyGained = 0;
-				// minus shadow to stop leaf shading itself
-				int[] availableLight = lightMap.getLightMinusShadowAt((int) x, y, shadowColour);
-				energyGained += Math.max(0, (availableLight[0] - leafColour.getRed()));
-				energyGained += Math.max(0, (availableLight[1] - leafColour.getGreen()));
-				energyGained += Math.max(0, (availableLight[2] - leafColour.getBlue()));
-				/*
-				 * The leaf colour represents the light a leaf DOESN'T absorb.
-				 */
-				/*
-				 * If energy gained is over 255 the extra energy is subtracted
-				 * from the energy gained. In nature photosynthesis is inhibited
-				 * by too much light and dark adapted species are actually at a
-				 * large disadvantage in normal conditions.
-				 */
-				if (energyGained > 200)
-					energyGained = Math.max(0, 200 - (energyGained - 200));
-
-				return energyGained;
+				lightMap.removeShadow(x, (int) nodeY, leafSize, leafTransparency);
 			}
 
 		public void updateLighting()
@@ -254,15 +236,19 @@ public class Simulation
 							}
 						else if (Main.simWindow.currentCursor == Cursor.getDefaultCursor())
 							{
-								for (Plant plant : plants)
-									if (plant.contains(point))
-										plant.selected = true;
+								boolean plantSelected = false;
+								for (RecursivePlant plant : plants)
+									if (!plantSelected && plant.contains(point))
+										{
+											plant.selected = true;
+											plantSelected = true;
+										}
 									else if (plant.selected)
 										plant.selected = false;
 							}
 						else if (Main.simWindow.currentCursor == Main.simWindow.getGenesCursor)
 							{
-								for (Plant plant : plants)
+								for (RecursivePlant plant : plants)
 									if (plant.contains(point))
 										{
 											currentGenes = plant.getGenesCopy();

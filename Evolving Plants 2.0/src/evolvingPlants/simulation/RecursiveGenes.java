@@ -1,6 +1,9 @@
 package evolvingPlants.simulation;
 
+import java.awt.Color;
 import java.util.LinkedList;
+
+import tools.ColTools;
 
 /**
  * This class represents a plant's genetics
@@ -15,9 +18,10 @@ public class RecursiveGenes
 		public static final char GROW = 'a';
 		public static final char ROTATE_LEFT = 'b';
 		public static final char ROTATE_RIGHT = 'c';
+		public static final char TOGGLE_LEAF = 'd';
 		public static final char START_NODE = '{';
 		public static final char END_NODE = '}';
-		public static final char NOTHING = '_';
+		public static final char NOTHING = '~';
 
 		@SuppressWarnings("unchecked")
 		private final LinkedList<Character>[] genes = new LinkedList[MAX_UNPACKABLES];
@@ -25,15 +29,24 @@ public class RecursiveGenes
 		private boolean genesUnpacked = false;
 		private final LinkedList<Character> unpackedGenes = new LinkedList<Character>();
 
+		// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		Color leafColour;
+		double seedEnergy, /* energy to seeds */baseNodeSize, taper /* the proportion by which the plant gets smaller each branch */;
+
 		public RecursiveGenes()
 			{
 				for (int i = 0; i < MAX_UNPACKABLES; i++)
 					{
 						genes[i] = new LinkedList<Character>();
-						genes[i].addLast(NOTHING);
 					}
 
 				genes[0].addFirst(GROW);
+				genes[0].addLast(TOGGLE_LEAF);
+
+				leafColour = ColTools.randColour();
+				seedEnergy = 100;
+				baseNodeSize = 1;
+				taper = 0.1;
 			}
 
 		public RecursiveGenes(RecursiveGenes parentGenes)
@@ -48,8 +61,14 @@ public class RecursiveGenes
 					{
 						this.genes[i] = new LinkedList<Character>();
 						for (int charIndex = 0; charIndex < parentGenes.genes[i].size(); charIndex++)
-							this.genes[i].addLast(parentGenes.genes[charIndex].pop());
+							this.genes[i].addLast(new Character(parentGenes.genes[i].get(charIndex)));
 					}
+
+				// Get other gene variables too
+				leafColour = parentGenes.leafColour;
+				seedEnergy = parentGenes.seedEnergy;
+				baseNodeSize = parentGenes.baseNodeSize;
+				taper = parentGenes.taper;
 
 				// TODO implement mutation
 			}
@@ -75,7 +94,7 @@ public class RecursiveGenes
 						completed = true;
 
 						// Work through the genome backwards to avoid getting stuck in a recursive unpacking loop
-						for (int i = unpackedGenes.size() - 1; i >= 0; i++)
+						for (int i = unpackedGenes.size() - 1; i >= 0; i--)
 							{
 								char c = unpackedGenes.get(i);
 								// If the character is unpackable
