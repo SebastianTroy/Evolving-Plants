@@ -89,10 +89,6 @@ public class SimPresetIO
 						out = new BufferedWriter(new FileWriter(presetFile, false));
 						out.write("Plants:");
 						out.newLine();
-						out.write("LeafSize= " + sim.leafSizeSlider.getValue());
-						out.newLine();
-						out.write("StalkLength= " + sim.stalkLengthSlider.getValue());
-						out.newLine();
 						out.write("MutationChance= " + sim.mutantOffspringSlider.getValue());
 						out.newLine();
 						out.write("DNADamage= " + sim.dnaDamageSlider.getValue());
@@ -125,32 +121,30 @@ public class SimPresetIO
 		public void loadPreset(String presetName)
 			{
 				BufferedReader in = null;
-				SimulationWindow sim = Main.simWindow;
+				SimulationWindow simWindow = Main.simWindow;
 
 				try
 					{
-						sim.sim.pause();
+						simWindow.sim.paused = true;;
 						
 						File presetFile = new File(saveDirectory + "//" + presetName);
 
 						in = new BufferedReader(new FileReader(presetFile));
 						in.readLine();// Plants
-						sim.plantOptionsMenu.setX(-200);
-						/**/sim.add(sim.plantOptionsMenu);
-						sim.leafSizeSlider.setValue(readValueFromLine(in.readLine()));
-						sim.stalkLengthSlider.setValue(readValueFromLine(in.readLine()));
-						sim.mutantOffspringSlider.setValue(readValueFromLine(in.readLine()));
-						sim.dnaDamageSlider.setValue(readValueFromLine(in.readLine()));
-						/**/sim.remove(sim.plantOptionsMenu);
+						simWindow.plantOptionsMenu.setX(-200);
+						/**/simWindow.add(simWindow.plantOptionsMenu);
+						simWindow.mutantOffspringSlider.setValue(readValueFromLine(in.readLine()));
+						simWindow.dnaDamageSlider.setValue(readValueFromLine(in.readLine()));
+						/**/simWindow.remove(simWindow.plantOptionsMenu);
 						in.readLine();// /n
 						in.readLine();// Light
-						sim.lightOptionsMenu.setX(-200);
-						/**/sim.add(sim.lightOptionsMenu);
-						sim.lightSlider.setValue(readValueFromLine(in.readLine()));
-						sim.leafOpacitySlider.setValue(readValueFromLine(in.readLine()));
-						/**/sim.remove(sim.lightOptionsMenu);
+						simWindow.lightOptionsMenu.setX(-200);
+						/**/simWindow.add(simWindow.lightOptionsMenu);
+						simWindow.lightSlider.setValue(readValueFromLine(in.readLine()));
+						simWindow.leafOpacitySlider.setValue(readValueFromLine(in.readLine()));
+						/**/simWindow.remove(simWindow.lightOptionsMenu);
 						
-						sim.sim.unpause();
+						simWindow.sim.paused = false;
 					}
 				catch (Exception e)
 					{
@@ -170,7 +164,7 @@ public class SimPresetIO
 								e.printStackTrace();
 							}
 						
-						sim.sim.unpause();
+						simWindow.sim.paused = false;
 					}
 			}
 
@@ -202,10 +196,6 @@ public class SimPresetIO
 
 						out.write("Plants:");
 						out.newLine();
-						out.write("LeafSize= 14.0");
-						out.newLine();
-						out.write("StalkLength= 20.0");
-						out.newLine();
 						out.write("MutationChance= 35.0");
 						out.newLine();
 						out.write("DNADamage= 4.0");
@@ -213,13 +203,9 @@ public class SimPresetIO
 						out.newLine();
 						out.write("Light:");
 						out.newLine();
-						out.write("RedLightIntensity= 255.0");
+						out.write("LightIntensity= 255.0");
 						out.newLine();
-						out.write("GreenLightIntensity= 255.0");
-						out.newLine();
-						out.write("BlueLightIntensity= 255.0");
-						out.newLine();
-						out.write("LeafTransparency= 0.0");
+						out.write("LeafOpacity= 75.0");
 					}
 				catch (Exception e)
 					{

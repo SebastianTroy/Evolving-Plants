@@ -10,35 +10,36 @@ import tools.NumTools;
 import tools.RandTools;
 import evolvingPlants.Main;
 
-public class RecursivePlant
+public class Plant
 	{
-		public int plantX, minX, maxX, leafSize, leafOpacity;
-		public static final int plantY = 550;
+		public int plantX, minX, maxX, leafOpacity;
+		public static final int plantY = 550, leafSize = 20;
 
 		private static final double MIN_NODE_SIZE = 0.1;
 
-		private double height = 0, lean = 0, plantEnergy, metabolism = 1;
+		private double height = 0, lean = 0, plantEnergy, metabolism = 0;
 
-		private RecursiveGenes genes;
+		private Genome genes;
 
 		private Node baseNode = new Node(null);
 
 		public boolean alive = true, selected = false;
 
-		public RecursivePlant(RecursiveGenes parentGenes, int x)
+		public Plant(Genome parentGenes, int x)
 			{
 				plantX = x;
 				minX = maxX = plantX;
 				genes = parentGenes;
 				plantEnergy = genes.seedEnergy;
-				leafSize = (int) Main.simWindow.leafSizeSlider.getValue();
 				leafOpacity = (int) Main.simWindow.leafOpacitySlider.getValue();
 
-				baseNode.extractNodeInstructions(parentGenes.getGenes());
+				baseNode.extractNodeInstructions(parentGenes.getUnpackedGenome());
 				baseNode.calculateShape();
 				baseNode.calculateBounds();
 				baseNode.calculateLean();
 				// TODO work out if plant leans too far...
+				
+				//TODO base metabolism on the size of the unpacked genes
 
 				minX -= leafSize / 2;
 				maxX += leafSize / 2;
@@ -49,29 +50,15 @@ public class RecursivePlant
 		public final void tick()
 			{
 				if (!alive)
-					{
-						System.out.println("DEAD PLANT NOT REMOVED");
-						return;
-					}
-
-				// TODO
-				/*
-				 * pass energy from one fully grown node to the next, if no daughter nodes pass energy to plant, use energy to grow a node, more energy =
-				 * quicker growth, once a plant has enough energy to make a seed, seed, get rid of seed, simply place a new plant at desired location and wait
-				 * for space.
-				 * 
-				 * When a plant germinates, it has a set amount of energy passed to it from its parent, this goes down each tick, at a faster rate as the plant
-				 * ages, only once the plant is fully grown does this number start going up, so it must grow fully before its seed energy runs out in order to
-				 * survive. If the energy goes over a threshold, the plant will drop a seed and pass that amount of energy onto its seed.
-				 */
+					return;
 
 				// 1 energy from the plant's metabolism is passed to the base Node for growth
-				baseNode.nodeEnergy++; 
+				baseNode.nodeEnergy++;
 				// Remove the metabolism value from plant energy
 				plantEnergy -= metabolism;
 				// Increase metabolism with age
 				metabolism += 0.01; // TODO work out a decent value for this
-				
+
 				baseNode.tick();
 
 				if (plantEnergy < 0)
@@ -82,7 +69,7 @@ public class RecursivePlant
 				else if (plantEnergy > genes.seedEnergy)
 					{
 						plantEnergy -= genes.seedEnergy;
-						Main.simWindow.sim.plantsToAdd.add(new RecursivePlant(new RecursiveGenes(genes, true), RandTools.getInt(minX - 40, maxX + 40)));
+						Main.simWindow.sim.plantsToAdd.add(new Plant(new Genome(genes, true), RandTools.getInt(minX - 40, maxX + 40)));
 					}
 			}
 
@@ -103,19 +90,22 @@ public class RecursivePlant
 				return baseNode.contains(p);
 			}
 
-		public RecursiveGenes getGenesCopy()
+		public Genome getGenesCopy()
 			{
-				return new RecursiveGenes(genes, false);
+				return new Genome(genes, false);
 			}
 
 		public final void kill()
 			{
-				baseNode.removeAllShadows();
-				alive = false;
+				if (alive)
+					{
+						baseNode.removeAllShadows();
+						alive = false;
+					}
 			}
 
 		/**
-		 * Each {@link RecursivePlant} is made up of {@link Node}s arranged in a tree. Each {@link Node} takes care of itself, how grown it is, its shadow and
+		 * Each {@link Plant} is made up of {@link Node}s arranged in a tree. Each {@link Node} takes care of itself, how grown it is, its shadow and
 		 * also holds references to any daughter {@link Node}s it has.
 		 * 
 		 * @author Sebastian Troy
@@ -149,9 +139,8 @@ public class RecursivePlant
 								// If is a leaf
 								if (isLeaf)
 									{
-										plantEnergy += Main.simWindow.sim.lightMap.getLightMinusShadowAt(getX() + RandTools.getInt(getLeafSize() / -2, getLeafSize() / 2), getY(), leafOpacity)
-												* proportionGrown;
-										System.out.println(Main.simWindow.sim.lightMap.getLightMinusShadowAt(getX() + RandTools.getInt(getLeafSize() / -2, getLeafSize() / 2), getY(), leafOpacity));
+										plantEnergy += (Main.simWindow.sim.lightMap.getLightMinusShadowAt(getX() + RandTools.getInt((getLeafSize() / -2) + 1, (getLeafSize() / 2) - 1), getY(),
+												leafOpacity) * proportionGrown) / 255.0;
 									}
 
 								// Pass this Node's energy onto daughter Nodes
@@ -175,8 +164,8 @@ public class RecursivePlant
 								proportionGrown += nodeEnergy / stemLength;
 								nodeEnergy = 0;
 
-								// if over-grown
-								if (proportionGrown > maxSize)
+								// if fully or over-grown, only ever called once
+								if (proportionGrown >= maxSize)
 									{
 										// Recuperate any excess energy used to grow too large
 										nodeEnergy += (proportionGrown - maxSize) * stemLength;
@@ -187,6 +176,9 @@ public class RecursivePlant
 										finalY = getY();
 										fullGrown = true;
 										setNodeShadow();
+										
+										// Increase the plant's metabolism to support this node
+										metabolism += isLeaf ? 0.2 : 0.05;
 									}
 							}
 					}
@@ -257,7 +249,7 @@ public class RecursivePlant
 					{
 						// If is a terminating node (aka a leaf)
 						if (daughterNodes.size() == 0)
-							return NumTools.distance(p.x, p.y, getX(), getY()) < leafSize;
+							return NumTools.distance(p.x, p.y, getX(), getY()) < getLeafSize();
 						else
 							for (Node n : daughterNodes)
 								if (n.contains(p))
@@ -324,7 +316,7 @@ public class RecursivePlant
 								// Remove the first instruction to process
 								Character c = allPlantInstructions.pop();
 								// If it signifies the start of a new node
-								if (c == RecursiveGenes.START_NODE)
+								if (c == Genome.START_NODE)
 									{
 										// Create a new node
 										Node n = new Node(this);
@@ -334,7 +326,7 @@ public class RecursivePlant
 										daughterNodes.add(n);
 									}
 								// If it signifies the end of this node
-								else if (c == RecursiveGenes.END_NODE)
+								else if (c == Genome.END_NODE)
 									// stop processing instructions
 									break;
 								else
@@ -347,15 +339,15 @@ public class RecursivePlant
 								char c = nodeInstructions.get(i);
 								switch (c)
 									{
-										case (RecursiveGenes.GROW):
+										case (Genome.GROW):
 											stemLength += 10;
 											break;
-										case (RecursiveGenes.ROTATE_LEFT):
+										case (Genome.ROTATE_LEFT):
 											stemAngle -= 18;
 											break;
-										case (RecursiveGenes.ROTATE_RIGHT):
+										case (Genome.ROTATE_RIGHT):
 											stemAngle += 18;
-										case (RecursiveGenes.TOGGLE_LEAF):
+										case (Genome.TOGGLE_LEAF):
 											isLeaf = !isLeaf;
 											break;
 									}

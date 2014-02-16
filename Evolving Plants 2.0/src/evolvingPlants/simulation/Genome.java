@@ -4,16 +4,17 @@ import java.awt.Color;
 import java.util.LinkedList;
 
 import tools.ColTools;
+import tools.RandTools;
 
 /**
  * This class represents a plant's genetics
  * 
  * @author Sebastian Troy
  */
-public class RecursiveGenes
+public class Genome
 	{
 		private static final int MAX_RECURSIONS = 10;
-		private static final int MAX_UNPACKABLES = 5;
+		private static final int MAX_GENES = 5;
 
 		public static final char GROW = 'a';
 		public static final char ROTATE_LEFT = 'b';
@@ -24,18 +25,18 @@ public class RecursiveGenes
 		public static final char NOTHING = '~';
 
 		@SuppressWarnings("unchecked")
-		private final LinkedList<Character>[] genes = new LinkedList[MAX_UNPACKABLES];
+		private final LinkedList<Character>[] genes = new LinkedList[MAX_GENES];
 
 		private boolean genesUnpacked = false;
-		private final LinkedList<Character> unpackedGenes = new LinkedList<Character>();
+		private final LinkedList<Character> unpackedGenome = new LinkedList<Character>();
 
 		// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 		Color leafColour;
 		double seedEnergy, /* energy to seeds */baseNodeSize, taper /* the proportion by which the plant gets smaller each branch */;
 
-		public RecursiveGenes()
+		public Genome()
 			{
-				for (int i = 0; i < MAX_UNPACKABLES; i++)
+				for (int i = 0; i < MAX_GENES; i++)
 					{
 						genes[i] = new LinkedList<Character>();
 					}
@@ -49,15 +50,15 @@ public class RecursiveGenes
 				taper = 0.1;
 			}
 
-		public RecursiveGenes(RecursiveGenes parentGenes)
+		public Genome(Genome parentGenes)
 			{
 				this(parentGenes, true);
 			}
 
-		public RecursiveGenes(RecursiveGenes parentGenes, boolean mutate)
+		public Genome(Genome parentGenes, boolean mutate)
 			{
 				// For each set of genes (or as many allowed by the MAX_UNPACKABLES variable)
-				for (int i = 0; i < MAX_UNPACKABLES || i < parentGenes.genes.length; i++)
+				for (int i = 0; i < MAX_GENES || i < parentGenes.genes.length; i++)
 					{
 						this.genes[i] = new LinkedList<Character>();
 						for (int charIndex = 0; charIndex < parentGenes.genes[i].size(); charIndex++)
@@ -70,20 +71,21 @@ public class RecursiveGenes
 				baseNodeSize = parentGenes.baseNodeSize;
 				taper = parentGenes.taper;
 
-				// TODO implement mutation
+				if (mutate)
+					mutate();
 			}
 
-		public final LinkedList<Character> getGenes()
+		public final LinkedList<Character> getUnpackedGenome()
 			{
 				if (!genesUnpacked)
 					unpackGenes();
-				return unpackedGenes;
+				return unpackedGenome;
 			}
 
 		private final void unpackGenes()
 			{
 				// Construct the entire genome by unpacking A (the first gene)
-				unpackedGenes.addAll(genes[0]);
+				unpackedGenome.addAll(genes[0]);
 
 				boolean completed;
 
@@ -94,19 +96,19 @@ public class RecursiveGenes
 						completed = true;
 
 						// Work through the genome backwards to avoid getting stuck in a recursive unpacking loop
-						for (int i = unpackedGenes.size() - 1; i >= 0; i--)
+						for (int i = unpackedGenome.size() - 1; i >= 0; i--)
 							{
-								char c = unpackedGenes.get(i);
+								char c = unpackedGenome.get(i);
 								// If the character is unpackable
 								if (Character.isUpperCase(c))
 									{
 										// Remove the capital letter so it isn't unpacked again
-										unpackedGenes.remove(i);
+										unpackedGenome.remove(i);
 
 										// If the capital letter is a valid unpackable letter
-										if (c - 65 < MAX_UNPACKABLES)
+										if (c - 65 < MAX_GENES)
 											// Add the letters that the Capital letter represented to the genome
-											unpackedGenes.addAll(i, genes[c - 65]);
+											unpackedGenome.addAll(i, genes[c - 65]);
 
 										// We'll need to go through again in case we've unpacked more unpackable characters
 										completed = false;
@@ -122,12 +124,12 @@ public class RecursiveGenes
 				int numEndNodes = 0;
 
 				// Go through the unpacked genes and remove any surplus unpackables
-				for (int i = 0; i < unpackedGenes.size();)
+				for (int i = 0; i < unpackedGenome.size();)
 					{
-						Character c = unpackedGenes.get(i);
+						Character c = unpackedGenome.get(i);
 						if (Character.isUpperCase(c))
 							// Add the next character to our string of genes
-							unpackedGenes.remove(i);
+							unpackedGenome.remove(i);
 						else if (c == START_NODE)
 							{
 								numStartNodes++;
@@ -138,7 +140,7 @@ public class RecursiveGenes
 								numEndNodes++;
 								// If inviable, stop checking the genes
 								if (numEndNodes > numStartNodes)
-									i = unpackedGenes.size();
+									i = unpackedGenome.size();
 								i++;
 							}
 						else
@@ -147,9 +149,64 @@ public class RecursiveGenes
 
 				// If the brackets don't balance out, break the genes
 				if (numStartNodes != numEndNodes)
-					unpackedGenes.clear();
+					unpackedGenome.clear();
 
 				// Recored that the genes have been unpacked
 				genesUnpacked = true;
 			}
+
+		private final void mutate()
+		{
+			// Mutate leaf colour
+			int red = leafColour.getRed() + RandTools.getInt(-2, 2);
+			int green = leafColour.getGreen() + RandTools.getInt(-2, 2);
+			int blue = leafColour.getBlue() + RandTools.getInt(-2, 2);
+			leafColour = ColTools.checkColour(red, green, blue);
+		
+			// Mutate numerical genes
+			seedEnergy += RandTools.getDouble(-2, 2);
+			baseNodeSize += RandTools.getDouble(-0.01, 0.01);
+			taper += RandTools.getDouble(-0.008, 0.008);
+		
+			// Mutate structural genes
+		
+			for (int i = RandTools.getInt(1, 4); i > 0; i--)
+				switch (RandTools.getInt(0, 10))
+					{
+					// Mutate a character
+						case 1:
+							int geneToModify = RandTools.getInt(0, genes.length);
+							genes[geneToModify].add(RandTools.getInt(0, genes[geneToModify].size()), getRandomCharacter());
+							break;
+						// Add a character
+						case 2:
+							;
+							break;
+						// Remove a character
+						case 3:
+							;
+							break;
+					}
+		}
+
+		private final Character getRandomCharacter()
+		{
+			if (RandTools.randPercent() > 40)
+				return NOTHING;
+			
+			Character[] letters = new Character[6 + MAX_GENES];
+			letters[0] = GROW;
+			letters[1] = ROTATE_LEFT;
+			letters[2] = ROTATE_RIGHT;
+			letters[3] = TOGGLE_LEAF;
+			letters[4] = START_NODE;
+			letters[5] = END_NODE;
+			
+			// Add the characters that represent each gene
+			for (int i = 6; i < letters.length; i++)
+				letters[i] = new Character((char)(65 + i));
+			
+			return letters[RandTools.getInt(0, letters.length)];
+		
+		}
 	}

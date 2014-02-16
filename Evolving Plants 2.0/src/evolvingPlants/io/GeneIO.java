@@ -23,7 +23,7 @@ import javax.swing.JOptionPane;
 import tComponents.components.TButton;
 import tComponents.components.TMenu;
 import evolvingPlants.Main;
-import evolvingPlants.simulation.RecursiveGenes;
+import evolvingPlants.simulation.Genome;
 import evolvingPlants.simulation.Simulation;
 
 public class GeneIO
@@ -61,7 +61,7 @@ public class GeneIO
 					}
 			}
 
-		public void saveGenes(RecursiveGenes genes, String geneName)
+		public void saveGenes(Genome genes, String geneName)
 			{
 				if (genes == null)
 					return;
@@ -80,7 +80,7 @@ public class GeneIO
 						
 						out = new BufferedWriter(new FileWriter(geneFile, false));
 						
-						out.write(genes.getGenes());
+						out.write(genes.getUnpackedGenome());
 						out.newLine();
 						out.write("Seed Size=" + genes.seedEnergy);
 						out.newLine();
@@ -125,7 +125,7 @@ public class GeneIO
 
 						in = new BufferedReader(new FileReader(geneFile));
 
-						sim.currentGenes = new RecursiveGenes(readStringFromLine(in.readLine()), readValueFromLine(in.readLine()), (int) readValueFromLine(in.readLine()),
+						sim.currentGenes = new Genome(readStringFromLine(in.readLine()), readValueFromLine(in.readLine()), (int) readValueFromLine(in.readLine()),
 								(int) readValueFromLine(in.readLine()), (int) readValueFromLine(in.readLine()));
 					}
 				catch (Exception e)

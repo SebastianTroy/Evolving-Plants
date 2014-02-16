@@ -21,10 +21,9 @@ public class Simulation
 		public boolean showLighting = false;
 
 		//
-		private boolean paused = false;
-		private double oldWarpSpeed;// Keep track of warp speed when pausing
-		private double timePassed = 0;
-		private boolean rendered = false;
+		public boolean paused = false;
+		public double secondsPassed = 0;
+		public double secondsBetweenTicks = 1;
 		public boolean reset = false;
 
 		// Simulation variables
@@ -33,7 +32,7 @@ public class Simulation
 		BufferedImage lightImage;
 
 		// plants added by user
-		public RecursiveGenes currentGenes;
+		public Genome currentGenes;
 		public ArrayList<Point> plantsAddedByUser = new ArrayList<Point>(5);
 
 		// Light Filters
@@ -42,8 +41,8 @@ public class Simulation
 		private ArrayList<LightFilter> filters = new ArrayList<LightFilter>();
 
 		// Seeds and Plants in the simulation
-		ArrayList<RecursivePlant> plantsToAdd = new ArrayList<RecursivePlant>(40);
-		ArrayList<RecursivePlant> plants = new ArrayList<RecursivePlant>(40);
+		ArrayList<Plant> plantsToAdd = new ArrayList<Plant>(40);
+		ArrayList<Plant> plants = new ArrayList<Plant>(40);
 
 		public Simulation(int width)
 			{
@@ -54,7 +53,8 @@ public class Simulation
 
 		public void tick(double secondsPassed)
 			{
-				// TODO stop using secondsPassed except to limit ticks per second
+				if (!paused)
+					this.secondsPassed += secondsPassed;
 
 				if (reset)
 					{
@@ -101,22 +101,10 @@ public class Simulation
 							i++;
 					}
 
-				timePassed += secondsPassed;
-				if (timePassed > 0.03)
+				while (this.secondsPassed >= secondsBetweenTicks)
 					{
-						timePassed = 0;
-						rendered = false;
-					}
+						this.secondsPassed -= secondsBetweenTicks;
 
-				secondsPassed *= Main.simWindow.playbackSpeed.getValue();
-
-				// Cap secondsPassed to stop strange things happening at low
-				// frame-rates
-				if (secondsPassed > 0.2)
-					secondsPassed = 0.2;
-
-				for (int i = 0; i < Main.simWindow.warpSpeedSlider.getValue(); i++)
-					{
 						// ----------------------------------
 						/* REALLY SUPER SLOW */
 						if (showLighting)
@@ -126,49 +114,36 @@ public class Simulation
 
 						// Add new seedlings to Array
 						for (Point p : plantsAddedByUser)
-							plants.add(new RecursivePlant(currentGenes, (int) p.getX()));
+							plants.add(new Plant(new Genome(currentGenes, false), (int) p.getX()));
 						plantsAddedByUser.clear();
 						// Add new seedlings to Array
-						for (RecursivePlant p : plantsToAdd)
+						for (Plant p : plantsToAdd)
 							plants.add(p);
 						plantsToAdd.clear();
-						// Remove dead plants
+						// Process plants and remove dead ones
 						for (int p = 0; p < plants.size(); p++)
-							if (!plants.get(p).alive)
-								{
-									plants.remove(p);
-									p--;
-								}
-						if (tick)
 							{
-								// Process all living plants
-								for (RecursivePlant p : plants)
-									p.tick();
+								Plant plant = plants.get(p);
+								plant.tick();
+								if (!plant.alive)
+									{
+										plants.remove(p);
+										p--;
+									}
 							}
-						tick = false;
 					}
 			}
 
-		public boolean tick = false;
-
 		public void render(Graphics2D g)
 			{
-				if (rendered)
-					{
-						g.setColor(Color.CYAN);
-						g.fillRect(0, 0, 200, Main.canvasHeight);
-						g.fillRect(1000, 0, 200, Main.canvasHeight);
-						return;
-					}
-
 				int simX = (int) this.simX;
 				g.setColor(skyBlue);
-				g.fillRect(200, 0, 800, RecursivePlant.plantY);
+				g.fillRect(200, 0, 800, Plant.plantY);
 				if (showLighting)
 					g.drawImage(lightImage, 200, 0, Main.simWindow.getObserver());
 				g.setColor(Color.GREEN);
 				g.fillRect(200, 550, 800, 50);
-				for (RecursivePlant p : plants)
+				for (Plant p : plants)
 					p.render(g, simX + 200);
 				for (LightFilter f : filters)
 					f.render(g, simX + 200);
@@ -176,32 +151,9 @@ public class Simulation
 				g.setColor(Color.CYAN);
 				g.fillRect(0, 0, 200, Main.canvasHeight);
 				g.fillRect(1000, 0, 200, Main.canvasHeight);
-
-				rendered = true;
 			}
 
-		public final void unpause()
-			{
-				if (!paused)
-					return;
-
-				paused = false;
-
-				Main.simWindow.warpSpeedSlider.setValue(oldWarpSpeed);
-			}
-
-		public final void pause()
-			{
-				if (paused)
-					return;
-
-				paused = true;
-
-				oldWarpSpeed = Main.simWindow.warpSpeedSlider.getValue();
-				Main.simWindow.warpSpeedSlider.setValue(0);
-			}
-
-		public final void addPlant(RecursivePlant newPlant)
+		public final void addPlant(Plant newPlant)
 			{
 				plants.add(newPlant);
 			}
@@ -237,7 +189,7 @@ public class Simulation
 						else if (Main.simWindow.currentCursor == Cursor.getDefaultCursor())
 							{
 								boolean plantSelected = false;
-								for (RecursivePlant plant : plants)
+								for (Plant plant : plants)
 									if (!plantSelected && plant.contains(point))
 										{
 											plant.selected = true;
@@ -248,7 +200,7 @@ public class Simulation
 							}
 						else if (Main.simWindow.currentCursor == Main.simWindow.getGenesCursor)
 							{
-								for (RecursivePlant plant : plants)
+								for (Plant plant : plants)
 									if (plant.contains(point))
 										{
 											currentGenes = plant.getGenesCopy();

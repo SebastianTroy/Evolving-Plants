@@ -21,7 +21,7 @@ import tComponents.components.TSlider;
 import tComponents.components.TTextField;
 import tComponents.utils.events.TActionEvent;
 import tComponents.utils.events.TScrollEvent;
-import evolvingPlants.simulation.RecursiveGenes;
+import evolvingPlants.simulation.Genome;
 
 public class GeneEditor extends RenderableObject
 	{
@@ -30,7 +30,7 @@ public class GeneEditor extends RenderableObject
 		// Plant variables
 		private int plantX = 950, plantY = 500, leafSize = 14;
 		private Color leafColour = new Color(175, 175, 175), oppositeColour = new Color(80, 80, 80), lightColour = Color.WHITE;
-		private NodeTree examplePlant = new NodeTree(new RecursiveGenes());
+		private NodeTree examplePlant = new NodeTree(new Genome());
 		private NodeTree.Node lastSelectedNode;
 		private double height = 0, lean = 0, energyGained = 200, metabolism = 0.1;
 
@@ -266,7 +266,7 @@ public class GeneEditor extends RenderableObject
 
 				private Node baseNode = new Node(plantX, plantY);
 
-				private NodeTree(RecursiveGenes genes)
+				private NodeTree(Genome genes)
 					{
 						//TODO recreate based on NodeTree in the Plant class
 					}

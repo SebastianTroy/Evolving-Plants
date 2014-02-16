@@ -20,7 +20,7 @@ import tComponents.components.TTextField;
 import tComponents.utils.RadioButtonsCollection;
 import tComponents.utils.events.TActionEvent;
 import tComponents.utils.events.TScrollEvent;
-import evolvingPlants.simulation.RecursiveGenes;
+import evolvingPlants.simulation.Genome;
 import evolvingPlants.simulation.Simulation;
 
 public class SimulationWindow extends RenderableObject
@@ -41,8 +41,26 @@ public class SimulationWindow extends RenderableObject
 		TMenu currentRightSideMenu;
 
 		TMenu simOptionsMenu;
-		public final TSlider playbackSpeed = new TSlider(TSlider.HORIZONTAL);
-		public final TSlider warpSpeedSlider = new TSlider(TSlider.HORIZONTAL);
+		public final TSlider ticksPerSecondSlider = new TSlider(TSlider.HORIZONTAL);
+		private final TButton stepSimButton = new TButton("Step")
+			{
+				@Override
+				public final void pressed()
+					{
+						sim.secondsPassed = sim.secondsBetweenTicks;
+					}
+			};
+
+		private final TButton playPauseSimButton = new TButton("Pause")
+			{
+				@Override
+				public final void pressed()
+					{
+						sim.paused = !sim.paused;
+						this.setLabel(sim.paused ? "Play" : "Pause", true);
+					}
+			};
+
 		private final TButton resetSimButton = new TButton("Reset Simulation");
 		private final TButton mainMenuButton = new TButton("Main Menu");
 
@@ -65,8 +83,6 @@ public class SimulationWindow extends RenderableObject
 		public final TSlider mutantOffspringSlider = new TSlider(TSlider.HORIZONTAL);
 		public final TSlider dnaDamageSlider = new TSlider(TSlider.HORIZONTAL);
 		public final TButton showLightButton = new TButton("Show light");
-		public final TSlider leafSizeSlider = new TSlider(TSlider.HORIZONTAL);
-		public final TSlider stalkLengthSlider = new TSlider(TSlider.HORIZONTAL);
 
 		public TMenu lightOptionsMenu;
 		public final TSlider lightSlider = new TSlider(TSlider.HORIZONTAL);
@@ -147,14 +163,12 @@ public class SimulationWindow extends RenderableObject
 				interactionsMenu.add(deleteFilterButton);
 
 				// SimOptions menu set-up. This menu is located on the right
-				warpSpeedSlider.setRange(0, 50);
-				simOptionsMenu.add(new TLabel("Warp Speed"), false);
-				warpSpeedSlider.setValue(10.0);
-				simOptionsMenu.add(warpSpeedSlider);
-				playbackSpeed.setRange(0, 12);
-				simOptionsMenu.add(new TLabel("Playback Speed"), false);
-				playbackSpeed.setValue(5.0);
-				simOptionsMenu.add(playbackSpeed);
+				ticksPerSecondSlider.setRange(0, 1000);
+				simOptionsMenu.add(new TLabel("Ticks per second"), false);
+				ticksPerSecondSlider.setValue(15);
+				simOptionsMenu.add(ticksPerSecondSlider);
+				simOptionsMenu.add(stepSimButton);
+				simOptionsMenu.add(playPauseSimButton);
 				simOptionsMenu.add(resetSimButton);
 				simOptionsMenu.add(mainMenuButton);
 
@@ -163,12 +177,6 @@ public class SimulationWindow extends RenderableObject
 				allPlantsLabel.setFontSize(15);
 				allPlantsLabel.setBackgroundColour(new Color(0, 200, 200));
 				plantOptionsMenu.add(allPlantsLabel, false);
-				plantOptionsMenu.add(new TLabel("Leaf Size"), false);
-				leafSizeSlider.setRange(2, 25);
-				plantOptionsMenu.add(leafSizeSlider);
-				plantOptionsMenu.add(new TLabel("Stalk Length"), false);
-				stalkLengthSlider.setRange(15, 100);
-				plantOptionsMenu.add(stalkLengthSlider);
 				plantOptionsMenu.add(new TLabel("Chance of mutant offspring (%)"), false);
 				plantOptionsMenu.add(mutantOffspringSlider);
 				plantOptionsMenu.add(new TLabel("Damage to mutant DNA (%)"), false);
@@ -203,10 +211,10 @@ public class SimulationWindow extends RenderableObject
 				lightOptionsMenu.add(showLightButton);
 				lightOptionsMenu.add(new TLabel("Light Intensity"), false);
 				lightSlider.setRange(0, 255);
-				lightSlider.setValue(255);
-				lightSlider.setSliderImage(0, Main.loadImage("redSun.png"));
+				lightSlider.setSliderImage(0, Main.loadImage("sun.png"));
 				lightOptionsMenu.add(lightSlider);
 				lightOptionsMenu.add(new TLabel("Leaf Transparency"), false);
+				leafOpacitySlider.setRange(0, 255);
 				lightOptionsMenu.add(leafOpacitySlider);
 
 				// FilterOptions menu set-up. This menu is located on the left
@@ -222,15 +230,14 @@ public class SimulationWindow extends RenderableObject
 				filterOptionsMenu.add(filterOpacitySlider);
 				filterOptionsMenu.add(createFilterButton);
 
-				Main.geneIO.addGenesToMenu();
-				//Main.geneIO.loadGenes("default.txt");
-				sim.currentGenes = new RecursiveGenes();
-
-				//Main.presetIO.addPresetsToMenu();
-
 				setLeftMenu(interactionsMenu);
 				setRightMenu(simOptionsMenu);
 
+				Main.geneIO.addGenesToMenu();
+				// Main.geneIO.loadGenes("default.txt");
+				sim.currentGenes = new Genome();
+
+				Main.presetIO.addPresetsToMenu();
 				Main.presetIO.loadPreset("default.txt");
 			}
 
@@ -262,13 +269,6 @@ public class SimulationWindow extends RenderableObject
 				currentRightSideMenu.setLocation(1000, 0);
 				currentRightSideMenu.setDimensions(200, Main.canvasHeight / 2);
 				add(currentRightSideMenu);
-			}
-		
-
-		@Override
-		public final void keyPressed(KeyEvent e)
-			{
-				sim.tick = true;
 			}
 
 		@Override
@@ -311,13 +311,7 @@ public class SimulationWindow extends RenderableObject
 				else if (eventSource == showLightButton)
 					{
 						if (!sim.showLighting)
-							{
-								sim.pause();
-								warpSpeedSlider.setPercent(0);
-								sim.updateLighting();
-							}
-						else
-							sim.unpause();
+							sim.updateLighting();
 
 						sim.showLighting = !sim.showLighting;
 						showLightButton.setLabel(sim.showLighting ? "Hide light" : "Show Light", true);
@@ -358,13 +352,12 @@ public class SimulationWindow extends RenderableObject
 				// update light
 				else if (eventSource == lightSlider && (e.getScrollType() == TScrollEvent.FINAL_VALUE || e.getScrollType() == TScrollEvent.VALUE_SET_INTERNALLY))
 					{
-						double simSpeed = playbackSpeed.getValue();
-						playbackSpeed.setValue(0);
 						sim.lightMap.setLight(lightSlider.getValue());
-						playbackSpeed.setValue(simSpeed);
 						if (sim.showLighting)
 							sim.updateLighting();
 					}
+				else if (eventSource == ticksPerSecondSlider)
+					sim.secondsBetweenTicks = 1.0 / ticksPerSecondSlider.getValue();
 			}
 
 		@Override
