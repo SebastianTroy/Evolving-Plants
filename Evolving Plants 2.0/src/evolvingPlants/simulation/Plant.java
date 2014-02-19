@@ -13,11 +13,11 @@ import evolvingPlants.Main;
 public class Plant
 	{
 		public int plantX, minX, maxX, leafOpacity;
-		public static final int plantY = 550, leafSize = 20;
+		public static final int plantY = 550, leafSize = 15;
 
 		private static final double MIN_NODE_SIZE = 0.1;
 
-		private double height = 0, lean = 0, plantEnergy, metabolism = 0;
+		private double height = 0, /* lean = 0, */plantEnergy, metabolism = 0;
 
 		private Genome genes;
 
@@ -30,16 +30,14 @@ public class Plant
 				plantX = x;
 				minX = maxX = plantX;
 				genes = parentGenes;
-				plantEnergy = genes.seedEnergy;
+				plantEnergy = genes.seedEnergy - 1;
 				leafOpacity = (int) Main.simWindow.leafOpacitySlider.getValue();
 
 				baseNode.extractNodeInstructions(parentGenes.getUnpackedGenome());
 				baseNode.calculateShape();
+				// baseNode.calculateLean();
 				baseNode.calculateBounds();
-				baseNode.calculateLean();
-				// TODO work out if plant leans too far...
-				
-				//TODO base metabolism on the size of the unpacked genes
+				baseNode.nodeEnergy++;
 
 				minX -= leafSize / 2;
 				maxX += leafSize / 2;
@@ -52,16 +50,14 @@ public class Plant
 				if (!alive)
 					return;
 
-				// 1 energy from the plant's metabolism is passed to the base Node for growth
-				baseNode.nodeEnergy++;
 				// Remove the metabolism value from plant energy
 				plantEnergy -= metabolism;
 				// Increase metabolism with age
-				metabolism += 0.01; // TODO work out a decent value for this
+				metabolism += 0.0005;
 
 				baseNode.tick();
 
-				if (plantEnergy < 0)
+				if (plantEnergy < 0 /* || Math.abs(lean) > 50 */)
 					{
 						if (alive)
 							kill();
@@ -69,7 +65,8 @@ public class Plant
 				else if (plantEnergy > genes.seedEnergy)
 					{
 						plantEnergy -= genes.seedEnergy;
-						Main.simWindow.sim.plantsToAdd.add(new Plant(new Genome(genes, true), RandTools.getInt(minX - 40, maxX + 40)));
+						if (RandTools.getBool())
+							Main.simWindow.sim.plantsToAdd.add(new Plant(new Genome(genes, true), RandTools.getInt(minX - 40, maxX + 40)));
 					}
 			}
 
@@ -105,8 +102,8 @@ public class Plant
 			}
 
 		/**
-		 * Each {@link Plant} is made up of {@link Node}s arranged in a tree. Each {@link Node} takes care of itself, how grown it is, its shadow and
-		 * also holds references to any daughter {@link Node}s it has.
+		 * Each {@link Plant} is made up of {@link Node}s arranged in a tree. Each {@link Node} takes care of itself, how grown it is, its shadow and also holds
+		 * references to any daughter {@link Node}s it has.
 		 * 
 		 * @author Sebastian Troy
 		 */
@@ -139,8 +136,8 @@ public class Plant
 								// If is a leaf
 								if (isLeaf)
 									{
-										plantEnergy += (Main.simWindow.sim.lightMap.getLightMinusShadowAt(getX() + RandTools.getInt((getLeafSize() / -2) + 1, (getLeafSize() / 2) - 1), getY(),
-												leafOpacity) * proportionGrown) / 255.0;
+										nodeEnergy += (Main.simWindow.sim.lightMap.getLightMinusShadowAt(getX() + RandTools.getInt((getLeafSize() / -2) + 1, (getLeafSize() / 2) - 1), getY(),
+												leafOpacity) * proportionGrown) / 100;
 									}
 
 								// Pass this Node's energy onto daughter Nodes
@@ -161,6 +158,12 @@ public class Plant
 						// if growing
 						else if (proportionGrown < maxSize)
 							{
+								// If is a leaf
+								if (isLeaf)
+									{
+										nodeEnergy += (Main.simWindow.sim.lightMap.getLightAt(getX() + RandTools.getInt((getLeafSize() / -2) + 1, (getLeafSize() / 2) - 1), getY()) * proportionGrown) / 255.0;
+									}
+
 								proportionGrown += nodeEnergy / stemLength;
 								nodeEnergy = 0;
 
@@ -176,9 +179,6 @@ public class Plant
 										finalY = getY();
 										fullGrown = true;
 										setNodeShadow();
-										
-										// Increase the plant's metabolism to support this node
-										metabolism += isLeaf ? 0.2 : 0.05;
 									}
 							}
 					}
@@ -234,7 +234,7 @@ public class Plant
 						else
 							{
 								if (parentNode != null)
-									return (int) (parentNode.getX() + (relativeY * proportionGrown));
+									return (int) (parentNode.getY() + (relativeY * proportionGrown));
 								else
 									return (int) (plantY + (relativeY * proportionGrown));
 							}
@@ -247,13 +247,13 @@ public class Plant
 
 				private final boolean contains(Point p)
 					{
-						// If is a terminating node (aka a leaf)
-						if (daughterNodes.size() == 0)
-							return NumTools.distance(p.x, p.y, getX(), getY()) < getLeafSize();
-						else
-							for (Node n : daughterNodes)
-								if (n.contains(p))
-									return true;
+						if (NumTools.distance(p.x, p.y, getX(), getY()) < getLeafSize())
+							return true;
+
+						for (Node n : daughterNodes)
+							if (n.contains(p))
+								return true;
+
 						return false;
 					}
 
@@ -263,7 +263,7 @@ public class Plant
 				private final void setNodeShadow()
 					{
 						if (isLeaf)
-							Main.simWindow.sim.addShadow(finalX, finalY, leafSize, leafOpacity);
+							Main.simWindow.sim.addShadow(finalX, finalY, getLeafSize(), leafOpacity);
 					}
 
 				/**
@@ -276,7 +276,7 @@ public class Plant
 
 						// if is a leaf and has had its shadow previously set
 						if (isLeaf && proportionGrown == maxSize)
-							Main.simWindow.sim.removeShadow(finalX, finalY, leafSize, leafOpacity);
+							Main.simWindow.sim.removeShadow(finalX, finalY, getLeafSize(), leafOpacity);
 					}
 
 				private final void calculateBounds()
@@ -297,13 +297,12 @@ public class Plant
 						proportionGrown = 0;
 					}
 
-				// TODO needed? check while growing and make plants that suddenly exceed it topple over? (maybe too much...)
-				private final void calculateLean()
-					{
-						lean -= plantX - getX();
-						for (Node n : daughterNodes)
-							n.calculateLean();
-					}
+				// private final void calculateLean()
+				// {
+				// lean -= (plantX - getX()) * maxSize;
+				// for (Node n : daughterNodes)
+				// n.calculateLean();
+				// }
 
 				private final LinkedList<Character> extractNodeInstructions(LinkedList<Character> allPlantInstructions)
 					{
@@ -343,10 +342,10 @@ public class Plant
 											stemLength += 10;
 											break;
 										case (Genome.ROTATE_LEFT):
-											stemAngle -= 18;
+											stemAngle += 10;
 											break;
 										case (Genome.ROTATE_RIGHT):
-											stemAngle += 18;
+											stemAngle -= 10;
 										case (Genome.TOGGLE_LEAF):
 											isLeaf = !isLeaf;
 											break;
@@ -354,11 +353,17 @@ public class Plant
 							}
 
 						// Pass on any rotation to any daughter Nodes
-						for (Node n : daughterNodes)
-							n.stemAngle += stemAngle - 180;
+						rotate(stemAngle - 180);
 
 						// Return any remaining instructions so the parent Node can keep processing them
 						return allPlantInstructions;
+					}
+
+				private final void rotate(double angle)
+					{
+						stemAngle += angle;
+						for (Node n : daughterNodes)
+							n.rotate(angle);
 					}
 
 				private final void calculateShape()
@@ -371,8 +376,8 @@ public class Plant
 							daughterNodes.clear();
 						for (Node n : daughterNodes)
 							{
+								n.maxSize = maxSize - genes.taper;
 								n.calculateShape();
-								n.maxSize -= genes.taper;
 							}
 					}
 			}

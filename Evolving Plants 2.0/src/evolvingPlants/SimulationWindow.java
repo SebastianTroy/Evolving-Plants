@@ -163,7 +163,7 @@ public class SimulationWindow extends RenderableObject
 				interactionsMenu.add(deleteFilterButton);
 
 				// SimOptions menu set-up. This menu is located on the right
-				ticksPerSecondSlider.setRange(0, 1000);
+				ticksPerSecondSlider.setRange(0, 10000);
 				simOptionsMenu.add(new TLabel("Ticks per second"), false);
 				ticksPerSecondSlider.setValue(15);
 				simOptionsMenu.add(ticksPerSecondSlider);
@@ -225,7 +225,7 @@ public class SimulationWindow extends RenderableObject
 				filterOptionsMenu.add(new TLabel("Filter Width"), false);
 				filterWidthSlider.setRange(0, sim.simWidth);
 				filterOptionsMenu.add(filterWidthSlider);
-				filterOpacitySlider.setSliderImage(0, Main.loadImage("redFilter.png"));
+				filterOpacitySlider.setSliderImage(0, Main.loadImage("filter.png"));
 				filterOpacitySlider.setRange(0, 255);
 				filterOptionsMenu.add(filterOpacitySlider);
 				filterOptionsMenu.add(createFilterButton);

@@ -13,22 +13,22 @@ public class LightFilter // TODO refactor to Shadow
 		int x, y, width;
 		int shadowColour;// TODO refactor to filter transparency 0 = transparent, 255 = opaque
 		private BufferedImage filterColourMap;
-		
+
 		public Point movedTo = null;
 
 		public boolean exists = true;
 
-		public LightFilter(int x, int y, int width, int filterTransparency)
+		public LightFilter(int x, int y, int width, int filterOpacity)
 			{
 				this.x = x;
 				this.y = y;
 				this.width = width;
 
-				shadowColour = filterTransparency;
+				shadowColour = filterOpacity;
 
-				filterColourMap = new BufferedImage(width, 4, BufferedImage.TYPE_INT_ARGB);
+				filterColourMap = new BufferedImage(width, 4, BufferedImage.TYPE_INT_RGB);
 				Graphics g = filterColourMap.getGraphics();
-				g.setColor(new Color(filterTransparency,filterTransparency,filterTransparency));
+				g.setColor(new Color(255 - filterOpacity, 255 - filterOpacity, 255 - filterOpacity));
 				g.fillRect(0, 0, width, 4);
 				g.dispose();
 			}
@@ -45,7 +45,7 @@ public class LightFilter // TODO refactor to Shadow
 			{
 				int x = movedTo == null ? this.x : movedTo.x;
 				int y = movedTo == null ? this.y : movedTo.y;
-				
+
 				if (x + width < -simX + 200 || x > -simX + 1000)
 					return;
 
@@ -70,7 +70,7 @@ public class LightFilter // TODO refactor to Shadow
 
 		public final void moving(Point p)
 			{
-				if (p.x > Main.simWindow.sim.simWidth || p.x + width< 0 || p.y > 550 || p.y < 0)
+				if (p.x > Main.simWindow.sim.simWidth || p.x + width < 0 || p.y > 550 || p.y < 0)
 					{
 						exists = false;
 						return;
@@ -78,12 +78,12 @@ public class LightFilter // TODO refactor to Shadow
 				else
 					movedTo = p;
 			}
-		
+
 		public final void moved()
 			{
 				x = movedTo.x;
 				y = movedTo.y;
-				
+
 				movedTo = null;
 			}
 	}

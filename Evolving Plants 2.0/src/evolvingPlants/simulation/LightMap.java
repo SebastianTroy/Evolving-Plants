@@ -91,6 +91,23 @@ public class LightMap
 		 * 
 		 * @param x
 		 * @param y
+		 * 
+		 * @return - A value from 0 to {@link LightMap#baseLight}
+		 */
+		public int getLightAt(int x, int y)
+			{
+				int light = 0;
+				
+				if (x > 0 && x < width && y > 0 && y < height)
+					light = lightLevel[x][y];
+
+				return Math.max(0, light);
+			}
+		
+		/**
+		 * 
+		 * @param x
+		 * @param y
 		 * @param leafOpacity
 		 *            - How much light the leaf casting the shadow is blocking, 0 being none, 255 being all
 		 * @return - A value from 0 to {@link LightMap#baseLight}

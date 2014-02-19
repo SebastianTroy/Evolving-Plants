@@ -3,6 +3,8 @@ package evolvingPlants.simulation;
 import java.awt.Color;
 import java.util.LinkedList;
 
+import evolvingPlants.Main;
+
 import tools.ColTools;
 import tools.RandTools;
 
@@ -39,13 +41,19 @@ public class Genome
 				for (int i = 0; i < MAX_GENES; i++)
 					{
 						genes[i] = new LinkedList<Character>();
+						for (int num = 0; num < 10; num++)
+							genes[i].add(NOTHING);
+
 					}
 
-				genes[0].addFirst(GROW);
-				genes[0].addLast(TOGGLE_LEAF);
+				genes[0].add(GROW);
+				genes[0].add(TOGGLE_LEAF);
+				genes[0].add('B');
+				genes[1].add('C');
+				genes[2].add('D');
 
 				leafColour = ColTools.randColour();
-				seedEnergy = 100;
+				seedEnergy = 70;
 				baseNodeSize = 1;
 				taper = 0.1;
 			}
@@ -107,9 +115,12 @@ public class Genome
 
 										// If the capital letter is a valid unpackable letter
 										if (c - 65 < MAX_GENES)
-											// Add the letters that the Capital letter represented to the genome
-											unpackedGenome.addAll(i, genes[c - 65]);
-
+											{
+												unpackedGenome.add(START_NODE);
+												// Add the letters that the Capital letter represented to the genome
+												unpackedGenome.addAll(i, genes[c - 65]);
+												unpackedGenome.add(END_NODE);
+											}
 										// We'll need to go through again in case we've unpacked more unpackable characters
 										completed = false;
 									}
@@ -120,93 +131,110 @@ public class Genome
 							recursions = MAX_RECURSIONS;
 					}
 
-				int numStartNodes = 0;
-				int numEndNodes = 0;
-
-				// Go through the unpacked genes and remove any surplus unpackables
-				for (int i = 0; i < unpackedGenome.size();)
-					{
-						Character c = unpackedGenome.get(i);
-						if (Character.isUpperCase(c))
-							// Add the next character to our string of genes
-							unpackedGenome.remove(i);
-						else if (c == START_NODE)
-							{
-								numStartNodes++;
-								i++;
-							}
-						else if (c == END_NODE)
-							{
-								numEndNodes++;
-								// If inviable, stop checking the genes
-								if (numEndNodes > numStartNodes)
-									i = unpackedGenome.size();
-								i++;
-							}
-						else
-							i++;
-					}
-
-				// If the brackets don't balance out, break the genes
-				if (numStartNodes != numEndNodes)
-					unpackedGenome.clear();
+				// This code checked that START_NODE & END_NODE brackets matched up in pairs
+				// int numStartNodes = 0;
+				// int numEndNodes = 0;
+				//
+				// // Go through the unpacked genes and remove any surplus unpackables
+				// for (int i = 0; i < unpackedGenome.size();)
+				// {
+				// Character c = unpackedGenome.get(i);
+				// if (Character.isUpperCase(c))
+				// // Add the next character to our string of genes
+				// unpackedGenome.remove(i);
+				// else if (c == START_NODE)
+				// {
+				// numStartNodes++;
+				// i++;
+				// }
+				// else if (c == END_NODE)
+				// {
+				// numEndNodes++;
+				// // If inviable, stop checking the genes
+				// if (numEndNodes > numStartNodes)
+				// i = unpackedGenome.size();
+				// i++;
+				// }
+				// else
+				// i++;
+				// }
+				//
+				// // If the brackets don't balance out, break the genes
+				// if (numStartNodes != numEndNodes)
+				// unpackedGenome.clear();
 
 				// Recored that the genes have been unpacked
 				genesUnpacked = true;
 			}
 
 		private final void mutate()
-		{
-			// Mutate leaf colour
-			int red = leafColour.getRed() + RandTools.getInt(-2, 2);
-			int green = leafColour.getGreen() + RandTools.getInt(-2, 2);
-			int blue = leafColour.getBlue() + RandTools.getInt(-2, 2);
-			leafColour = ColTools.checkColour(red, green, blue);
-		
-			// Mutate numerical genes
-			seedEnergy += RandTools.getDouble(-2, 2);
-			baseNodeSize += RandTools.getDouble(-0.01, 0.01);
-			taper += RandTools.getDouble(-0.008, 0.008);
-		
-			// Mutate structural genes
-		
-			for (int i = RandTools.getInt(1, 4); i > 0; i--)
-				switch (RandTools.getInt(0, 10))
+			{
+				// If a random % is higher than the chance of being a mutated offspring, return.
+				if (RandTools.randPercent() > Main.simWindow.mutantOffspringSlider.getPercent())
+					return;
+
+				// Mutate leaf colour
+				if (RandTools.randPercent() > 50)
 					{
-					// Mutate a character
-						case 1:
-							int geneToModify = RandTools.getInt(0, genes.length);
-							genes[geneToModify].add(RandTools.getInt(0, genes[geneToModify].size()), getRandomCharacter());
-							break;
-						// Add a character
-						case 2:
-							;
-							break;
-						// Remove a character
-						case 3:
-							;
-							break;
+						int red = leafColour.getRed() + RandTools.getInt(-5, 5);
+						int green = leafColour.getGreen() + RandTools.getInt(-5, 5);
+						int blue = leafColour.getBlue() + RandTools.getInt(-5, 5);
+						leafColour = ColTools.checkColour(red, green, blue);
 					}
-		}
+				// Mutate numerical genes
+				seedEnergy += RandTools.getDouble(-2, 2);
+				baseNodeSize += RandTools.getDouble(-0.01, 0.01);
+				taper += RandTools.getDouble(-0.008, 0.008);
+				if (taper < 0)
+					taper = 0;
+
+				// Mutate structural genes
+
+				for (int i = RandTools.getInt(1, (int) Main.simWindow.dnaDamageSlider.getValue()); i > 0; i--)
+					{
+						int geneToModify = RandTools.getInt(0, genes.length - 1);
+						int mutationIndex = RandTools.getInt(0, genes[geneToModify].size() - 1);
+						switch (RandTools.getInt(0, 10))
+							{
+							// Mutate a character
+								case 1:
+									if (genes[geneToModify].size() > 0)
+										genes[geneToModify].remove(mutationIndex);
+									genes[geneToModify].add(mutationIndex, getRandomCharacter());
+									break;
+								// Add a character
+								case 2:
+									genes[geneToModify].add(mutationIndex, getRandomCharacter());
+									break;
+								// Remove a character
+								case 3:
+									if (genes[geneToModify].size() > 0)
+										genes[geneToModify].remove(mutationIndex);
+									break;
+							}
+					}
+			}
 
 		private final Character getRandomCharacter()
-		{
-			if (RandTools.randPercent() > 40)
-				return NOTHING;
-			
-			Character[] letters = new Character[6 + MAX_GENES];
-			letters[0] = GROW;
-			letters[1] = ROTATE_LEFT;
-			letters[2] = ROTATE_RIGHT;
-			letters[3] = TOGGLE_LEAF;
-			letters[4] = START_NODE;
-			letters[5] = END_NODE;
-			
-			// Add the characters that represent each gene
-			for (int i = 6; i < letters.length; i++)
-				letters[i] = new Character((char)(65 + i));
-			
-			return letters[RandTools.getInt(0, letters.length)];
-		
-		}
+			{
+				if (RandTools.randPercent() > 40)
+					return NOTHING;
+
+				Character[] letters = new Character[6 + (MAX_GENES * 2)];
+				letters[0] = GROW;
+				letters[1] = ROTATE_LEFT;
+				letters[2] = ROTATE_RIGHT;
+				letters[3] = TOGGLE_LEAF;
+				letters[4] = START_NODE;
+				letters[5] = END_NODE;
+
+				// Add the characters that represent each gene
+				for (int i = 6; i < letters.length; i += 2)
+					{
+						letters[i] = new Character((char) (65 + i));
+						letters[i + 1] = new Character((char) (65 + i));
+					}
+				return letters[RandTools.getInt(0, letters.length - 1)];
+
+			}
 	}
