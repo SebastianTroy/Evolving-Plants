@@ -6,7 +6,6 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
-import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 
 import tCode.RenderableObject;

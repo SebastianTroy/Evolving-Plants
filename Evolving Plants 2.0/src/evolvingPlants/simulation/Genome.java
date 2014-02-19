@@ -3,10 +3,9 @@ package evolvingPlants.simulation;
 import java.awt.Color;
 import java.util.LinkedList;
 
-import evolvingPlants.Main;
-
 import tools.ColTools;
 import tools.RandTools;
+import evolvingPlants.Main;
 
 /**
  * This class represents a plant's genetics
