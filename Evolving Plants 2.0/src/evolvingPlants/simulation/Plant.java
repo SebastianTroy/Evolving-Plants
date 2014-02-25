@@ -65,8 +65,9 @@ public class Plant
 				else if (plantEnergy > genes.seedEnergy)
 					{
 						plantEnergy -= genes.seedEnergy;
-						if (RandTools.getBool())
-							Main.simWindow.sim.plantsToAdd.add(new Plant(new Genome(genes, true), RandTools.getInt(minX - 40, maxX + 40)));
+
+						if (RandTools.randPercent() > 80)
+							Main.simWindow.sim.plantsToAdd.addFirst(new Plant(new Genome(genes, true), RandTools.getInt(minX - 30, maxX + 30)));
 					}
 			}
 
@@ -247,7 +248,7 @@ public class Plant
 
 				private final boolean contains(Point p)
 					{
-						if (NumTools.distance(p.x, p.y, getX(), getY()) < getLeafSize())
+						if (isLeaf && NumTools.distance(p.x, p.y, getX(), getY()) < getLeafSize())
 							return true;
 
 						for (Node n : daughterNodes)
@@ -309,34 +310,47 @@ public class Plant
 						// Store a list of all instructions specifically for this Node.
 						LinkedList<Character> nodeInstructions = new LinkedList<Character>();
 
+						char c;
+
 						// While there are still instructions to process
 						while (allPlantInstructions.size() > 0)
 							{
 								// Remove the first instruction to process
-								Character c = allPlantInstructions.pop();
-								// If it signifies the start of a new node
-								if (c == Genome.START_NODE)
+								c = allPlantInstructions.pop();
+
+								// If the node is big enough to be part of the final plant
+								if (maxSize > 0.2)
 									{
-										// Create a new node
-										Node n = new Node(this);
-										// Pass on the instructions and get in return the instructions, minus all instructions relevant to that node
-										allPlantInstructions = n.extractNodeInstructions(allPlantInstructions);
-										// Add the daughter node to our list to keep track of it
-										daughterNodes.add(n);
+										// If it signifies the start of a new node
+										if (c == Genome.START_NODE)
+											{
+												// Create a new node
+												Node n = new Node(this);
+												// Tell the Node how big it will be
+												n.maxSize = maxSize - genes.taper;
+
+												// Pass on the instructions and get in return the instructions, minus all instructions relevant to that node
+												allPlantInstructions = n.extractNodeInstructions(allPlantInstructions);
+
+												// If the leaf is big enough AND the daughter Node is a leaf or has branches which eventually terminate in
+												// leaves
+												if (n.maxSize > 0.1 && (n.isLeaf || n.daughterNodes.size() > 0))
+													// Add the daughter node to our list to keep track of it
+													daughterNodes.add(n);
+											}
+										// If it signifies the end of this node
+										else if (c == Genome.END_NODE)
+											// stop processing instructions
+											break;
+										else
+											nodeInstructions.addFirst(c);
 									}
-								// If it signifies the end of this node
-								else if (c == Genome.END_NODE)
-									// stop processing instructions
-									break;
-								else
-									nodeInstructions.addFirst(c);
 							}
 
 						// For each instruction
 						for (int i = 0; i < nodeInstructions.size(); i++)
 							{
-								char c = nodeInstructions.get(i);
-								switch (c)
+								switch (nodeInstructions.get(i))
 									{
 										case (Genome.GROW):
 											stemLength += 10;
@@ -366,11 +380,15 @@ public class Plant
 							n.rotate(angle);
 					}
 
+				/**
+				 * Takes {@link Node#stemAngle} and {@link Node#stemLength} and converts that into the {@link Node}s' position relative to
+				 * {@link Node#parentNode}.
+				 */
 				private final void calculateShape()
 					{
 						double[] vector = NumTools.getVector(stemAngle);
-						relativeX = (int) (vector[0] * stemLength);
-						relativeY = (int) (vector[1] * stemLength);
+						relativeX = (int) ((vector[0] * stemLength) + RandTools.getDouble(-2, 2));
+						relativeY = (int) ((vector[1] * stemLength) + RandTools.getDouble(-2, 2));
 
 						if (maxSize < MIN_NODE_SIZE)
 							daughterNodes.clear();

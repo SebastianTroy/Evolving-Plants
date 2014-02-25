@@ -7,6 +7,8 @@ import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedList;
 
 import evolvingPlants.Main;
 
@@ -37,11 +39,13 @@ public class Simulation
 		// Light Filters
 		public boolean addFilter = false;
 		private LightFilter filterBeingMoved = null;
-		private ArrayList<LightFilter> filters = new ArrayList<LightFilter>();
+		private LinkedList<LightFilter> filters = new LinkedList<LightFilter>();
+		private Iterator<LightFilter> filterIterator;
 
-		// Seeds and Plants in the simulation
-		ArrayList<Plant> plantsToAdd = new ArrayList<Plant>(40);
-		ArrayList<Plant> plants = new ArrayList<Plant>(40);
+		// Plants in the simulation
+		LinkedList<Plant> plantsToAdd = new LinkedList<Plant>();
+		LinkedList<Plant> plants = new LinkedList<Plant>();
+		private Iterator<Plant> plantIterator;
 
 		public Simulation(int width)
 			{
@@ -58,7 +62,6 @@ public class Simulation
 				if (reset)
 					{
 						plantsAddedByUser.clear();
-						plantsToAdd.clear();
 						plants.clear();
 						filters.clear();
 						lightMap = new LightMap((int) simWidth, 550);
@@ -70,7 +73,7 @@ public class Simulation
 				if (addFilter)
 					{
 						LightFilter newFilter = new LightFilter((int) -simX + 5, 250, (int) Main.simWindow.filterWidthSlider.getValue(), (int) Main.simWindow.filterOpacitySlider.getValue());
-						filters.add(newFilter);
+						filters.addFirst(newFilter);
 						addFilter = false;
 
 						lightMap.addShadow(newFilter.x, newFilter.y, newFilter.width, newFilter.shadowColour);
@@ -78,9 +81,10 @@ public class Simulation
 							updateLighting();
 					}
 
-				for (int i = 0; i < filters.size();)
+				filterIterator = filters.iterator();
+				while (filterIterator.hasNext())
 					{
-						LightFilter f = filters.get(i);
+						LightFilter f = filterIterator.next();
 
 						if (f.movedTo != null)
 							{
@@ -94,43 +98,36 @@ public class Simulation
 						if (!f.exists)
 							{
 								lightMap.removeShadow(f.x, f.y, f.width, f.shadowColour);
-								filters.remove(i);
+								filterIterator.remove();
 							}
-						else
-							i++;
 					}
 
+				// Do stuff that can happen more than once a frame
 				while (this.secondsPassed >= secondsBetweenTicks)
 					{
 						this.secondsPassed -= secondsBetweenTicks;
 
-						// ----------------------------------
-						/* REALLY SUPER SLOW */
-						if (showLighting)
-							updateLighting();
-						/* REALLY SUPER SLOW */
-						// ----------------------------------
-
-						// Add new seedlings to Array
-						for (Point p : plantsAddedByUser)
-							plants.add(new Plant(new Genome(currentGenes, false), (int) p.getX()));
-						plantsAddedByUser.clear();
-						// Add new seedlings to Array
-						for (Plant p : plantsToAdd)
-							plants.add(p);
+						// Add new plants to our array
+						plants.addAll(plantsToAdd);
 						plantsToAdd.clear();
+
 						// Process plants and remove dead ones
-						for (int p = 0; p < plants.size(); p++)
+						plantIterator = plants.iterator();
+						Plant plant;
+						while (plantIterator.hasNext())
 							{
-								Plant plant = plants.get(p);
+								plant = plantIterator.next();
 								plant.tick();
 								if (!plant.alive)
-									{
-										plants.remove(p);
-										p--;
-									}
+									plantIterator.remove();
 							}
 					}
+				// ----------------------------------
+				/* ##### REALLY SUPER SLOW ##### */
+				if (showLighting)
+					updateLighting(); // call as little as possible
+				/* ##### REALLY SUPER SLOW ##### */
+				// ----------------------------------
 			}
 
 		public void render(Graphics2D g)
@@ -142,19 +139,20 @@ public class Simulation
 					g.drawImage(lightImage, 200, 0, Main.simWindow.getObserver());
 				g.setColor(Color.GREEN);
 				g.fillRect(200, 550, 800, 50);
-				for (Plant p : plants)
-					p.render(g, simX + 200);
-				for (LightFilter f : filters)
-					f.render(g, simX + 200);
+
+				// Draw plants
+				plantIterator = plants.iterator();
+				while (plantIterator.hasNext())
+					plantIterator.next().render(g, simX + 200);
+
+				// Draw filters
+				filterIterator = filters.iterator();
+				while (filterIterator.hasNext())
+					filterIterator.next().render(g, simX + 200);
 
 				g.setColor(Color.CYAN);
 				g.fillRect(0, 0, 200, Main.canvasHeight);
 				g.fillRect(1000, 0, 200, Main.canvasHeight);
-			}
-
-		public final void addPlant(Plant newPlant)
-			{
-				plants.add(newPlant);
 			}
 
 		public final void addShadow(double nodeX, double nodeY, int leafSize, int leafTransparency)
@@ -183,48 +181,69 @@ public class Simulation
 
 						if (Main.simWindow.currentCursor == Main.simWindow.plantSeedCursor)
 							{
-								plantsAddedByUser.add(point);
+								plantsToAdd.addFirst(new Plant(new Genome(currentGenes, false), point.x));
 							}
 						else if (Main.simWindow.currentCursor == Cursor.getDefaultCursor())
 							{
 								boolean plantSelected = false;
-								for (Plant plant : plants)
-									if (!plantSelected && plant.contains(point))
-										{
-											plant.selected = true;
-											plantSelected = true;
-										}
-									else if (plant.selected)
-										plant.selected = false;
+								Iterator<Plant> tempIter = plants.iterator();
+								Plant plant;
+								while (tempIter.hasNext())
+									{
+										plant = tempIter.next();
+										if (!plantSelected && plant.contains(point))
+											{
+												plant.selected = true;
+												plantSelected = true;
+											}
+										else if (plant.selected)
+											plant.selected = false;
+									}
 							}
 						else if (Main.simWindow.currentCursor == Main.simWindow.getGenesCursor)
 							{
-								for (Plant plant : plants)
-									if (plant.contains(point))
-										{
+								Iterator<Plant> tempIter = plants.iterator();
+								Plant plant;
+								while (tempIter.hasNext())
+									{
+										plant = tempIter.next();
+										if (plant.contains(point))
 											currentGenes = plant.getGenesCopy();
-										}
+									}
+								if (Main.DEBUG)
+									currentGenes.printGenome();
 							}
 						else if (Main.simWindow.currentCursor == Main.simWindow.killPlantCursor)
 							{
-								for (int i = 0; i < plants.size(); i++)
-									if (plants.get(i).contains(point))
-										plants.get(i).kill();
+								Iterator<Plant> tempIter = plants.iterator();
+								Plant plant;
+								while (tempIter.hasNext())
+									{
+										plant = tempIter.next();
+										if (plant.contains(point))
+											plant.kill();
+									}
 							}
 						else if (Main.simWindow.currentCursor == Main.simWindow.moveFilterCursor)
 							{
 								Point adjustedPoint = new Point((int) (e.getX() + -simX - 200), e.getY());
 
-								for (LightFilter f : filters)
-									if (f.containsPoint(adjustedPoint))
-										filterBeingMoved = f;
+								Iterator<LightFilter> tempIter = filters.iterator();
+								LightFilter f;
+								while (tempIter.hasNext())
+									{
+										f = tempIter.next();
+										if (f.containsPoint(adjustedPoint))
+											filterBeingMoved = f;
+									}
 							}
 						else if (Main.simWindow.currentCursor == Main.simWindow.deleteFilterCursor)
 							{
 								Point adjustedPoint = new Point((int) (e.getX() + -simX - 200), e.getY());
-								for (LightFilter f : filters)
-									if (f.containsPoint(adjustedPoint))
-										f.exists = false;
+								Iterator<LightFilter> tempIter = filters.iterator();
+								while (tempIter.hasNext())
+									if (tempIter.next().containsPoint(adjustedPoint))
+										tempIter.remove();
 							}
 					}
 			}
@@ -235,9 +254,14 @@ public class Simulation
 
 				if (Main.simWindow.currentCursor == Main.simWindow.killPlantCursor)
 					{
-						for (int i = 0; i < plants.size(); i++)
-							if (plants.get(i).contains(point))
-								plants.get(i).kill();
+						Iterator<Plant> tempIter = plants.iterator();
+						Plant plant;
+						while (tempIter.hasNext())
+							{
+								plant = tempIter.next();
+								if (plant.contains(point))
+									tempIter.remove();
+							}
 					}
 
 				if (filterBeingMoved != null)

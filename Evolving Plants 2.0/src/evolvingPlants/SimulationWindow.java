@@ -356,7 +356,10 @@ public class SimulationWindow extends RenderableObject
 							sim.updateLighting();
 					}
 				else if (eventSource == ticksPerSecondSlider)
-					sim.secondsBetweenTicks = 1.0 / ticksPerSecondSlider.getValue();
+					{
+						sim.secondsBetweenTicks = 1.0 / ticksPerSecondSlider.getValue();
+						sim.secondsPassed = sim.secondsBetweenTicks;
+					}
 			}
 
 		@Override
