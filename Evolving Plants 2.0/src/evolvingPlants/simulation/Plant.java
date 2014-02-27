@@ -6,18 +6,24 @@ import java.awt.Point;
 import java.util.ArrayList;
 import java.util.LinkedList;
 
+import tComponents.components.TSlider;
 import tools.NumTools;
 import tools.RandTools;
+import evolvingPlants.GeneEditor;
 import evolvingPlants.Main;
 
 public class Plant
 	{
-		public int plantX, minX, maxX, leafOpacity;
-		public static final int plantY = 550, leafSize = 15;
-
+		// These static variables are used to allow the plant class to be used outside of the Main.simWindow.Sim context
+		public static LightMap lightMap;
+		public static TSlider leafOpacitySlider;
+		public static int plantY;
+		public static int leafSize = 15;
 		private static final double MIN_NODE_SIZE = 0.1;
 
-		private double height = 0, /* lean = 0, */plantEnergy, metabolism = 0;
+		public int plantX, minX, maxX, leafOpacity;
+		private double height = 0, /* lean = 0, */ metabolism = 0;
+		public double plantEnergy, metabolismIncreasePerTick = 0.0005;
 
 		private Genome genes;
 
@@ -31,7 +37,7 @@ public class Plant
 				minX = maxX = plantX;
 				genes = parentGenes;
 				plantEnergy = genes.seedEnergy - 1;
-				leafOpacity = (int) Main.simWindow.leafOpacitySlider.getValue();
+				leafOpacity = (int) leafOpacitySlider.getValue();
 
 				baseNode.extractNodeInstructions(parentGenes.getUnpackedGenome());
 				baseNode.calculateShape();
@@ -53,7 +59,7 @@ public class Plant
 				// Remove the metabolism value from plant energy
 				plantEnergy -= metabolism;
 				// Increase metabolism with age
-				metabolism += 0.0005;
+				metabolism += metabolismIncreasePerTick;
 
 				baseNode.tick();
 
@@ -81,7 +87,7 @@ public class Plant
 
 		public boolean contains(Point p)
 			{
-				// if nowhere near plant, return false
+				// if not within total bounds of plant
 				if (p.x < minX || p.x > maxX || plantY - p.y > height)
 					return false;
 
@@ -93,6 +99,19 @@ public class Plant
 				return new Genome(genes, false);
 			}
 
+		/**
+		 * This method is only called by {@link GeneEditor}.
+		 */
+		public final void refreshShadows(int newLeafOpacity)
+			{
+				baseNode.removeAllShadows();
+				leafOpacity = newLeafOpacity;
+				baseNode.addAllShadows();
+			}
+
+		/**
+		 * Can only be called once, signals the {@Link Simulation} to remove this {@link Plant} from the simulation.
+		 */
 		public final void kill()
 			{
 				if (alive)
@@ -137,8 +156,7 @@ public class Plant
 								// If is a leaf
 								if (isLeaf)
 									{
-										nodeEnergy += (Main.simWindow.sim.lightMap.getLightMinusShadowAt(getX() + RandTools.getInt((getLeafSize() / -2) + 1, (getLeafSize() / 2) - 1), getY(),
-												leafOpacity) * proportionGrown) / 100;
+										nodeEnergy += (lightMap.getLightMinusShadowAt(getX() + RandTools.getInt((getLeafSize() / -2) + 1, (getLeafSize() / 2) - 1), getY(), leafOpacity) * proportionGrown) / 100;
 									}
 
 								// Pass this Node's energy onto daughter Nodes
@@ -162,7 +180,7 @@ public class Plant
 								// If is a leaf
 								if (isLeaf)
 									{
-										nodeEnergy += (Main.simWindow.sim.lightMap.getLightAt(getX() + RandTools.getInt((getLeafSize() / -2) + 1, (getLeafSize() / 2) - 1), getY()) * proportionGrown) / 255.0;
+										nodeEnergy += (lightMap.getLightAt(getX() + RandTools.getInt((getLeafSize() / -2) + 1, (getLeafSize() / 2) - 1), getY()) * proportionGrown) / 255.0;
 									}
 
 								proportionGrown += nodeEnergy / stemLength;
@@ -264,7 +282,20 @@ public class Plant
 				private final void setNodeShadow()
 					{
 						if (isLeaf)
-							Main.simWindow.sim.addShadow(finalX, finalY, getLeafSize(), leafOpacity);
+							lightMap.addShadow(finalX - (getLeafSize() / 2), finalY, getLeafSize(), leafOpacity);
+					}
+
+				/**
+				 * this method is used only when the plant is the {@link GeneEditor#examplePlant}.
+				 */
+				private final void addAllShadows()
+					{
+						for (Node n : daughterNodes)
+							n.addAllShadows();
+
+						// if is a leaf and has had its shadow previously set
+						if (isLeaf && proportionGrown == maxSize)
+							setNodeShadow();
 					}
 
 				/**
@@ -277,7 +308,7 @@ public class Plant
 
 						// if is a leaf and has had its shadow previously set
 						if (isLeaf && proportionGrown == maxSize)
-							Main.simWindow.sim.removeShadow(finalX, finalY, getLeafSize(), leafOpacity);
+							lightMap.removeShadow(finalX - (getLeafSize() / 2), finalY, getLeafSize(), leafOpacity);
 					}
 
 				private final void calculateBounds()

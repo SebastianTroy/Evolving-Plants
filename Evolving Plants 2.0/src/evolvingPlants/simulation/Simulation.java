@@ -105,8 +105,6 @@ public class Simulation
 				// Do stuff that can happen more than once a frame
 				while (this.secondsPassed >= secondsBetweenTicks)
 					{
-						this.secondsPassed -= secondsBetweenTicks;
-
 						// Add new plants to our array
 						plants.addAll(plantsToAdd);
 						plantsToAdd.clear();
@@ -121,6 +119,8 @@ public class Simulation
 								if (!plant.alive)
 									plantIterator.remove();
 							}
+
+						this.secondsPassed -= secondsBetweenTicks;
 					}
 				// ----------------------------------
 				/* ##### REALLY SUPER SLOW ##### */
@@ -155,18 +155,6 @@ public class Simulation
 				g.fillRect(1000, 0, 200, Main.canvasHeight);
 			}
 
-		public final void addShadow(double nodeX, double nodeY, int leafSize, int leafTransparency)
-			{
-				int x = (int) nodeX - (leafSize / 2);
-				lightMap.addShadow(x, (int) nodeY, leafSize, leafTransparency);
-			}
-
-		public final void removeShadow(double nodeX, double nodeY, int leafSize, int leafTransparency)
-			{
-				int x = (int) nodeX - (leafSize / 2);
-				lightMap.removeShadow(x, (int) nodeY, leafSize, leafTransparency);
-			}
-
 		public void updateLighting()
 			{
 				lightImage = lightMap.getLightImage(lightImage, (int) -simX);
@@ -185,12 +173,14 @@ public class Simulation
 							}
 						else if (Main.simWindow.currentCursor == Cursor.getDefaultCursor())
 							{
+								plantIterator = plants.iterator();
+
 								boolean plantSelected = false;
-								Iterator<Plant> tempIter = plants.iterator();
+
 								Plant plant;
-								while (tempIter.hasNext())
+								while (plantIterator.hasNext())
 									{
-										plant = tempIter.next();
+										plant = plantIterator.next();
 										if (!plantSelected && plant.contains(point))
 											{
 												plant.selected = true;
@@ -198,28 +188,31 @@ public class Simulation
 											}
 										else if (plant.selected)
 											plant.selected = false;
-									}
-							}
+									}							}
 						else if (Main.simWindow.currentCursor == Main.simWindow.getGenesCursor)
 							{
-								Iterator<Plant> tempIter = plants.iterator();
+								plantIterator = plants.iterator();
+
 								Plant plant;
-								while (tempIter.hasNext())
+								while (plantIterator.hasNext())
 									{
-										plant = tempIter.next();
+										plant = plantIterator.next();
 										if (plant.contains(point))
-											currentGenes = plant.getGenesCopy();
+											{
+												currentGenes = plant.getGenesCopy();
+												if (Main.DEBUG)
+													currentGenes.printGenome();
+											}
 									}
-								if (Main.DEBUG)
-									currentGenes.printGenome();
 							}
 						else if (Main.simWindow.currentCursor == Main.simWindow.killPlantCursor)
 							{
-								Iterator<Plant> tempIter = plants.iterator();
+								plantIterator = plants.iterator();
+
 								Plant plant;
-								while (tempIter.hasNext())
+								while (plantIterator.hasNext())
 									{
-										plant = tempIter.next();
+										plant = plantIterator.next();
 										if (plant.contains(point))
 											plant.kill();
 									}
@@ -254,13 +247,14 @@ public class Simulation
 
 				if (Main.simWindow.currentCursor == Main.simWindow.killPlantCursor)
 					{
-						Iterator<Plant> tempIter = plants.iterator();
+						plantIterator = plants.iterator();
+
 						Plant plant;
-						while (tempIter.hasNext())
+						while (plantIterator.hasNext())
 							{
-								plant = tempIter.next();
+								plant = plantIterator.next();
 								if (plant.contains(point))
-									tempIter.remove();
+									plant.kill();
 							}
 					}
 

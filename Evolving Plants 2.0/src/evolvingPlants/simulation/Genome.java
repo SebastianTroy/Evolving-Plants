@@ -15,9 +15,10 @@ import evolvingPlants.Main;
 public class Genome
 	{
 		// Gene constants
-		private static final int MAX_RECURSIONS = 5;
-		private static final int MAX_GENES = 5;
-		private static final int GENE_LENGTH = 5;
+		public static final int MAX_RECURSIONS = 5;
+		public static final int NUM_GENES = 4;
+		public static final int GENE_LENGTH = 10;
+		public static final int MAX_UNPACKED_GENE_LENGTH = 100;
 
 		// Genetic Instructions
 		public static final char GROW = '^';
@@ -28,18 +29,18 @@ public class Genome
 		public static final char END_NODE = '}';
 		public static final char NOTHING = '~';
 
-		private final char[/* Genes */][/* Instructions */] genes = new char[MAX_GENES][GENE_LENGTH];
+		public final char[/* Genes */][/* Instructions */] genes = new char[NUM_GENES][GENE_LENGTH];
 
 		private boolean genesUnpacked = false;
 		private final LinkedList<Character> unpackedGenome = new LinkedList<Character>();
 
 		// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		Color leafColour;
-		double seedEnergy, /* energy to seeds */baseNodeSize, taper /* the proportion by which the plant gets smaller each branch */;
+		public Color leafColour;
+		public double seedEnergy, /* energy to seeds */baseNodeSize, taper /* the proportion by which the plant gets smaller each branch */;
 
 		public Genome()
 			{
-				for (int geneNum = 0; geneNum < MAX_GENES; geneNum++)
+				for (int geneNum = 0; geneNum < NUM_GENES; geneNum++)
 					for (int geneIndex = 0; geneIndex < GENE_LENGTH; geneIndex++)
 						genes[geneNum][geneIndex] = NOTHING;
 
@@ -60,7 +61,7 @@ public class Genome
 		public Genome(Genome parentGenes, boolean mutate)
 			{
 				// Make this.genes a hard copy of parentGenes.genes
-				for (int geneNum = 0; geneNum < MAX_GENES; geneNum++)
+				for (int geneNum = 0; geneNum < NUM_GENES; geneNum++)
 					for (int geneIndex = 0; geneIndex < GENE_LENGTH; geneIndex++)
 						genes[geneNum][geneIndex] = new Character(parentGenes.genes[geneNum][geneIndex]);
 
@@ -78,14 +79,19 @@ public class Genome
 			{
 				if (!genesUnpacked)
 					unpackGenes();
-				return unpackedGenome;
+
+				LinkedList<Character> copyOfUnpackedGenome = new LinkedList<Character>();
+				for (Character c : unpackedGenome)
+					copyOfUnpackedGenome.addLast(new Character(c));
+
+				return copyOfUnpackedGenome;
 			}
 
 		public final void printGenome()
 			{
-				for (int geneNum = 0; geneNum < MAX_GENES; geneNum++)
+				for (int geneNum = 0; geneNum < NUM_GENES; geneNum++)
 					{
-						System.out.print("Gene " + geneNum + ": ( " + genes[geneNum][0]);
+						System.out.print("Gene " + (char) (65 + geneNum) + ": ( " + genes[geneNum][0]);
 						for (int geneIndex = 1; geneIndex < GENE_LENGTH; geneIndex++)
 							System.out.print(", " + genes[geneNum][geneIndex]);
 						System.out.print(" )");
@@ -106,22 +112,22 @@ public class Genome
 				boolean completed;
 
 				// For as many recursions as are allowed
-				for (int recursions = 0; recursions < MAX_RECURSIONS; recursions++)
+				for (int recursions = 0; recursions < MAX_RECURSIONS && unpackedGenome.size() < MAX_UNPACKED_GENE_LENGTH; recursions++)
 					{
 						// Assume this will be the last run for unpacking the genome (we can correct ourselves alter)
 						completed = true;
 
-						// Work through the genome backwards to avoid getting stuck in a recursive unpacking loop
-						for (int i = unpackedGenome.size() - 1; i >= 0; i--)
+						// Work through the genome and unpack any capital letters
+						for (int i = 0; i < unpackedGenome.size(); i++)
 							{
 								char c = unpackedGenome.get(i);
 
-								// Don't bother adding any NOTHING instructions
-								if (c == NOTHING)
-									{
-										completed = false;
-										break;
-									}
+								// // Don't bother adding any NOTHING instructions
+								// if (c == NOTHING)
+								// {
+								// completed = false;
+								// break;
+								// }
 
 								// If the character is upper case (i.e. can be unpacked)
 								if (Character.isUpperCase(c))
@@ -130,12 +136,14 @@ public class Genome
 										unpackedGenome.remove(i);
 
 										// If the letter represents one of the other genes
-										if (c - 65 < MAX_GENES)
+										if (c - 65 < NUM_GENES)
 											{
 												// Add the letters from that gene to the genome
 												for (int index = 0; index < GENE_LENGTH; index++)
-													unpackedGenome.add(genes[c - 65][index]);
+													unpackedGenome.add(i + index, genes[c - 65][index]);
+												i += GENE_LENGTH;
 											}
+
 										// We'll need to go through again in case we've unpacked more unpackable characters from that gene
 										completed = false;
 									}
@@ -176,7 +184,9 @@ public class Genome
 
 				// If the brackets don't balance out, break the genes
 				if (numStartNodes != numEndNodes)
-					unpackedGenome.clear();
+					{
+						unpackedGenome.clear();
+					}
 
 				// Recored that the genes have been unpacked
 				genesUnpacked = true;
@@ -206,7 +216,7 @@ public class Genome
 				// For a user specified value
 				for (int i = 0; i < Main.simWindow.dnaDamageSlider.getValue(); i++)
 					// Modify a random character in the genome
-					genes[RandTools.getInt(0, MAX_GENES - 1)][RandTools.getInt(0, GENE_LENGTH - 1)] = getRandomCharacter();
+					genes[RandTools.getInt(0, NUM_GENES - 1)][RandTools.getInt(0, GENE_LENGTH - 1)] = getRandomCharacter();
 			}
 
 		private final char getRandomCharacter()
@@ -216,7 +226,7 @@ public class Genome
 					return NOTHING;
 
 				// Add one of each of the rest of the letters
-				char[] letters = new char[6 + MAX_GENES];
+				char[] letters = new char[6 + NUM_GENES];
 				letters[0] = GROW;
 				letters[1] = ROTATE_LEFT;
 				letters[2] = ROTATE_RIGHT;

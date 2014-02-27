@@ -24,6 +24,7 @@ public class Main extends TCode
 				programName = "Evolving Plants 2.0";
 				versionNumber = "0.2_1";
 				DEBUG = true;
+				FORCE_SINGLE_THREAD = true;
 				begin(menu);
 			}
 

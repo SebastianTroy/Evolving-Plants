@@ -10,6 +10,7 @@ import tComponents.components.TMenu;
 import tComponents.components.TSlider;
 import tComponents.utils.events.TActionEvent;
 import tComponents.utils.events.TScrollEvent;
+import evolvingPlants.simulation.Plant;
 import evolvingPlants.simulation.Simulation;
 
 public class MainMenu extends RenderableObject
@@ -49,6 +50,7 @@ public class MainMenu extends RenderableObject
 			{
 				mainMenu.setLocation(200, 0);
 				newSimMenu.setLocation(1200, 0);
+				simWidthSlider.setValue(800);
 			}
 
 		@Override
@@ -71,12 +73,16 @@ public class MainMenu extends RenderableObject
 					{
 						mainMenu.setX(0);
 						newSimMenu.setX(640);
-						simWidth = (int) simWidthSlider.getValue(0);
+						simWidth = (int) simWidthSlider.getValue();					
 					}
 				else if (source == resumeSimButton)
 					{
 						if (Main.simWindow != null && Main.simWindow.sim != null && Main.simWindow.sim.simWidth >= 800)
 							{
+								Plant.lightMap = Main.simWindow.sim.lightMap;
+								Plant.leafOpacitySlider = Main.simWindow.leafOpacitySlider;
+								Plant.plantY = 550;
+								
 								changeRenderableObject(Main.simWindow);
 								reset();
 							}
@@ -85,17 +91,20 @@ public class MainMenu extends RenderableObject
 					{
 						Main.simWindow = new SimulationWindow();
 						Main.simWindow.sim = new Simulation(simWidth);
+						
+						Plant.lightMap = Main.simWindow.sim.lightMap;
+						Plant.leafOpacitySlider = Main.simWindow.leafOpacitySlider;
+						Plant.plantY = 550;
+						
 						changeRenderableObject(Main.simWindow);
 						reset();
 					}
 				else if (source == editorButton)
 					{
-						if (Main.simWindow == null)
-							{
-								Main.simWindow = new SimulationWindow();
-								Main.simWindow.sim = new Simulation(1);
-								changeRenderableObject(Main.simWindow);
-							}
+						Plant.lightMap = Main.editor.lightMap;
+						Plant.leafOpacitySlider = Main.editor.leafOpacitySlider;
+						Plant.plantY = GeneEditor.plantY;
+						
 						changeRenderableObject(Main.editor);
 						reset();
 					}

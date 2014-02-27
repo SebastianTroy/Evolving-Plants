@@ -5,6 +5,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.event.KeyEvent;
+import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -22,28 +23,39 @@ import tComponents.components.TTextField;
 import tComponents.utils.events.TActionEvent;
 import tComponents.utils.events.TScrollEvent;
 import evolvingPlants.simulation.Genome;
+import evolvingPlants.simulation.LightMap;
+import evolvingPlants.simulation.Plant;
 
 public class GeneEditor extends RenderableObject
 	{
 		private String saveDirectory = System.getProperty("user.home") + "//Evolving Plants//Genes";
 
 		// Plant variables
-		private int plantX = 950, plantY = 500, leafSize = 14;
-		private Color leafColour = new Color(175, 175, 175), oppositeColour = new Color(80, 80, 80), lightColour = Color.WHITE;
-		private NodeTree examplePlant = new NodeTree(new Genome());
-		private NodeTree.Node lastSelectedNode;
-		private double height = 0, lean = 0, energyGained = 200, metabolism = 0.1;
+		private int plantX = 250;
+		static int plantY = 500;
+
+		LightMap lightMap = new LightMap(500, 500);
+		private BufferedImage lightMapImage = new BufferedImage(500, 500, BufferedImage.TYPE_INT_RGB);
+		private double height = 0, lean = 0, energyGained = 200;
 
 		public final TMenu plantOptionsMenu = new TMenu(450, 0, 250, 500, TMenu.VERTICAL);
 		public final TSlider seedSizeSlider = new TSlider(TSlider.HORIZONTAL);
 		public final TSlider redLeafSlider = new TSlider(TSlider.HORIZONTAL);
 		public final TSlider greenLeafSlider = new TSlider(TSlider.HORIZONTAL);
 		public final TSlider blueLeafSlider = new TSlider(TSlider.HORIZONTAL);
-		public final TSlider redLightSlider = new TSlider(TSlider.HORIZONTAL);
-		public final TSlider greenLightSlider = new TSlider(TSlider.HORIZONTAL);
-		public final TSlider blueLightSlider = new TSlider(TSlider.HORIZONTAL);
+		public final TSlider leafOpacitySlider = new TSlider(TSlider.HORIZONTAL);
+		public final TSlider lightSlider = new TSlider(TSlider.HORIZONTAL);
+		public final TButton refreshPlantButton = new TButton("refresh Plant")
+			{
+				@Override
+				public final void pressed()
+					{
+						updateExamplePlant();
+					}
+			};
 
-		private TTextField geneEditorField;
+		private TMenu geneFieldsMenu = new TMenu(0, 490, 1200, 50, TMenu.HORIZONTAL);
+		private ArrayList<TTextField> geneFields = new ArrayList<TTextField>();
 		private final TTextField saveNameField = new TTextField(10, 540, 300, 20, "Save Name Here");
 
 		private final TMenu saveLoadMenu = new TMenu(320, 533, 500, 37, TMenu.HORIZONTAL);
@@ -53,6 +65,9 @@ public class GeneEditor extends RenderableObject
 		private final TButton mainMenuButton = new TButton("Main Menu");
 
 		private final TMenu instructionMenu = new TMenu(0, 0, 400, 500, TMenu.VERTICAL);
+
+		private Genome exampleGenes;
+		private Plant examplePlant;
 
 		@Override
 		protected void initiate()
@@ -72,12 +87,8 @@ public class GeneEditor extends RenderableObject
 				redLeafSlider.setSliderImage(0, Main.loadImage("redLeaf.png"));
 				greenLeafSlider.setSliderImage(0, Main.loadImage("greenLeaf.png"));
 				blueLeafSlider.setSliderImage(0, Main.loadImage("blueLeaf.png"));
-				redLightSlider.setRange(0, 255);
-				greenLightSlider.setRange(0, 255);
-				blueLightSlider.setRange(0, 255);
-				redLightSlider.setSliderImage(0, Main.loadImage("redSun.png"));
-				greenLightSlider.setSliderImage(0, Main.loadImage("greenSun.png"));
-				blueLightSlider.setSliderImage(0, Main.loadImage("blueSun.png"));
+				lightSlider.setRange(0, 255);
+				lightSlider.setSliderImage(0, Main.loadImage("sun.png"));
 
 				TLabel plantOptionsLabel = new TLabel("Plant Options");
 				plantOptionsLabel.setFontSize(15);
@@ -88,21 +99,24 @@ public class GeneEditor extends RenderableObject
 				plantOptionsMenu.add(greenLeafSlider);
 				plantOptionsMenu.add(blueLeafSlider);
 
-				TLabel simOptionsLabel = new TLabel("Light Options");
+				plantOptionsMenu.add(new TLabel("Leaf Transparency"), false);
+				leafOpacitySlider.setRange(0, 255);
+				leafOpacitySlider.setValue(75);
+				plantOptionsMenu.add(leafOpacitySlider);
+
+				TLabel simOptionsLabel = new TLabel("Light Intensity");
 				simOptionsLabel.setFontSize(15);
 				simOptionsLabel.setBackgroundColour(new Color(0, 200, 200));
 				plantOptionsMenu.add(simOptionsLabel, false);
-				plantOptionsMenu.add(redLightSlider);
-				plantOptionsMenu.add(greenLightSlider);
-				plantOptionsMenu.add(blueLightSlider);
+				plantOptionsMenu.add(lightSlider);
+
+				plantOptionsMenu.add(refreshPlantButton);
 
 				redLeafSlider.setValue(175.0);
 				greenLeafSlider.setValue(175.0);
 				blueLeafSlider.setValue(175.0);
 
-				redLightSlider.setValue(255);
-				greenLightSlider.setValue(255);
-				blueLightSlider.setValue(255);
+				lightSlider.setValue(255);
 
 				add(plantOptionsMenu);
 
@@ -114,26 +128,46 @@ public class GeneEditor extends RenderableObject
 
 				add(saveLoadMenu);
 
-				geneEditorField = new TTextField(10, 510, Main.canvasWidth - 20, 20, "Insert genetic code here");
-				add(geneEditorField);
+				geneFieldsMenu.setTComponentAlignment(TMenu.ALIGN_START);
+				geneFieldsMenu.setBorderSize(5);
+
+				for (int i = 0; i < Genome.NUM_GENES; i++)
+					{
+						TTextField t = new TTextField(0, 0, 90, 20, Genome.GENE_LENGTH);
+
+						TLabel l = new TLabel("Gene" + (char) (i + 65));
+						l.setBackgroundColour(new Color(24, 157, 181));
+						geneFieldsMenu.add(l, false);
+						geneFieldsMenu.add(t, false);
+						geneFields.add(t);
+					}
+
+				add(geneFieldsMenu);
 				add(saveNameField);
 
-				add(instructionMenu);
 				instructionMenu.add(getInstructionLabel("Genetic Instructions:"), false);
-				instructionMenu.add(getInstructionLabel("Grow up instruction = ^"), false);
-				instructionMenu.add(getInstructionLabel("Grow down instruction = v"), false);
-				instructionMenu.add(getInstructionLabel("Grow left instruction = <"), false);
-				instructionMenu.add(getInstructionLabel("Grow right instruction = >"), false);
-				instructionMenu.add(getInstructionLabel("Create new node = N"), false);
-				instructionMenu.add(getInstructionLabel("Toggle if node can seed = S"), false);
-				instructionMenu.add(getInstructionLabel("Climb up node tree = +"), false);
-				instructionMenu.add(getInstructionLabel("Climb down node tree = -"), false);
-				instructionMenu.add(getInstructionLabel("Stop reading instructions = |"), false);
+				instructionMenu.add(getInstructionLabel("Grow = " + Genome.GROW), false);
+				instructionMenu.add(getInstructionLabel("Rotate left = " + Genome.ROTATE_LEFT), false);
+				instructionMenu.add(getInstructionLabel("Rotate right = " + Genome.ROTATE_RIGHT), false);
+				instructionMenu.add(getInstructionLabel("Start Node = " + Genome.START_NODE), false);
+				instructionMenu.add(getInstructionLabel("End Node = " + Genome.END_NODE), false);
+				instructionMenu.add(getInstructionLabel("Toggle leaf = " + Genome.TOGGLE_LEAF), false);
+				instructionMenu.add(getInstructionLabel("Nothing = " + Genome.NOTHING), false);
+				add(instructionMenu);
+
+				lightMap.getLightImage(lightMapImage, 0);
+
+				updateExamplePlant();
 			}
 
 		@Override
 		public void tick(double secondsPassed)
-			{}
+			{
+				examplePlant.tick();
+				energyGained = examplePlant.plantEnergy;
+				examplePlant.plantEnergy = Double.MIN_VALUE;
+				lightMap.getLightImage(lightMapImage, 0);
+			}
 
 		@Override
 		protected void render(Graphics2D g)
@@ -142,15 +176,15 @@ public class GeneEditor extends RenderableObject
 				g.fillRect(0, 0, 700, 500);
 				g.setColor(Color.DARK_GRAY);
 				g.fillRect(0, 500, Main.canvasWidth, 100);
-				g.setColor(lightColour);
-				g.fillRect(700, 0, 500, 500);
+				g.drawImage(lightMapImage, 700, 0, getObserver());
 
 				g.setColor(Color.BLACK);
-				g.drawString((Math.abs(lean) / height > 0.6) ? "Plant not Viable, too much lean!" : "Plant Viable", 710, 30);
-				g.drawString("Energy/Sec: " + energyGained, 520, 400);
-				g.drawString("Metabolism: " + metabolism, 520, 415);
+				g.drawString(exampleGenes.getUnpackedGenome().size() == 0 ? "Plant not Viable, You need a " + Genome.END_NODE + " for each " + Genome.START_NODE : "Plant Viable", 710, 30);
+				g.drawString("Energy/Tick: " + energyGained, 520, 424);
 
-				examplePlant.baseNode.render(g);
+				g.drawString("UnpackedGenes: " + exampleGenes.getUnpackedGenome(), 5, 480);
+
+				examplePlant.render(g, 700);
 			}
 
 		private final TLabel getInstructionLabel(String labelText)
@@ -163,11 +197,62 @@ public class GeneEditor extends RenderableObject
 
 		private final void updateExamplePlant()
 			{
-				metabolism = 0;
-				//TODO update example plant
-				// examplePlant = new NodeTree(new RecursiveGenes(geneEditorField.getText(), seedSizeSlider.getValue(), (int) redLeafSlider.getValue(), (int)
-				// greenLeafSlider.getValue(),
-				// (int) blueLeafSlider.getValue()));
+				if (examplePlant != null)
+					examplePlant.kill();
+
+				setGenome();
+
+				examplePlant = new Plant(exampleGenes, plantX);
+				examplePlant.leafOpacity = (int) leafOpacitySlider.getValue();
+				examplePlant.metabolismIncreasePerTick = 0;
+
+				exampleGenes.seedEnergy = Double.POSITIVE_INFINITY;
+			}
+
+		private final void setGenome()
+			{
+				exampleGenes = new Genome();
+
+				for (int geneNum = 0; geneNum < Genome.NUM_GENES; geneNum++)
+					{
+						String geneString = geneFields.get(geneNum).getText();
+						while (geneString.length() < Genome.GENE_LENGTH)
+							geneString += Genome.NOTHING;
+
+						for (int geneIndex = 0; geneIndex < Genome.GENE_LENGTH; geneIndex++)
+							{
+								char charAtIndex = geneString.charAt(geneIndex);
+								switch (charAtIndex)
+									{
+										case (Genome.GROW):
+											exampleGenes.genes[geneNum][geneIndex] = Genome.GROW;
+											break;
+										case (Genome.ROTATE_LEFT):
+											exampleGenes.genes[geneNum][geneIndex] = Genome.ROTATE_LEFT;
+											break;
+										case (Genome.ROTATE_RIGHT):
+											exampleGenes.genes[geneNum][geneIndex] = Genome.ROTATE_RIGHT;
+											break;
+										case (Genome.TOGGLE_LEAF):
+											exampleGenes.genes[geneNum][geneIndex] = Genome.TOGGLE_LEAF;
+											break;
+										case (Genome.START_NODE):
+											exampleGenes.genes[geneNum][geneIndex] = Genome.START_NODE;
+											break;
+										case (Genome.END_NODE):
+											exampleGenes.genes[geneNum][geneIndex] = Genome.END_NODE;
+											break;
+										default:
+											if (charAtIndex - 65 < Genome.NUM_GENES && (charAtIndex - 65 > 0))
+													exampleGenes.genes[geneNum][geneIndex] = charAtIndex;
+											else
+												exampleGenes.genes[geneNum][geneIndex] = Genome.NOTHING;
+									}								
+							}					
+					}
+
+				exampleGenes.leafColour = new Color((int) redLeafSlider.getValue(), (int) greenLeafSlider.getValue(), (int) blueLeafSlider.getValue());
+				exampleGenes.seedEnergy = seedSizeSlider.getValue();
 			}
 
 		private final String readStringFromLine(String text)
@@ -178,14 +263,6 @@ public class GeneEditor extends RenderableObject
 		private final double readValueFromLine(String text)
 			{
 				return Double.parseDouble(text.substring(text.indexOf('=') + 1, text.length()));
-			}
-
-		@Override
-		public final void keyReleased(KeyEvent e)
-			{
-				height = 0;
-				lean = 0;
-				updateExamplePlant();
 			}
 
 		@Override
@@ -215,7 +292,7 @@ public class GeneEditor extends RenderableObject
 										in = new BufferedReader(new FileReader(geneFile));
 
 										saveNameField.setText(chooser.getSelectedFile().getName().substring(0, chooser.getSelectedFile().getName().length() - 4));
-										geneEditorField.setText(readStringFromLine(in.readLine()));
+										// geneEditorField.setText(readStringFromLine(in.readLine()));
 										seedSizeSlider.setValue(readValueFromLine(in.readLine()));
 										redLeafSlider.setValue(readValueFromLine(in.readLine()));
 										greenLeafSlider.setValue(readValueFromLine(in.readLine()));
@@ -247,171 +324,12 @@ public class GeneEditor extends RenderableObject
 		@Override
 		public final void tScrollEvent(TScrollEvent e)
 			{
-				leafColour = new Color((int) redLeafSlider.getValue(), (int) greenLeafSlider.getValue(), (int) blueLeafSlider.getValue());
-				oppositeColour = new Color(255 - (int) redLeafSlider.getValue(), 255 - (int) greenLeafSlider.getValue(), 255 - (int) blueLeafSlider.getValue());
-				lightColour = new Color((int) redLightSlider.getValue(), (int) greenLightSlider.getValue(), (int) blueLightSlider.getValue());
+				exampleGenes.leafColour = new Color((int) redLeafSlider.getValue(), (int) greenLeafSlider.getValue(), (int) blueLeafSlider.getValue());
+				lightMap.setLight(lightSlider.getValue());
 
-				energyGained = 0;
-				energyGained += Math.max(0, (lightColour.getRed() - leafColour.getRed()));
-				energyGained += Math.max(0, (lightColour.getGreen() - leafColour.getGreen()));
-				energyGained += Math.max(0, (lightColour.getBlue() - leafColour.getBlue()));
+				examplePlant.refreshShadows((int) leafOpacitySlider.getValue());
+				examplePlant.leafOpacity = (int) leafOpacitySlider.getValue();
 
-				if (energyGained > 200)
-					energyGained = Math.max(0, 200 - (energyGained - 200));
-			}
-
-		private class NodeTree
-			{
-				private ArrayList<Point> leafLocations = new ArrayList<Point>(5);
-
-				private Node baseNode = new Node(plantX, plantY);
-
-				private NodeTree(Genome genes)
-					{
-						//TODO recreate based on NodeTree in the Plant class
-					}
-
-				private class Node
-					{
-						private static final double StalkLength = 20;
-
-						private double x, y;
-
-						private boolean isLeaf = false, canSeed = true;
-
-						private Node parentNode;
-						private ArrayList<Node> daughterNodes = new ArrayList<Node>();
-
-						private Node(double x, double y)
-							{
-								this.x = x;
-								this.y = y;
-								parentNode = this;
-							}
-
-						private Node(Node parent)
-							{
-								x = parent.x;
-								y = parent.y;
-								parentNode = parent;
-							}
-
-						private final void render(Graphics g)
-							{
-								if (!daughterNodes.isEmpty())
-									for (Node n : daughterNodes)
-										n.render(g);
-									{
-										int x = (int) this.x - (leafSize / 2);
-										int y = getY() - (leafSize / 2);
-
-										if (isLeaf)
-											{
-												g.setColor(leafColour);
-												g.fillOval(x, y, leafSize, leafSize);
-												g.setColor(Color.BLACK);
-												g.drawOval(x, y, leafSize, leafSize);
-												if (canSeed)
-													{
-														g.setColor(oppositeColour);
-														g.fillOval(x + leafSize / 4, y + leafSize / 4, leafSize / 2, leafSize / 2);
-													}
-											}
-										if (this == lastSelectedNode)
-											{
-												g.setColor(Color.BLACK);
-												g.drawOval(x - 3, y - 3, leafSize + 6, leafSize + 6);
-											}
-									}
-
-								g.setColor(Color.BLACK);
-								g.drawLine((int) x, getY(), (int) (parentNode.getX()), parentNode.getY());
-							}
-
-						private final void growUp()
-							{
-								y -= (int) StalkLength;
-								for (Node n : daughterNodes)
-									n.growUp();
-
-								if (height < plantY - y)
-									height = plantY - y;
-							}
-
-						private final void growDown()
-							{
-								if (y < plantY - StalkLength)
-									{
-										y += (int) StalkLength;
-										for (Node n : daughterNodes)
-											n.growDown();
-									}
-							}
-
-						private final void growLeft()
-							{
-								x -= (int) StalkLength;
-								for (Node n : daughterNodes)
-									n.growLeft();
-							}
-
-						private final void growRight()
-							{
-								x += (int) StalkLength;
-								for (Node n : daughterNodes)
-									n.growRight();
-							}
-
-						private final void addNode(Node newNode)
-							{
-								daughterNodes.add(newNode);
-							}
-
-						private final Node getParentNode()
-							{
-								return parentNode;
-							}
-
-						private final Node getDaughterNode()
-							{
-								if (daughterNodes.size() > 0)
-									return daughterNodes.get(daughterNodes.size() - 1);
-								else
-									return this;
-							}
-
-						private final void calculateLean()
-							{
-								lean -= plantX - x;
-								for (Node n : daughterNodes)
-									n.calculateLean();
-							}
-
-						private final void setLeaves()
-							{
-								if (daughterNodes.size() > 0)
-									for (Node n : daughterNodes)
-										n.setLeaves();
-								else
-									{
-										isLeaf = true;
-										for (Point p : leafLocations)
-											if (p.x == (int) x && p.y == (int) y)
-												isLeaf = false;
-										if (isLeaf)
-											leafLocations.add(new Point((int) x, (int) y));
-									}
-							}
-
-						final int getX()
-							{
-								return (int) x;
-							}
-
-						final int getY()
-							{
-								return (int) y;
-							}
-					}
+				lightMap.getLightImage(lightMapImage, 0);
 			}
 	}
