@@ -6,7 +6,7 @@ import java.awt.Point;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 
-import tools.RandTools;
+import tools.Rand;
 import evolvingPlants.Hub;
 
 public class Plant
@@ -84,7 +84,7 @@ public class Plant
 						// every second that the plant is alive have 1 offspring
 						if (timeToNextSeed < 0 && energy > genes.seedEnergy)
 							{
-								Hub.simWindow.sim.plantsToAdd.add(new Plant(this, RandTools.getInt(minX - 40, maxX + 40)));
+								Hub.simWindow.sim.plantsToAdd.add(new Plant(this, Rand.int_(minX - 40, maxX + 40)));
 								energy -= genes.seedEnergy;
 								timeToNextSeed = 5;
 							}
@@ -251,7 +251,7 @@ public class Plant
 									{
 										// NOTE: seedlings do not have shadows
 										// hence BLACK shadow
-										energy += Hub.simWindow.sim.photosynthesizeAt(getX() + RandTools.getDouble((int) leafSize / -2, (int) leafSize / 2), (int) y, genes.leafColour, shadowColour)
+										energy += Hub.simWindow.sim.photosynthesizeAt(getX() + Rand.double_((int) leafSize / -2, (int) leafSize / 2), (int) y, genes.leafColour, shadowColour)
 												* secondsPassed * fractionGrown;
 									}
 								else

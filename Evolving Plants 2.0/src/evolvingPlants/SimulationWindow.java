@@ -16,7 +16,7 @@ import tComponents.components.TRadioButton;
 import tComponents.components.TScrollBar;
 import tComponents.components.TSlider;
 import tComponents.components.TTextField;
-import tComponents.utils.RadioButtonsCollection;
+import tComponents.components.TRadioButtonCollection;
 import tComponents.utils.events.TActionEvent;
 import tComponents.utils.events.TScrollEvent;
 import evolvingPlants.simulation.Simulation;
@@ -45,7 +45,7 @@ public class SimulationWindow extends RenderableObject
 		private final TButton mainMenuButton = new TButton("Main Menu");
 
 		TMenu interactionsMenu;
-		private RadioButtonsCollection interactionButtons = new RadioButtonsCollection();
+		private TRadioButtonCollection interactionButtons = new TRadioButtonCollection();
 		private TRadioButton selectPlantButton = new TRadioButton("Select Plants");
 		private TRadioButton plantSeedButton = new TRadioButton("Plant Seeds");
 		private TRadioButton getGenesButton = new TRadioButton("Extract Genes");
@@ -83,7 +83,7 @@ public class SimulationWindow extends RenderableObject
 		private final TTextField geneSaveNameField = new TTextField(0, 0, 160, 25, "My Genes");
 		private final TButton saveGenesButton = new TButton("Save Current Genes");
 		public final TMenu savedGenesMenu = new TMenu(0, 0, 200, 340, TMenu.VERTICAL);
-		private RadioButtonsCollection loadDeleteGenesButtons = new RadioButtonsCollection();
+		private TRadioButtonCollection loadDeleteGenesButtons = new TRadioButtonCollection();
 		public final TRadioButton loadGenesButton = new TRadioButton("Load Genes");
 		public final TRadioButton deleteGenesButton = new TRadioButton("Delete Genes");
 		private final TButton openGenesFolderButton = new TButton("Open Folder");
@@ -92,7 +92,7 @@ public class SimulationWindow extends RenderableObject
 		private final TTextField presetSaveNameField = new TTextField(0, 0, 160, 25, "My Settings");
 		private final TButton savePresetButton = new TButton("Save Current Settings");
 		public final TMenu savedPresetsMenu = new TMenu(0, 0, 200, 340, TMenu.VERTICAL);
-		private RadioButtonsCollection loadDeletePresetButtons = new RadioButtonsCollection();
+		private TRadioButtonCollection loadDeletePresetButtons = new TRadioButtonCollection();
 		public final TRadioButton loadPresetButton = new TRadioButton("Load Presets");
 		public final TRadioButton deletePresetButton = new TRadioButton("Delete Presets");
 		private final TButton openPresetsFolderButton = new TButton("Open Folder");

@@ -4,7 +4,7 @@ import java.awt.Color;
 import java.util.LinkedList;
 
 import tools.ColTools;
-import tools.RandTools;
+import tools.Rand;
 import evolvingPlants.Hub;
 
 /**
@@ -106,36 +106,36 @@ public class Genes
 				instructions = new LinkedList<Character>();
 
 				for (int i = 0; i < parentOne.size() && i < parentTwo.size(); i++)
-					instructions.add(RandTools.getBool() ? parentOne.get(i) : parentTwo.get(i));
+					instructions.add(Rand.bool() ? parentOne.get(i) : parentTwo.get(i));
 				
 				return instructions;
 			}
 
 		private final void mutate()
 			{
-				if (RandTools.randPercent() > Hub.simWindow.mutantOffspringSlider.getValue())
+				if (Rand.percent() > Hub.simWindow.mutantOffspringSlider.getValue())
 					return;
 
-				seedEnergy += RandTools.getDouble(-10, 10);
+				seedEnergy += Rand.double_(-10, 10);
 
 				// mutate leaf colour
 				int[] leafColours = { leafColour.getRed(), leafColour.getGreen(), leafColour.getBlue() };
-				leafColours[RandTools.getInt(0, 2)] += RandTools.getInt(-10, 10);
+				leafColours[Rand.int_(0, 2)] += Rand.int_(-10, 10);
 				leafColour = ColTools.checkColour(leafColours[0], leafColours[1], leafColours[2]);
 
 				// Mutate instructions
 				for (int i = 0; i < instructions.size(); i++)
 					{
-						if (RandTools.randPercent() < Hub.simWindow.dnaDamageSlider.getValue())
+						if (Rand.percent() < Hub.simWindow.dnaDamageSlider.getValue())
 							{
 								// Mutate instruction
-								if (RandTools.randPercent() > 6)
+								if (Rand.percent() > 6)
 									{
 										instructions.remove(i);
 										instructions.add(i, getRandomInstruction());
 									}
 								// Insert Extra instruction
-								else if (RandTools.randPercent() > 3)
+								else if (Rand.percent() > 3)
 									{
 										instructions.add(i, getRandomInstruction());
 										i++;
@@ -152,7 +152,7 @@ public class Genes
 
 		private final char getRandomInstruction()
 			{
-				switch (RandTools.getInt(0, 20))
+				switch (Rand.int_(0, 20))
 					{
 						case 0:
 							return ADD_NODE;
