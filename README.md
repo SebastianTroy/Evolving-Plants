@@ -1,3 +1,7 @@
-Evolving-Plants-2.0
-===================
-For a complete description of the project, including help running and working it, visit the [project's webpage](http://troydev.proggle.net/projects-evolving-plants.php).
+Evolving Plants Version 3.0
+===========================
+Developed with Qt 6.3.0 & MinGW 9.0.0
+
+Built with CMake and Ninja in QtCreator
+
+For a complete description of the project visit the [project's webpage](https://troydev.co.uk/evolving-plants).
