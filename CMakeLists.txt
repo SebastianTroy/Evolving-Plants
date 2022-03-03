@@ -70,9 +70,6 @@ target_link_libraries(Evolving-Plants
     Utility
 )
 
-#temp
-FILE(GLOB JAVA_CODE "Evolving Plants 2.0/src/*" "Evolving Plants 2.0/src/evolvingPlants/*" "Evolving Plants 2.0/src/evolvingPlants/io/*" "Evolving Plants 2.0/src/evolvingPlants/simulation/*")
-
 # Make additional files appear in QtCreator
 FILE(GLOB SAVD_GENOMES SavedGenomes/*)
 add_custom_target(Other
