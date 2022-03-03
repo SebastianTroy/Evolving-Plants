@@ -14,23 +14,25 @@ public:
         int blue;
     };
 
-    LightMap(size_t width, size_t height);
+    LightMap(int64_t width, int64_t height);
 
-    Colour GetLightMinusShadowAt(size_t x, size_t y, QColor shadowColor) const;
+    Colour GetLightAt(size_t x, size_t y) const;
 
     QImage GetLightImage(QRect areaOfInterest) const;
     QRect GetRect() const;
 
-    void AddShadow(size_t shadowX, size_t shadowY, size_t shadowWidth, const QColor& shadowColour);
-    void RemoveShadow(size_t shadowX, size_t shadowY, size_t shadowWidth, const QColor& shadowColour);
+    void AddShadow(int64_t shadowX, int64_t shadowY, int64_t shadowWidth, const QColor& shadowColour);
+    void RemoveShadow(int64_t shadowX, int64_t shadowY, int64_t shadowWidth, const QColor& shadowColour);
 
     LightMap& operator=(const LightMap& other) = delete;
     LightMap& operator=(LightMap&& other) = default;
 
 private:
-    size_t width;
-    size_t height;
+    int64_t width;
+    int64_t height;
     std::vector<std::vector<Colour>> lightData;
+
+    void ModifyData(int64_t shadowX, int64_t shadowY, int64_t areaWidth, int64_t areaHeight, const Colour& values);
 };
 
 #endif // LIGHTMAP_H

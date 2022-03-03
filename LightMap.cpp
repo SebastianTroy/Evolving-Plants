@@ -1,19 +1,19 @@
 #include "LightMap.h"
 
-LightMap::LightMap(size_t width, size_t height)
-    : width(width)
-    , height(height)
-    , lightData(width, std::vector<Colour>(height, Colour{ 255, 255, 255 }))
+LightMap::LightMap(int64_t width, int64_t height)
+    : width(std::max(int64_t{ 0 }, width))
+    , height(std::max(int64_t{ 0 }, height))
+    , lightData(this->width, std::vector<Colour>(this->height, Colour{ 255, 255, 255 }))
 {
 }
 
-LightMap::Colour LightMap::GetLightMinusShadowAt(size_t x, size_t y, QColor shadowColor) const
+LightMap::Colour LightMap::GetLightAt(size_t x, size_t y) const
 {
     Colour light{ 0, 0, 0 };
-    if (x > 0 && x < width && y > 0 && y < height) {
-        light.red = std::clamp(lightData[x][y].red + shadowColor.red(), 0, 255);
-        light.green = std::clamp(lightData[x][y].green + shadowColor.green(), 0, 255);
-        light.blue = std::clamp(lightData[x][y].blue + shadowColor.blue(), 0, 255);
+    if (GetRect().contains(x, y)) {
+        light.red = lightData[x][y].red;
+        light.green = lightData[x][y].green;
+        light.blue = lightData[x][y].blue;
     }
     return light;
 }
@@ -38,34 +38,31 @@ QRect LightMap::GetRect() const
     return QRect(0, 0, width, height);
 }
 
-void LightMap::AddShadow(size_t shadowX, size_t shadowY, size_t shadowWidth, const QColor& shadowColour)
+void LightMap::AddShadow(int64_t shadowX, int64_t shadowY, int64_t shadowWidth, const QColor& shadowColour)
 {
-    shadowX = std::clamp(shadowX, size_t{ 0 }, width);
-    shadowY = std::clamp(shadowY, size_t{ 0 }, height);
-    shadowWidth = std::clamp(width - shadowX, size_t{ 0 }, shadowWidth);
-
-    unsigned shadowEnd = shadowX + shadowWidth;
-    for (size_t x = shadowX; x < shadowEnd; ++x) {
-        for (size_t y = shadowY; y < height; --y) {
-            lightData[x][y].red -= shadowColour.red();
-            lightData[x][y].green -= shadowColour.green();
-            lightData[x][y].blue -= shadowColour.blue();
-        }
-    }
+    ModifyData(shadowX, 0, shadowWidth, shadowY + 1, Colour{ -shadowColour.red(), -shadowColour.green(), -shadowColour.blue() });
 }
 
-void LightMap::RemoveShadow(size_t shadowX, size_t shadowY, size_t shadowWidth, const QColor& shadowColour)
+void LightMap::RemoveShadow(int64_t shadowX, int64_t shadowY, int64_t shadowWidth, const QColor& shadowColour)
 {
-    shadowX = std::clamp(shadowX, size_t{ 0 }, width);
-    shadowY = std::clamp(shadowY, size_t{ 0 }, height);
-    shadowWidth = std::clamp(width - shadowX, size_t{ 0 }, shadowWidth);
+    ModifyData(shadowX, 0, shadowWidth, shadowY + 1, Colour{ shadowColour.red(), shadowColour.green(), shadowColour.blue() });
+}
 
-    unsigned shadowEnd = shadowX + shadowWidth;
-    for (size_t x = shadowX; x < shadowEnd; ++x) {
-        for (size_t y = shadowY; y < height; --y) {
-            lightData[x][y].red += shadowColour.red();
-            lightData[x][y].green += shadowColour.green();
-            lightData[x][y].blue += shadowColour.blue();
+void LightMap::ModifyData(int64_t startX, int64_t startY, int64_t areaWidth, int64_t areaHeight, const Colour& values)
+{
+    int64_t endX = startX + areaWidth;
+    int64_t endY = startY + areaHeight;
+
+    startX = std::clamp(startX, int64_t{ 0 }, width);
+    startY = std::clamp(startY, int64_t{ 0 }, height);
+    endX = std::clamp(endX, int64_t{ 0 }, width);
+    endY = std::clamp(endY, int64_t{ 0 }, height);
+
+    for (int64_t x = startX; x < endX; ++x) {
+        for (int64_t y = startY; y < endY; ++y) {
+            lightData[x][y].red += values.red;
+            lightData[x][y].green += values.green;
+            lightData[x][y].blue += values.blue;
         }
     }
 }

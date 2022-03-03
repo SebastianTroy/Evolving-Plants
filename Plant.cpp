@@ -69,15 +69,15 @@ std::optional<Plant> Plant::Generate(Genetics&& genetics, double x)
         Point start = n.parentNode ? n.parentNode->location : Point{ x, 0 };
         n.location = ApplyOffset(start, n.rotation, n.distance);
 
-        bool isLeaf = n.daughterNodes.empty();
+        bool hasLeaf = n.daughterNodes.empty();
 
         plantRange.ExpandToContain(n.location.x);
-        if (isLeaf) {
-            plantRange.ExpandToContain(n.location.x - (LEAF_SIZE / 2.0));
-            plantRange.ExpandToContain(n.location.x + (LEAF_SIZE / 2.0));
+        if (hasLeaf) {
+            plantRange.ExpandToContain(n.location.x - (MAX_LEAF_SIZE / 2.0));
+            plantRange.ExpandToContain(n.location.x + (MAX_LEAF_SIZE / 2.0));
         }
         height = std::max(height, n.location.y);
-        lean += (n.location.x - x) * (isLeaf ? 2.0 : 1.0);
+        lean += (n.location.x - x) * (hasLeaf ? 2.0 : 1.0);
 
         float thickness = 1.0f;
         unsigned descendantCount = 0;
@@ -90,7 +90,7 @@ std::optional<Plant> Plant::Generate(Genetics&& genetics, double x)
         thickness += descendantCount * 0.25;
 
         // TODO increase thickness based on number of descendant nodes
-        stems.push_back(Stem{ QLineF(start.x, start.y, n.location.x, n.location.y), thickness, isLeaf });
+        stems.push_back(Stem{ QLineF(start.x, start.y, n.location.x, n.location.y), thickness, hasLeaf });
     });
 
     if (std::abs(lean) / height > 0.6) {
@@ -107,7 +107,7 @@ void Plant::Tick(Simulation& sim, LightMap& lightMap)
     if (proportionGrown < 1.0) {
         // Shadows will be zero width when `proportionGrown == 0` so no need to add them first
         RemoveShadows(lightMap);
-        proportionGrown += 5.0 / plantHeight;
+        proportionGrown  = std::min(proportionGrown + (5.0 / plantHeight), 1.0);
         AddShadows(lightMap);
     }
 
@@ -128,12 +128,12 @@ void Plant::Tick(Simulation& sim, LightMap& lightMap)
     metabolism += 0.02;
     energy -= metabolism * 0.01;
 
-    for (const auto& [ stem, thickness, hasLeaf ] : nodes) {
-        Q_UNUSED(thickness);
+    ForEachStem([this, &lightMap](const QLineF& stem, double /*thickness*/, bool hasLeaf)
+    {
         if (hasLeaf) {
-            energy += PhotosynthesizeAt(lightMap, stem.p2() + QPointF(Random::Number<double>(LEAF_SIZE / -2, LEAF_SIZE / 2), 0));
+            energy += PhotosynthesizeAt(lightMap, stem.p2() + QPointF(Random::Number<double>(GetLeafSize() / -2, GetLeafSize() / 2), 0));
         }
-    }
+    });
 
     if (!IsAlive()) {
         RemoveShadows(lightMap);
@@ -180,20 +180,39 @@ const QColor& Plant::GetShadowColour() const
     return shadowColour;
 }
 
-const std::vector<Plant::Stem>& Plant::GetNodes() const
+void Plant::ForEachStem(std::function<void (QLineF, double, bool)>&& action) const
 {
-    return nodes;
-}
+    if (proportionGrown < 1) {
+        QPointF plantLocation(plantX, 0.0);
+        for (const auto& [ stem, thickness, hasLeaf ] : nodes) {
+            QPointF scaledStemStart = ((stem.p1() - plantLocation) * proportionGrown) + plantLocation;
+            QPointF scaledStemEnd = ((stem.p2() - plantLocation) * proportionGrown) + plantLocation;
+            QLineF scaledStem(scaledStemStart, scaledStemEnd);
 
-bool Plant::Contains(QPointF p) const
-{
-    for (const auto& [ stem, thickness, hasLeaf ] : nodes) {
-        Q_UNUSED(thickness);
-        if (hasLeaf && QLineF(p, stem.p2()).length() <= LEAF_SIZE) {
-            return true;
+            action(scaledStem, thickness * proportionGrown, hasLeaf);
+        }
+    } else {
+        for (const auto& [ stem, thickness, hasLeaf ] : nodes) {
+            action(stem, thickness, hasLeaf);
         }
     }
-    return false;
+}
+
+bool Plant::Contains(const QPointF& p) const
+{
+    bool collides = false;
+    ForEachStem([&collides, &p, leafSize = GetLeafSize()](const QLineF& stem, double /*thickness*/, bool hasLeaf)
+    {
+        if (hasLeaf && QLineF(p, stem.p2()).length() <= leafSize) {
+            collides = true;
+        }
+    });
+    return collides;
+}
+
+double Plant::GetLeafSize() const
+{
+    return MAX_LEAF_SIZE * proportionGrown;
 }
 
 const Energy& Plant::GetEnergy() const
@@ -236,32 +255,22 @@ QColor Plant::CalculateShadowColour(const QColor& leafColour)
 
 void Plant::AddShadows(LightMap& lightMap) const
 {
-    QPointF plantLocation(plantX, 0.0);
-    for (const auto& [ stem, thickness, hasLeaf ] : nodes) {
-        Q_UNUSED(thickness)
+    ForEachStem([this, &lightMap](const QLineF& stem, double /*thickness*/, bool hasLeaf)
+    {
         if (hasLeaf) {
-            QLineF scaledStem = stem.translated(-plantLocation);
-            scaledStem.setLength(stem.length() * proportionGrown);
-            scaledStem.translate(plantLocation);
-
-            lightMap.AddShadow(scaledStem.p2().x() - (proportionGrown * (LEAF_SIZE / 2.0)), scaledStem.p2().y(), proportionGrown * LEAF_SIZE, shadowColour);
+            lightMap.AddShadow(stem.p2().x() - (GetLeafSize() / 2.0), stem.p2().y(), GetLeafSize(), shadowColour);
         }
-    }
+    });
 }
 
 void Plant::RemoveShadows(LightMap& lightMap) const
 {
-    QPointF plantLocation(plantX, 0.0);
-    for (const auto& [ stem, thickness, hasLeaf ] : nodes) {
-        Q_UNUSED(thickness)
+    ForEachStem([this, &lightMap](const QLineF& stem, double /*thickness*/, bool hasLeaf)
+    {
         if (hasLeaf) {
-            QLineF scaledStem = stem.translated(-plantLocation);
-            scaledStem.setLength(stem.length() * proportionGrown);
-            scaledStem.translate(plantLocation);
-
-            lightMap.RemoveShadow(scaledStem.p2().x() - (proportionGrown * (LEAF_SIZE / 2.0)), scaledStem.p2().y(), proportionGrown * LEAF_SIZE, shadowColour);
+            lightMap.RemoveShadow(stem.p2().x() - (GetLeafSize() / 2.0), stem.p2().y(), GetLeafSize(), shadowColour);
         }
-    }
+    });
 }
 
 Energy Plant::PhotosynthesizeAt(LightMap& lightMap, QPointF location) const
@@ -270,12 +279,16 @@ Energy Plant::PhotosynthesizeAt(LightMap& lightMap, QPointF location) const
         return 0_j;
     }
 
-    double energyGained = 0;
+    LightMap::Colour availableLight = lightMap.GetLightAt(location.x(), location.y());
     // minus shadow to stop leaf shading itself
-    LightMap::Colour availableLight = lightMap.GetLightMinusShadowAt(location.x(), location.y(), shadowColour);
+    availableLight.red = std::clamp(availableLight.red + shadowColour.red(), 0, 255);
+    availableLight.green = std::clamp(availableLight.green + shadowColour.green(), 0, 255);
+    availableLight.blue = std::clamp(availableLight.blue + shadowColour.blue(), 0, 255);
+
     /*
      * The leaf colour represents the light a leaf DOESN'T absorb.
      */
+    double energyGained = 0;
     energyGained += std::max(0, (availableLight.red - GetLeafColour().red()))
                   + std::max(0, (availableLight.green - GetLeafColour().green()))
                   + std::max(0, (availableLight.blue - GetLeafColour().blue()));

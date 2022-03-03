@@ -17,14 +17,6 @@ class LightMap;
 
 class Plant {
 public:
-    static inline constexpr int LEAF_SIZE = 15;
-
-    struct Stem {
-        QLineF stem;
-        qreal thickness;
-        bool hasLeaf;
-    };
-
     Plant(const Plant& other) = delete;
     Plant(Plant&& other) = default;
 
@@ -40,8 +32,9 @@ public:
     double GetProportionGrown() const;
     const QColor& GetLeafColour() const;
     const QColor& GetShadowColour() const;
-    const std::vector<Stem>& GetNodes() const;
-    bool Contains(QPointF p) const;
+    void ForEachStem(std::function<void(QLineF stem, double thickness, bool hasLeaf)>&& action) const;
+    bool Contains(const QPointF& p) const;
+    double GetLeafSize() const;
 
     const Energy& GetEnergy() const;
     const Energy& GetMetabolism() const;
@@ -51,6 +44,14 @@ public:
     Plant& operator=(Plant&& other) = default;
 
 private:
+    struct Stem {
+        QLineF stem;
+        qreal thickness;
+        bool hasLeaf;
+    };
+
+    static inline constexpr double MAX_LEAF_SIZE = 15;
+
     Genetics genes;
     QColor shadowColour;
     double plantX;

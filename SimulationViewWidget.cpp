@@ -53,32 +53,31 @@ void SimulationViewWidget::paintEvent(QPaintEvent* /*event*/)
         // TODO only copy and sort plants visible on screen
         sortedPlants.push_back(&plant);
     }
-    std::sort(std::begin(sortedPlants), std::end(sortedPlants), [](const Plant* a, const Plant* b)
+    std::stable_sort(std::begin(sortedPlants), std::end(sortedPlants), [](const Plant* a, const Plant* b)
     {
         return a->GetHeight() > b->GetHeight();
     });
+
+    paint.setRenderHint(QPainter::RenderHint::Antialiasing, true);
 
     for (const Plant* plantPtr : sortedPlants) {
         const Plant& plant = *plantPtr;
 
         QPointF plantLocation(plant.GetPlantX(), 0);
-        for (const auto& [ stem, thickness, leaf ] : plant.GetNodes()) {
-            QLineF scaledStem = stem.translated(-plantLocation);
-            scaledStem.setLength(stem.length() * plant.GetProportionGrown());
-            scaledStem.translate(plantLocation);
-
+        plant.ForEachStem([&](const QLineF& stem, double thickness, bool hasLeaf)
+        {
             QPen pen(QColor::fromRgb(73, 39, 14));
-            pen.setWidthF(std::max(1.0, thickness * plant.GetProportionGrown()));
+            pen.setWidthF(std::max(1.0, thickness));
             paint.setPen(pen);
-            paint.drawLine(scaledStem);
+            paint.drawLine(stem);
 
-            if (leaf) {
+            if (hasLeaf) {
                 paint.setPen(Qt::black);
                 paint.setBrush(plant.GetLeafColour());
-                double radius = (Plant::LEAF_SIZE / 2) * plant.GetProportionGrown();
-                paint.drawEllipse(scaledStem.p2(), radius, radius * 0.66);
+                double radius = (plant.GetLeafSize() / 2) * plant.GetProportionGrown();
+                paint.drawEllipse(stem.p2(), radius, radius * 0.66);
             }
-        }
+        });
     }
 }
 
@@ -87,7 +86,7 @@ void SimulationViewWidget::showEvent(QShowEvent*)
     if (sim.GetLightMap().GetRect().width() == 0) {
         sim = Simulation(width(), height());
         for (int x = 0; x < width(); x += width() / 30) {
-            sim.AddPlant(*Plant::Generate(Genetics("", 40000_j, QColor::fromRgb(Random::Number<QRgb>(0xFF000000, 0xFFFFFFFF))), x));
+            sim.AddPlant(*Plant::Generate(Genetics("", 400_j, QColor::fromRgb(Random::Number<QRgb>(0xFF000000, 0xFFFFFFFF))), x));
         }
         simulationDriver.start();
     }
