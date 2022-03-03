@@ -26,17 +26,6 @@ void SimulationViewWidget::paintEvent(QPaintEvent* /*event*/)
 {
     QPainter paint(this);
 
-//    LightMap map(100, 100);
-//    double x_ = 20.1;
-//    size_t y_ = 75;
-//    size_t width_ = 20;
-//    QColor colour_ = Qt::blue;
-//    map.AddShadow(x_, y_, width_, colour_);
-//    map.RemoveShadow(x_, y_, width_, colour_);
-//    paint.drawImage(QPoint(0, 0), map.GetLightImage());
-//    return;
-
-
     // Paint the sky
     paint.fillRect(rect(), QGradient(QGradient::SkyGlider));
 
@@ -54,16 +43,40 @@ void SimulationViewWidget::paintEvent(QPaintEvent* /*event*/)
     paint.translate(0, groundHeght);
 
     if (viewLight) {
-        paint.drawImage(QPoint(0, 0), sim.GetLightMap().GetLightImage());
+        QRect viewport = sim.GetLightMap().GetRect().intersected(rect());
+        paint.drawImage(QPoint(0, 0), sim.GetLightMap().GetLightImage(viewport));
     }
 
-    // Paint the plant
+    // Paint the plants, shortest last so they aren't hidden by taller plant's stems
+    std::vector<const Plant*> sortedPlants;
     for (const Plant& plant : sim.GetPlants()) {
-        for (const auto& [ stem, hasLeaf ] : plant.GetNodes()) {
-            paint.drawLine(stem);
-            if (hasLeaf) {
+        // TODO only copy and sort plants visible on screen
+        sortedPlants.push_back(&plant);
+    }
+    std::sort(std::begin(sortedPlants), std::end(sortedPlants), [](const Plant* a, const Plant* b)
+    {
+        return a->GetHeight() > b->GetHeight();
+    });
+
+    for (const Plant* plantPtr : sortedPlants) {
+        const Plant& plant = *plantPtr;
+
+        QPointF plantLocation(plant.GetPlantX(), 0);
+        for (const auto& [ stem, thickness, leaf ] : plant.GetNodes()) {
+            QLineF scaledStem = stem.translated(-plantLocation);
+            scaledStem.setLength(stem.length() * plant.GetProportionGrown());
+            scaledStem.translate(plantLocation);
+
+            QPen pen(QColor::fromRgb(73, 39, 14));
+            pen.setWidthF(std::max(1.0, thickness * plant.GetProportionGrown()));
+            paint.setPen(pen);
+            paint.drawLine(scaledStem);
+
+            if (leaf) {
+                paint.setPen(Qt::black);
                 paint.setBrush(plant.GetLeafColour());
-                paint.drawEllipse(stem.p2(), plant.GetLeafSize() / 2, plant.GetLeafSize() / 3);
+                double radius = (Plant::LEAF_SIZE / 2) * plant.GetProportionGrown();
+                paint.drawEllipse(scaledStem.p2(), radius, radius * 0.66);
             }
         }
     }
@@ -71,9 +84,11 @@ void SimulationViewWidget::paintEvent(QPaintEvent* /*event*/)
 
 void SimulationViewWidget::showEvent(QShowEvent*)
 {
-    sim = Simulation(width(), height());
-    for (int x = 0; x < width(); x += width() / 30) {
-        sim.AddPlant(*Plant::Generate(Genetics("", 40000_j, QColor::fromRgb(Random::Number<QRgb>(0xFF000000, 0xFFFFFFFF))), x));
+    if (sim.GetLightMap().GetRect().width() == 0) {
+        sim = Simulation(width(), height());
+        for (int x = 0; x < width(); x += width() / 30) {
+            sim.AddPlant(*Plant::Generate(Genetics("", 40000_j, QColor::fromRgb(Random::Number<QRgb>(0xFF000000, 0xFFFFFFFF))), x));
+        }
+        simulationDriver.start();
     }
-    simulationDriver.start();
 }

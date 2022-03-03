@@ -18,12 +18,12 @@ LightMap::Colour LightMap::GetLightMinusShadowAt(size_t x, size_t y, QColor shad
     return light;
 }
 
-QImage LightMap::GetLightImage() const
+QImage LightMap::GetLightImage(QRect areaOfInterest) const
 {
-    QImage lightMap(width, height, QImage::Format::Format_RGB32);
+    QImage lightMap(areaOfInterest.width(), areaOfInterest.height(), QImage::Format::Format_RGB32);
 
-    for (size_t x = 0; x < width; ++x) {
-        for (size_t y = 0; y < height; ++y) {
+    for (int x = areaOfInterest.left(); x < areaOfInterest.width(); ++x) {
+        for (int y = areaOfInterest.top(); y < areaOfInterest.height(); ++y) {
             int red = std::clamp(lightData[x][y].red, 0, 255);
             int green = std::clamp(lightData[x][y].green, 0, 255);
             int blue = std::clamp(lightData[x][y].blue, 0, 255);
@@ -31,6 +31,11 @@ QImage LightMap::GetLightImage() const
         }
     }
     return lightMap;
+}
+
+QRect LightMap::GetRect() const
+{
+    return QRect(0, 0, width, height);
 }
 
 void LightMap::AddShadow(size_t shadowX, size_t shadowY, size_t shadowWidth, const QColor& shadowColour)

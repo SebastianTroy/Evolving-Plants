@@ -19,14 +19,14 @@ std::optional<Plant> Plant::Generate(Genetics&& genetics, double x)
     const double startLength = 25;
     const double startAngle = 0;
 
-    Energy metabolism = 1.0_j;
+    Energy metabolism = 0.0_j;
 
     std::shared_ptr<Node> root = std::make_shared<Node>(nullptr, std::vector<std::shared_ptr<Node>>{}, startAngle, startLength, Point{});
     std::shared_ptr<Node> currentNode = root;
 
     for (const Genetics::Instruction& instruction : genetics.GetInstructions()) {
         // Every instruction ups metabolism
-        metabolism += 0.1_j;
+        metabolism += 5.0_j;
         if (instruction == Genetics::Instruction::ADD_NODE) {
             currentNode->daughterNodes.push_back(std::make_shared<Node>(currentNode, std::vector<std::shared_ptr<Node>>{}, startAngle, startLength, Point{}));
             currentNode = currentNode->daughterNodes.back();
@@ -39,7 +39,6 @@ std::optional<Plant> Plant::Generate(Genetics&& genetics, double x)
                 currentNode = currentNode->parentNode;
             }
         } else if (instruction == Genetics::Instruction::GROW_UP) {
-            metabolism += 1_j;
             currentNode->distance += startLength;
         } else if (instruction == Genetics::Instruction::GROW_LEFT) {
             currentNode->rotation -= util::Tau / 9;
@@ -47,7 +46,7 @@ std::optional<Plant> Plant::Generate(Genetics&& genetics, double x)
             currentNode->rotation += util::Tau / 9;
         } else if (instruction == Genetics::Instruction::SKIP) {
             // (disincentivise long empty genomes)
-            metabolism += 0.1_j;
+            metabolism += 0.5_j;
         } else if (instruction == Genetics::Instruction::END_ALL) {
             break;
         }
@@ -60,9 +59,6 @@ std::optional<Plant> Plant::Generate(Genetics&& genetics, double x)
             ForEachNode(*child, action);
         }
     };
-
-    // FIXME perhaps make this part of the genetics
-    const double leafSize = 15;
 
     util::MinMax<double> plantRange;
     double lean = 0;
@@ -77,24 +73,44 @@ std::optional<Plant> Plant::Generate(Genetics&& genetics, double x)
 
         plantRange.ExpandToContain(n.location.x);
         if (isLeaf) {
-            plantRange.ExpandToContain(n.location.x - (leafSize / 2.0));
-            plantRange.ExpandToContain(n.location.x + (leafSize / 2.0));
+            plantRange.ExpandToContain(n.location.x - (LEAF_SIZE / 2.0));
+            plantRange.ExpandToContain(n.location.x + (LEAF_SIZE / 2.0));
         }
         height = std::max(height, n.location.y);
         lean += (n.location.x - x) * (isLeaf ? 2.0 : 1.0);
 
-        stems.push_back(Stem{ QLineF(start.x, start.y, n.location.x, n.location.y), isLeaf });
+        float thickness = 1.0f;
+        unsigned descendantCount = 0;
+        ForEachNode(n, [&descendantCount](Node&)
+        {
+            ++descendantCount;
+        });
+        // Don't count ourselves!
+        --descendantCount;
+        thickness += descendantCount * 0.25;
+
+        // TODO increase thickness based on number of descendant nodes
+        stems.push_back(Stem{ QLineF(start.x, start.y, n.location.x, n.location.y), thickness, isLeaf });
     });
 
     if (std::abs(lean) / height > 0.6) {
         return std::nullopt;
     }
 
-    return std::optional<Plant>(std::in_place, Plant{ std::move(genetics), std::move(plantRange), x, height, leafSize, std::move(stems), metabolism });
+    metabolism += std::pow(height, 2.0) * 0.5_j;
+
+    return std::optional<Plant>(std::in_place, Plant{ std::move(genetics), std::move(plantRange), x, height, std::move(stems), metabolism });
 }
 
-void Plant::Tick(Simulation& sim)
+void Plant::Tick(Simulation& sim, LightMap& lightMap)
 {
+    if (proportionGrown < 1.0) {
+        // Shadows will be zero width when `proportionGrown == 0` so no need to add them first
+        RemoveShadows(lightMap);
+        proportionGrown += 5.0 / plantHeight;
+        AddShadows(lightMap);
+    }
+
     // FIXME do something nicer than: every 500 ticks that the plant is alive have 1 offspring
     if (timeToNextSeed < 0 && energy > genes.GetSeedEnergy()) {
         // FIXME search sim for appropriate partner
@@ -112,18 +128,16 @@ void Plant::Tick(Simulation& sim)
     metabolism += 0.02;
     energy -= metabolism * 0.01;
 
-    for (const auto& [ stem, hasLeaf ] : nodes) {
+    for (const auto& [ stem, thickness, hasLeaf ] : nodes) {
+        Q_UNUSED(thickness);
         if (hasLeaf) {
-            energy += sim.PhotosynthesizeAt(stem.p2() + QPointF(Random::Number<double>(leafSize / -2, leafSize / 2), 0), genes.GetLeafColour(), shadowColour);
+            energy += PhotosynthesizeAt(lightMap, stem.p2() + QPointF(Random::Number<double>(LEAF_SIZE / -2, LEAF_SIZE / 2), 0));
         }
     }
-}
 
-void Plant::Grow()
-{
-    // FIXME set grow speed based on final height, use energy to grow
-    // Fully grown in 20 ticks
-    proportionGrown += 0.05;
+    if (!IsAlive()) {
+        RemoveShadows(lightMap);
+    }
 }
 
 const Genetics& Plant::GetGenetics() const
@@ -146,9 +160,9 @@ double Plant::GetMaxX() const
     return bounds.Max();
 }
 
-double Plant::GetLeafSize() const
+double Plant::GetHeight() const
 {
-    return leafSize;
+    return plantHeight;
 }
 
 double Plant::GetProportionGrown() const
@@ -173,8 +187,9 @@ const std::vector<Plant::Stem>& Plant::GetNodes() const
 
 bool Plant::Contains(QPointF p) const
 {
-    for (const auto& [ stem, hasLeaf ] : nodes) {
-        if (hasLeaf && QLineF(p, stem.p2()).length() <= leafSize) {
+    for (const auto& [ stem, thickness, hasLeaf ] : nodes) {
+        Q_UNUSED(thickness);
+        if (hasLeaf && QLineF(p, stem.p2()).length() <= LEAF_SIZE) {
             return true;
         }
     }
@@ -191,16 +206,21 @@ const Energy& Plant::GetMetabolism() const
     return metabolism;
 }
 
-Plant::Plant(Genetics&& genes, util::MinMax<double>&& bounds, double xPosition, double plantHeight, double leafSize, std::vector<Stem>&& nodes, Energy metabolism)
+bool Plant::IsAlive() const
+{
+    return GetEnergy() >= 0_j;
+}
+
+Plant::Plant(Genetics&& genes, util::MinMax<double>&& bounds, double xPosition, double plantHeight, std::vector<Stem>&& nodes, Energy metabolism)
     : genes(std::move(genes))
     , shadowColour(CalculateShadowColour(genes.GetLeafColour()))
     , plantX(xPosition)
     , plantHeight(plantHeight)
     , bounds(std::move(bounds))
-    , leafSize(leafSize)
     , nodes(std::move(nodes))
-    , energy(genes.GetSeedEnergy() / 3.0)
+    , energy(std::sqrt(genes.GetSeedEnergy()))
     , metabolism(metabolism)
+    , proportionGrown(0.0)
     , timeToNextSeed(50)
 {
 }
@@ -212,4 +232,63 @@ QColor Plant::CalculateShadowColour(const QColor& leafColour)
     shadow.setGreenF(qreal{ 1.0 } - leafColour.greenF());
     shadow.setBlueF(qreal{ 1.0 } - leafColour.blueF());
     return shadow;
+}
+
+void Plant::AddShadows(LightMap& lightMap) const
+{
+    QPointF plantLocation(plantX, 0.0);
+    for (const auto& [ stem, thickness, hasLeaf ] : nodes) {
+        Q_UNUSED(thickness)
+        if (hasLeaf) {
+            QLineF scaledStem = stem.translated(-plantLocation);
+            scaledStem.setLength(stem.length() * proportionGrown);
+            scaledStem.translate(plantLocation);
+
+            lightMap.AddShadow(scaledStem.p2().x() - (proportionGrown * (LEAF_SIZE / 2.0)), scaledStem.p2().y(), proportionGrown * LEAF_SIZE, shadowColour);
+        }
+    }
+}
+
+void Plant::RemoveShadows(LightMap& lightMap) const
+{
+    QPointF plantLocation(plantX, 0.0);
+    for (const auto& [ stem, thickness, hasLeaf ] : nodes) {
+        Q_UNUSED(thickness)
+        if (hasLeaf) {
+            QLineF scaledStem = stem.translated(-plantLocation);
+            scaledStem.setLength(stem.length() * proportionGrown);
+            scaledStem.translate(plantLocation);
+
+            lightMap.RemoveShadow(scaledStem.p2().x() - (proportionGrown * (LEAF_SIZE / 2.0)), scaledStem.p2().y(), proportionGrown * LEAF_SIZE, shadowColour);
+        }
+    }
+}
+
+Energy Plant::PhotosynthesizeAt(LightMap& lightMap, QPointF location) const
+{
+    if (!lightMap.GetRect().contains(location.toPoint())) {
+        return 0_j;
+    }
+
+    double energyGained = 0;
+    // minus shadow to stop leaf shading itself
+    LightMap::Colour availableLight = lightMap.GetLightMinusShadowAt(location.x(), location.y(), shadowColour);
+    /*
+     * The leaf colour represents the light a leaf DOESN'T absorb.
+     */
+    energyGained += std::max(0, (availableLight.red - GetLeafColour().red()))
+                  + std::max(0, (availableLight.green - GetLeafColour().green()))
+                  + std::max(0, (availableLight.blue - GetLeafColour().blue()));
+    /*
+     * If energy gained is over 200 the extra energy is subtracted
+     * from the energy gained. In nature photosynthesis is inhibited
+     * by too much light and dark adapted species are actually at a
+     * large disadvantage in normal conditions.
+     */
+    const Energy energyCap = 150_j;
+    if (energyGained > energyCap) {
+        energyGained = std::max(0.0_j, energyCap - (energyGained - energyCap));
+    }
+
+    return energyGained;
 }

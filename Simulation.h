@@ -12,10 +12,8 @@
 
 class Simulation {
 public:
-
     Simulation(size_t width, size_t height);
 
-    Energy PhotosynthesizeAt(QPointF location, const QColor& leafColour, const QColor& shadowColour) const;
     const std::vector<Plant>& GetPlants() const;
     const LightMap& GetLightMap() const;
 
@@ -26,8 +24,6 @@ public:
     Simulation& operator=(Simulation&& other) = default;
 
 private:
-    QRect bounds;
-
     LightMap lightMap;
 
     std::vector<Plant> seeds;

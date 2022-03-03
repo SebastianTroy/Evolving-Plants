@@ -18,8 +18,8 @@ public:
 
     Colour GetLightMinusShadowAt(size_t x, size_t y, QColor shadowColor) const;
 
-    // FIXME update to take x & width parameters
-    QImage GetLightImage() const;
+    QImage GetLightImage(QRect areaOfInterest) const;
+    QRect GetRect() const;
 
     void AddShadow(size_t shadowX, size_t shadowY, size_t shadowWidth, const QColor& shadowColour);
     void RemoveShadow(size_t shadowX, size_t shadowY, size_t shadowWidth, const QColor& shadowColour);
