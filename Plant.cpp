@@ -9,7 +9,7 @@
 std::optional<Plant> Plant::Generate(Genetics&& genetics, double x)
 {
     struct Node {
-        std::shared_ptr<Node> parentNode;
+        Node* parentNode;
         std::vector<std::shared_ptr<Node>> daughterNodes;
         double rotation;
         double distance;
@@ -22,17 +22,17 @@ std::optional<Plant> Plant::Generate(Genetics&& genetics, double x)
     Energy metabolism = 0.0_j;
 
     std::shared_ptr<Node> root = std::make_shared<Node>(nullptr, std::vector<std::shared_ptr<Node>>{}, startAngle, startLength, Point{});
-    std::shared_ptr<Node> currentNode = root;
+    Node* currentNode = root.get();
 
     for (const Genetics::Instruction& instruction : genetics.GetInstructions()) {
         // Every instruction ups metabolism
         metabolism += 5.0_j;
         if (instruction == Genetics::Instruction::ADD_NODE) {
             currentNode->daughterNodes.push_back(std::make_shared<Node>(currentNode, std::vector<std::shared_ptr<Node>>{}, startAngle, startLength, Point{}));
-            currentNode = currentNode->daughterNodes.back();
+            currentNode = currentNode->daughterNodes.back().get();
         } else if (instruction == Genetics::Instruction::CLIMB_NODE_TREE) {
             if (!currentNode->daughterNodes.empty()) {
-                currentNode = currentNode->daughterNodes.back();
+                currentNode = currentNode->daughterNodes.back().get();
             }
         } else if (instruction == Genetics::Instruction::DESCEND_NODE_TREE) {
             if (currentNode->parentNode) {
@@ -52,7 +52,7 @@ std::optional<Plant> Plant::Generate(Genetics&& genetics, double x)
         }
     }
 
-    std::function<void(Node&, std::function<void(Node&)>)> ForEachNode = [&](Node& node, std::function<void(Node&)> action) -> void
+    std::function<void(Node&, std::function<void(Node&)>)> ForEachNode = [&](Node& node, std::function<void(Node&)>&& action) -> void
     {
         std::invoke(action, node);
         for (std::shared_ptr<Node>& child : node.daughterNodes) {
@@ -162,7 +162,7 @@ double Plant::GetMaxX() const
 
 double Plant::GetHeight() const
 {
-    return plantHeight;
+    return plantHeight * proportionGrown;
 }
 
 double Plant::GetProportionGrown() const
