@@ -21,13 +21,19 @@ LightMap::Colour LightMap::GetLightAt(size_t x, size_t y) const
 QImage LightMap::GetLightImage(QRect areaOfInterest) const
 {
     QImage lightMap(areaOfInterest.width(), areaOfInterest.height(), QImage::Format::Format_RGB32);
+    lightMap.fill(Qt::black);
 
-    for (int x = areaOfInterest.left(); x < areaOfInterest.width(); ++x) {
-        for (int y = areaOfInterest.top(); y < areaOfInterest.height(); ++y) {
-            int red = std::clamp(lightData[x][y].red, 0, 255);
-            int green = std::clamp(lightData[x][y].green, 0, 255);
-            int blue = std::clamp(lightData[x][y].blue, 0, 255);
-            lightMap.setPixelColor(x, y, QColor::fromRgb(red, green, blue));
+    for (int x = areaOfInterest.left(); x < areaOfInterest.right(); ++x) {
+        for (int y = areaOfInterest.top(); y < areaOfInterest.bottom(); ++y) {
+            if (GetRect().contains(x, y)) {
+                int red = std::clamp(lightData[x][y].red, 0, 255);
+                int green = std::clamp(lightData[x][y].green, 0, 255);
+                int blue = std::clamp(lightData[x][y].blue, 0, 255);
+
+                int pixelX = x - areaOfInterest.left();
+                int pixelY = y - areaOfInterest.top();
+                lightMap.setPixelColor(pixelX, pixelY, QColor::fromRgb(red, green, blue));
+            }
         }
     }
     return lightMap;

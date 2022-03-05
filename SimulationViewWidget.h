@@ -5,10 +5,11 @@
 
 #include <QWidget>
 #include <QTimer>
+#include <QAbstractScrollArea>
 
 #include <memory>
 
-class SimulationViewWidget : public QWidget {
+class SimulationViewWidget : public QAbstractScrollArea {
     Q_OBJECT
 public:
     explicit SimulationViewWidget(QWidget *parent = nullptr);
@@ -19,17 +20,18 @@ protected:
         if (simulationDriver.isActive()) {
             simulationDriver.stop();
             viewLight = true;
-            update();
+            viewport()->update();
         } else {
             simulationDriver.start();
             viewLight = false;
-            update();
+            viewport()->update();
         }
     }
     virtual void mouseMoveEvent(QMouseEvent* event) override { /* TODO */}
     virtual void wheelEvent(QWheelEvent* event) override { /* TODO */}
     virtual void paintEvent(QPaintEvent* event) override;
     virtual void showEvent(QShowEvent* /*event*/) override;
+    virtual void resizeEvent(QResizeEvent* event) override;
 
 private:
     QTimer simulationDriver;

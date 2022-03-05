@@ -4,12 +4,21 @@
 
 #include <QPainter>
 #include <QLocale>
+#include <QScrollBar>
 
 SimulationViewWidget::SimulationViewWidget(QWidget* parent)
-    : QWidget(parent)
+    : QAbstractScrollArea(parent)
     , simulationDriver(this)
-    , sim(0, 0)
+    , sim(3000, 400)
 {
+    for (int x = 15; x < sim.GetLightMap().GetRect().width(); x += 30) {
+        sim.AddPlant(*Plant::Generate(Genetics("", 400_j, QColor::fromRgb(Random::Number<QRgb>(0xFF000000, 0xFFFFFFFF))), x));
+    }
+
+    verticalScrollBar()->setInvertedAppearance(true);
+    setVerticalScrollBarPolicy(Qt::ScrollBarPolicy::ScrollBarAsNeeded);
+    setHorizontalScrollBarPolicy(Qt::ScrollBarPolicy::ScrollBarAsNeeded);
+
     simulationDriver.setSingleShot(false);
     simulationDriver.setInterval(0);
     connect(&simulationDriver, &QTimer::timeout, this, [&]()
@@ -18,40 +27,43 @@ SimulationViewWidget::SimulationViewWidget(QWidget* parent)
             sim.Tick();
             ++tickCount;
         }
-        update();
+        viewport()->update();
     });
 }
 
 void SimulationViewWidget::paintEvent(QPaintEvent* /*event*/)
 {
-    QPainter paint(this);
+    QPainter paint(viewport());
 
     // Paint the sky
-    paint.fillRect(rect(), QGradient(QGradient::SkyGlider));
+    paint.fillRect(viewport()->rect(), QGradient(QGradient::SkyGlider));
 
     paint.drawText(0, 20, QLocale::system().toString(tickCount));
 
     // Flip painter vertically so x=0 is at bottom of the screen
-    paint.translate(0, height());
+    paint.translate(0, viewport()->height());
     paint.scale(1, -1);
 
     // Paint the ground
     const int groundHeght = 5;
-    paint.fillRect(QRect(0, 0, width(), groundHeght), Qt::green);
+    paint.fillRect(QRect(0, 0, viewport()->width(), groundHeght), Qt::green);
 
     // Move the painter so x=0 is at groundHeght
     paint.translate(0, groundHeght);
 
+    QRect viewportArea = viewport()->rect().translated(horizontalScrollBar()->value(), verticalScrollBar()->value());
+    paint.translate(-viewportArea.topLeft());
+
     if (viewLight) {
-        QRect viewport = sim.GetLightMap().GetRect().intersected(rect());
-        paint.drawImage(QPoint(0, 0), sim.GetLightMap().GetLightImage(viewport));
+        paint.drawImage(viewportArea.topLeft(), sim.GetLightMap().GetLightImage(viewportArea));
     }
 
     // Paint the plants, shortest last so they aren't hidden by taller plant's stems
     std::vector<const Plant*> sortedPlants;
     for (const Plant& plant : sim.GetPlants()) {
-        // TODO only copy and sort plants visible on screen
-        sortedPlants.push_back(&plant);
+        if (plant.GetMinX() < viewportArea.right() || plant.GetMaxX() > viewportArea.left()) {
+            sortedPlants.push_back(&plant);
+        }
     }
     std::stable_sort(std::begin(sortedPlants), std::end(sortedPlants), [](const Plant* a, const Plant* b)
     {
@@ -83,11 +95,16 @@ void SimulationViewWidget::paintEvent(QPaintEvent* /*event*/)
 
 void SimulationViewWidget::showEvent(QShowEvent*)
 {
-    if (sim.GetLightMap().GetRect().width() == 0) {
-        sim = Simulation(width(), height());
-        for (int x = 0; x < width(); x += width() / 30) {
-            sim.AddPlant(*Plant::Generate(Genetics("", 400_j, QColor::fromRgb(Random::Number<QRgb>(0xFF000000, 0xFFFFFFFF))), x));
-        }
-        simulationDriver.start();
-    }
+    simulationDriver.start();
+}
+
+void SimulationViewWidget::resizeEvent(QResizeEvent* /*event*/)
+{
+    QSize areaSize = viewport()->size();
+    QSize widgetSize = sim.GetLightMap().GetRect().size();
+
+    verticalScrollBar()->setPageStep(areaSize.height());
+    horizontalScrollBar()->setPageStep(areaSize.width());
+    verticalScrollBar()->setRange(0, widgetSize.height() - areaSize.height());
+    horizontalScrollBar()->setRange(0, widgetSize.width() - areaSize.width());
 }
