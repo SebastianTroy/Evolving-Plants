@@ -22,7 +22,7 @@ const LightMap& Simulation::GetLightMap() const
 
 void Simulation::AddPlant(Plant&& plant)
 {
-    if (lightMap.GetRect().contains(QPoint(plant.GetPlantX(), 0))) {
+    if (lightMap.GetRect().intersects(plant.GetBounds().toRect())) {
         // Can't add directly to plants as we may be mid tick
         seeds.emplace_back(std::move(plant));
     }

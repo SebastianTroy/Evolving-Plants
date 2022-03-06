@@ -35,6 +35,7 @@ protected:
 
 private:
     QTimer simulationDriver;
+    QTimer repaintDriver;
     Simulation sim;
 
     bool viewLight = false;

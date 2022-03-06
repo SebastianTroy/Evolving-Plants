@@ -1,105 +1,27 @@
 #include "Plant.h"
 
 #include "Simulation.h"
+#include "Phenotype.h"
 
-#include <Shape.h>
+#include <Random.h>
 
 #include <memory>
 
-std::optional<Plant> Plant::Generate(Genetics&& genetics, double x)
+std::optional<Plant> Plant::Generate(std::vector<std::shared_ptr<Gene>>&& genetics, Energy energy, double x)
 {
-    struct Node {
-        Node* parentNode;
-        std::vector<std::shared_ptr<Node>> daughterNodes;
-        double rotation;
-        double distance;
-        Point location;
-    };
+    Phenotype phenotype;
 
-    const double startLength = 25;
-    const double startAngle = 0;
-
-    Energy metabolism = 0.0_j;
-
-    std::shared_ptr<Node> root = std::make_shared<Node>(nullptr, std::vector<std::shared_ptr<Node>>{}, startAngle, startLength, Point{});
-    Node* currentNode = root.get();
-
-    for (const Genetics::Instruction& instruction : genetics.GetInstructions()) {
-        // Every instruction ups metabolism
-        metabolism += 5.0_j;
-        if (instruction == Genetics::Instruction::ADD_NODE) {
-            currentNode->daughterNodes.push_back(std::make_shared<Node>(currentNode, std::vector<std::shared_ptr<Node>>{}, startAngle, startLength, Point{}));
-            currentNode = currentNode->daughterNodes.back().get();
-        } else if (instruction == Genetics::Instruction::CLIMB_NODE_TREE) {
-            if (!currentNode->daughterNodes.empty()) {
-                currentNode = currentNode->daughterNodes.back().get();
-            }
-        } else if (instruction == Genetics::Instruction::DESCEND_NODE_TREE) {
-            if (currentNode->parentNode) {
-                currentNode = currentNode->parentNode;
-            }
-        } else if (instruction == Genetics::Instruction::GROW_UP) {
-            currentNode->distance += startLength;
-        } else if (instruction == Genetics::Instruction::GROW_LEFT) {
-            currentNode->rotation -= util::Tau / 9;
-        } else if (instruction == Genetics::Instruction::GROW_RIGHT) {
-            currentNode->rotation += util::Tau / 9;
-        } else if (instruction == Genetics::Instruction::SKIP) {
-            // (disincentivise long empty genomes)
-            metabolism += 0.5_j;
-        } else if (instruction == Genetics::Instruction::END_ALL) {
-            break;
-        }
+    for (const auto& gene : genetics) {
+        gene->Express(phenotype);
     }
 
-    std::function<void(Node&, std::function<void(Node&)>)> ForEachNode = [&](Node& node, std::function<void(Node&)>&& action) -> void
-    {
-        std::invoke(action, node);
-        for (std::shared_ptr<Node>& child : node.daughterNodes) {
-            ForEachNode(*child, action);
-        }
-    };
+    phenotype.Finalise();
 
-    util::MinMax<double> plantRange;
-    double lean = 0;
-    double height = 0;
-    std::vector<Stem> stems;
-    ForEachNode(*root, [&](Node& n)
-    {
-        Point start = n.parentNode ? n.parentNode->location : Point{ x, 0 };
-        n.location = ApplyOffset(start, n.rotation, n.distance);
-
-        bool hasLeaf = n.daughterNodes.empty();
-
-        plantRange.ExpandToContain(n.location.x);
-        if (hasLeaf) {
-            plantRange.ExpandToContain(n.location.x - (MAX_LEAF_SIZE / 2.0));
-            plantRange.ExpandToContain(n.location.x + (MAX_LEAF_SIZE / 2.0));
-        }
-        height = std::max(height, n.location.y);
-        lean += (n.location.x - x) * (hasLeaf ? 2.0 : 1.0);
-
-        float thickness = 1.0f;
-        unsigned descendantCount = 0;
-        ForEachNode(n, [&descendantCount](Node&)
-        {
-            ++descendantCount;
-        });
-        // Don't count ourselves!
-        --descendantCount;
-        thickness += descendantCount * 0.25;
-
-        // TODO increase thickness based on number of descendant nodes
-        stems.push_back(Stem{ QLineF(start.x, start.y, n.location.x, n.location.y), thickness, hasLeaf });
-    });
-
-    if (std::abs(lean) / height > 0.6) {
+    if (!phenotype.IsValid()) {
         return std::nullopt;
     }
 
-    metabolism += std::pow(height, 2.0) * 0.5_j;
-
-    return std::optional<Plant>(std::in_place, Plant{ std::move(genetics), std::move(plantRange), x, height, std::move(stems), metabolism });
+    return std::optional<Plant>(std::in_place, Plant{ std::move(genetics), std::move(phenotype), energy, x });
 }
 
 void Plant::Tick(Simulation& sim, LightMap& lightMap)
@@ -107,19 +29,24 @@ void Plant::Tick(Simulation& sim, LightMap& lightMap)
     if (proportionGrown < 1.0) {
         // Shadows will be zero width when `proportionGrown == 0` so no need to add them first
         RemoveShadows(lightMap);
-        proportionGrown  = std::min(proportionGrown + (5.0 / plantHeight), 1.0);
+        proportionGrown  = std::min(proportionGrown + (5.0 / bounds.height()), 1.0);
         AddShadows(lightMap);
     }
 
     // FIXME do something nicer than: every 500 ticks that the plant is alive have 1 offspring
-    if (timeToNextSeed < 0 && energy > genes.GetSeedEnergy()) {
+    if (timeToNextSeed < 0 && energy > seedSize) {
         // FIXME search sim for appropriate partner
-        Genetics childGenes = genes.Mutated(genes, Random::Number(0, 1)); // FIXME make mutation rate user settable
-        std::optional<Plant> plant = Generate(std::move(childGenes), Random::Number(bounds.Min() - plantHeight, bounds.Max() + plantHeight));
+        // FIXME make mutation rate user settable
+        auto childGenes = genes;
+        Random::ForNItems(childGenes, Random::Number(0, 1), [](std::shared_ptr<Gene>& item)
+        {
+            item = item->Mutated();
+        });
+        std::optional<Plant> plant = Generate(std::move(childGenes), std::sqrt(seedSize), Random::Number(bounds.left() - bounds.height(), bounds.right() + bounds.height()));
         if (plant) {
             sim.AddPlant(std::move(plant.value()));
         }
-        energy -= genes.GetSeedEnergy();
+        energy -= seedSize;
         timeToNextSeed = 500;
     } else {
         --timeToNextSeed;
@@ -140,7 +67,7 @@ void Plant::Tick(Simulation& sim, LightMap& lightMap)
     }
 }
 
-const Genetics& Plant::GetGenetics() const
+const std::vector<std::shared_ptr<Gene> >& Plant::GetGenetics() const
 {
     return genes;
 }
@@ -150,19 +77,9 @@ double Plant::GetPlantX() const
     return plantX;
 }
 
-double Plant::GetMinX() const
+const QRectF Plant::GetBounds() const
 {
-    return bounds.Min();
-}
-
-double Plant::GetMaxX() const
-{
-    return bounds.Max();
-}
-
-double Plant::GetHeight() const
-{
-    return plantHeight * proportionGrown;
+    return bounds;
 }
 
 double Plant::GetProportionGrown() const
@@ -172,7 +89,7 @@ double Plant::GetProportionGrown() const
 
 const QColor& Plant::GetLeafColour() const
 {
-    return genes.GetLeafColour();
+    return leafColour;
 }
 
 const QColor& Plant::GetShadowColour() const
@@ -212,7 +129,7 @@ bool Plant::Contains(const QPointF& p) const
 
 double Plant::GetLeafSize() const
 {
-    return MAX_LEAF_SIZE * proportionGrown;
+    return leafSize * proportionGrown;
 }
 
 const Energy& Plant::GetEnergy() const
@@ -230,18 +147,23 @@ bool Plant::IsAlive() const
     return GetEnergy() >= 0_j;
 }
 
-Plant::Plant(Genetics&& genes, util::MinMax<double>&& bounds, double xPosition, double plantHeight, std::vector<Stem>&& nodes, Energy metabolism)
+Plant::Plant(std::vector<std::shared_ptr<Gene>>&& genes, const Phenotype& phenotype, Energy startingEnergy, double xPosition)
     : genes(std::move(genes))
-    , shadowColour(CalculateShadowColour(genes.GetLeafColour()))
+    , leafColour(phenotype.leafColour)
+    , shadowColour(CalculateShadowColour(leafColour))
     , plantX(xPosition)
-    , plantHeight(plantHeight)
-    , bounds(std::move(bounds))
-    , nodes(std::move(nodes))
-    , energy(std::sqrt(genes.GetSeedEnergy()))
-    , metabolism(metabolism)
+    , bounds(phenotype.GetBounds(plantX))
+    , leafSize(phenotype.leafRadius * 2)
+    , seedSize(phenotype.seedSize)
+    , energy(startingEnergy)
+    , metabolism(phenotype.metabolism)
     , proportionGrown(0.0)
     , timeToNextSeed(50)
 {
+    phenotype.ForEachStem(xPosition, [this](QLineF stem, double thickness, bool hasLeaf)
+    {
+        nodes.emplace_back(stem, thickness, hasLeaf);
+    });
 }
 
 QColor Plant::CalculateShadowColour(const QColor& leafColour)

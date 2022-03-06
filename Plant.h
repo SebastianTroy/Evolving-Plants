@@ -1,34 +1,36 @@
 #ifndef PLANT_H
 #define PLANT_H
 
-#include "Genetics.h"
+#include "Gene.h"
 
 #include <Energy.h>
-#include <MathConstants.h>
 #include <MinMax.h>
 
 #include <QPointF>
 #include <QLineF>
+#include <QRectF>
+#include <QColor>
 
 #include <optional>
+#include <memory>
+#include <vector>
 
 class Simulation;
 class LightMap;
+class Phenotype;
 
 class Plant {
 public:
     Plant(const Plant& other) = delete;
     Plant(Plant&& other) = default;
 
-    static std::optional<Plant> Generate(Genetics&& genetics, double x);
+    static std::optional<Plant> Generate(std::vector<std::shared_ptr<Gene>>&& genetics, Energy energy, double x);
 
     void Tick(Simulation& sim, LightMap& lightmap);
 
-    const Genetics& GetGenetics() const;
+    const std::vector<std::shared_ptr<Gene>>& GetGenetics() const;
     double GetPlantX() const;
-    double GetMinX() const;
-    double GetMaxX() const;
-    double GetHeight() const;
+    const QRectF GetBounds() const;
     double GetProportionGrown() const;
     const QColor& GetLeafColour() const;
     const QColor& GetShadowColour() const;
@@ -50,13 +52,13 @@ private:
         bool hasLeaf;
     };
 
-    static inline constexpr double MAX_LEAF_SIZE = 15;
-
-    Genetics genes;
+    std::vector<std::shared_ptr<Gene>> genes;
+    QColor leafColour;
     QColor shadowColour;
     double plantX;
-    double plantHeight;
-    util::MinMax<double> bounds;
+    QRectF bounds;
+    double leafSize;
+    Energy seedSize;
     std::vector<Stem> nodes;
 
     Energy energy;
@@ -64,7 +66,7 @@ private:
     double proportionGrown;
     int timeToNextSeed;
 
-    Plant(Genetics&& genes, util::MinMax<double>&& bounds, double xPosition, double plantHeight, std::vector<Stem>&& nodes, Energy metabolism);
+    Plant(std::vector<std::shared_ptr<Gene>>&& genes, const Phenotype& phenotype, Energy startingEnergy, double xPosition);
 
     static QColor CalculateShadowColour(const QColor& leafColour);
 

@@ -1,6 +1,6 @@
 #include "SimulationViewWidget.h"
 
-#include <Random.h>
+#include "GeneFactory.h"
 
 #include <QPainter>
 #include <QLocale>
@@ -9,10 +9,11 @@
 SimulationViewWidget::SimulationViewWidget(QWidget* parent)
     : QAbstractScrollArea(parent)
     , simulationDriver(this)
+    , repaintDriver(this)
     , sim(3000, 400)
 {
     for (int x = 15; x < sim.GetLightMap().GetRect().width(); x += 30) {
-        sim.AddPlant(*Plant::Generate(Genetics("", 400_j, QColor::fromRgb(Random::Number<QRgb>(0xFF000000, 0xFFFFFFFF))), x));
+        sim.AddPlant(*Plant::Generate(GeneFactory::CreateDefaultGenome(), 400_j, x));
     }
 
     verticalScrollBar()->setInvertedAppearance(true);
@@ -23,12 +24,13 @@ SimulationViewWidget::SimulationViewWidget(QWidget* parent)
     simulationDriver.setInterval(0);
     connect(&simulationDriver, &QTimer::timeout, this, [&]()
     {
-        for (int i = 0; i < 100; ++i) {
-            sim.Tick();
-            ++tickCount;
-        }
-        viewport()->update();
+        sim.Tick();
+        ++tickCount;
     });
+
+    repaintDriver.setSingleShot(false);
+    repaintDriver.setInterval(1000 / 60);
+    connect(&repaintDriver, &QTimer::timeout, viewport(), static_cast<void(QWidget::*)()>(&QWidget::update));
 }
 
 void SimulationViewWidget::paintEvent(QPaintEvent* /*event*/)
@@ -61,13 +63,13 @@ void SimulationViewWidget::paintEvent(QPaintEvent* /*event*/)
     // Paint the plants, shortest last so they aren't hidden by taller plant's stems
     std::vector<const Plant*> sortedPlants;
     for (const Plant& plant : sim.GetPlants()) {
-        if (plant.GetMinX() < viewportArea.right() || plant.GetMaxX() > viewportArea.left()) {
+        if (viewportArea.intersects(plant.GetBounds().toRect())) {
             sortedPlants.push_back(&plant);
         }
     }
     std::stable_sort(std::begin(sortedPlants), std::end(sortedPlants), [](const Plant* a, const Plant* b)
     {
-        return a->GetHeight() > b->GetHeight();
+        return a->GetBounds().height() > b->GetBounds().height();
     });
 
     paint.setRenderHint(QPainter::RenderHint::Antialiasing, true);
@@ -96,6 +98,7 @@ void SimulationViewWidget::paintEvent(QPaintEvent* /*event*/)
 void SimulationViewWidget::showEvent(QShowEvent*)
 {
     simulationDriver.start();
+    repaintDriver.start();
 }
 
 void SimulationViewWidget::resizeEvent(QResizeEvent* /*event*/)

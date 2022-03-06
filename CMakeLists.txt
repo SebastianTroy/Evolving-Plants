@@ -15,14 +15,25 @@ find_package(QT NAMES Qt6 COMPONENTS Widgets REQUIRED)
 find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Widgets REQUIRED)
 
 set(PROJECT_SOURCES
-    Genetics.h
-    Genetics.cpp
+    Gene.h
+    GeneFactory.h
+    GeneFactory.cpp
+    GeneLeafColour.h
+    GeneLeafColour.cpp
+    GenePlantStructure.h
+    GenePlantStructure.cpp
+    GeneSeedProduction.h
+    GeneSeedProduction.cpp
+    GeneStemProportions.h
+    GeneStemProportions.cpp
     LightMap.h
     LightMap.cpp
     main.cpp
     MainWindow.h
     MainWindow.cpp
     MainWindow.ui
+    Phenotype.h
+    Phenotype.cpp
     Plant.h
     Plant.cpp
     Resources.qrc
