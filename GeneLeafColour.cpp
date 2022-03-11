@@ -56,6 +56,7 @@ double GeneLeafColour::Similarity(const std::shared_ptr<Gene>& other) const
 void GeneLeafColour::Express(Phenotype& phenotype) const
 {
     phenotype.leafColour = colour;
+    phenotype.metabolism += (std::pow(2.0 - colour.valueF(), 2.0) - 1.0) * 100_j;
 }
 
 QColor GeneLeafColour::InterpolateColours(const QColor& a, const QColor& b) {

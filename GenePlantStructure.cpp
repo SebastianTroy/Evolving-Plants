@@ -3,23 +3,26 @@
 #include "Phenotype.h"
 
 #include <Algorithm.h>
+#include <MathConstants.h>
 #include <Random.h>
 
 GenePlantStructure::GenePlantStructure(const std::string& instructions)
-    : GenePlantStructure(FromString(instructions))
+    : GenePlantStructure(FromString(instructions), 25, util::Tau / 9)
 {
 }
 
-GenePlantStructure::GenePlantStructure(const std::vector<Instruction>& instructions)
-    : instructions(instructions)
+GenePlantStructure::GenePlantStructure(const std::vector<Instruction>& instructions, double stemUnitLength, double stemRotationAngle)
+    : stemUnitLength(stemUnitLength)
+    , stemRotationAngle(stemRotationAngle)
+    , instructions(instructions)
 {
 }
 
 std::shared_ptr<Gene> GenePlantStructure::Mutated() const
 {
-    auto copy = std::make_shared<GenePlantStructure>(instructions);
+    auto copy = std::make_shared<GenePlantStructure>(instructions, stemUnitLength, stemRotationAngle);
 
-    switch (Random::Number(1, 3)) {
+    switch (Random::Number(1, 5)) {
         case 1: {
             // Deletion
             auto eraseIter = std::begin(copy->instructions);
@@ -45,6 +48,12 @@ std::shared_ptr<Gene> GenePlantStructure::Mutated() const
             }
             break;
         }
+        case 4: {
+            copy->stemUnitLength += Random::Gaussian(0.0, 1.0);
+        }
+        case 5: {
+            copy->stemRotationAngle += Random::Gaussian(0.0, util::Tau / 19);
+        }
     }
 
     return copy;
@@ -54,7 +63,9 @@ std::shared_ptr<Gene> GenePlantStructure::Crossed(const std::shared_ptr<Gene>& o
 {
     std::shared_ptr<GenePlantStructure> otherPlantStructureGene = std::dynamic_pointer_cast<GenePlantStructure>(other);
     if (otherPlantStructureGene) {
-        return std::make_shared<GenePlantStructure>(Random::Merge(instructions, otherPlantStructureGene->instructions));
+        double averageStemUnitLength = (stemUnitLength + otherPlantStructureGene->stemUnitLength) / 2.0;
+        double averageStemRotationAngle = (stemRotationAngle + otherPlantStructureGene->stemRotationAngle) / 2.0;
+        return std::make_shared<GenePlantStructure>(Random::Merge(instructions, otherPlantStructureGene->instructions), averageStemUnitLength, averageStemRotationAngle);
     }
     return nullptr;
 }
@@ -83,27 +94,51 @@ double GenePlantStructure::Similarity(const std::shared_ptr<Gene>& other) const
 
 void GenePlantStructure::Express(Phenotype& phenotype) const
 {
+    const int LENGTH_KEY = -5432;
+    const int ROTATION_KEY = -5431;
+
+    const double stemThickness = 1.0;
+    const double leafRadius = 7.5;
+
     for (const Instruction& instruction : instructions) {
         // Every instruction ups metabolism
         phenotype.metabolism += 5.0_j;
         switch (instruction) {
         case Instruction::ADD_NODE:
-            phenotype.AddNode();
-            [[ fallthrough ]];
+            phenotype.AddNode(Vec2{ 0, stemUnitLength }, stemThickness, leafRadius);
+            phenotype.AscendNodeTree();
+            break;
         case Instruction::CLIMB_NODE_TREE:
             phenotype.AscendNodeTree();
+            break;
+        case Instruction::SPLIT_NODE:
+            phenotype.AddNode(Vec2{ 0, 0 }, stemThickness, leafRadius);
+            phenotype.AscendNodeTree();
+            phenotype.GetCurrentNodesParameters()[LENGTH_KEY] += stemUnitLength;
+            phenotype.GetCurrentNodesParameters()[ROTATION_KEY] -= stemRotationAngle;
+            phenotype.DescendNodeTree();
+            phenotype.AddNode(Vec2{ 0, 0 }, stemThickness, leafRadius);
+            phenotype.AscendNodeTree();
+            phenotype.GetCurrentNodesParameters()[LENGTH_KEY] += stemUnitLength;
+            phenotype.GetCurrentNodesParameters()[ROTATION_KEY] += stemRotationAngle;
             break;
         case Instruction::DESCEND_NODE_TREE:
             phenotype.DescendNodeTree();
             break;
+        case Instruction::PREVIOUS_NODE:
+            phenotype.SelectPreviousNode();
+            break;
+        case Instruction::NEXT_NODE:
+            phenotype.SelectNextNode();
+            break;
         case Instruction::GROW_UP:
-            phenotype.IncreaseCurrentNodesLength(1);
+            phenotype.GetCurrentNodesParameters()[LENGTH_KEY] += stemUnitLength;
             break;
         case Instruction::ROTATE_LEFT:
-            phenotype.RotateCurrentNode(-1);
+            phenotype.GetCurrentNodesParameters()[ROTATION_KEY] -= stemRotationAngle;
             break;
         case Instruction::ROTATE_RIGHT:
-            phenotype.RotateCurrentNode(+1);
+            phenotype.GetCurrentNodesParameters()[ROTATION_KEY] += stemRotationAngle;
             break;
         case Instruction::SKIP:
             // (disincentivise long empty genomes)
@@ -113,6 +148,24 @@ void GenePlantStructure::Express(Phenotype& phenotype) const
             break;
         }
     }
+
+    double stemLengthSquared = 0;
+    phenotype.ForEachNode([&](std::map<int, double>& parameters, Vec2& stemVector, double& nodeStemThickness, double& nodeLeafRadius)
+    {
+        Point relativeTip = ApplyOffset({ 0, 0 }, parameters[ROTATION_KEY], parameters[LENGTH_KEY]);
+        stemVector.x += relativeTip.x;
+        stemVector.y += relativeTip.y;
+
+        stemVector.x += Random::Gaussian(0.0, 1.0);
+        stemVector.y += Random::Gaussian(0.0, 1.0);
+
+        nodeStemThickness = stemThickness;
+        nodeLeafRadius = leafRadius;
+
+        stemLengthSquared += GetDistanceSquare({0, 0}, Point{0, 0} + stemVector);
+    });
+
+    phenotype.metabolism += stemLengthSquared * 0.5_j;
 }
 
 GenePlantStructure::Instruction GenePlantStructure::RandomInstruction()
@@ -121,16 +174,22 @@ GenePlantStructure::Instruction GenePlantStructure::RandomInstruction()
     case 0:
         return Instruction::ADD_NODE;
     case 1:
-        return Instruction::CLIMB_NODE_TREE;
+        return Instruction::SPLIT_NODE;
     case 2:
-        return Instruction::DESCEND_NODE_TREE;
+        return Instruction::CLIMB_NODE_TREE;
     case 3:
-        return Instruction::GROW_UP;
+        return Instruction::DESCEND_NODE_TREE;
     case 4:
-        return Instruction::ROTATE_LEFT;
+        return Instruction::NEXT_NODE;
     case 5:
-        return Instruction::ROTATE_RIGHT;
+        return Instruction::PREVIOUS_NODE;
     case 6:
+        return Instruction::GROW_UP;
+    case 7:
+        return Instruction::ROTATE_LEFT;
+    case 8:
+        return Instruction::ROTATE_RIGHT;
+    case 9:
         return Instruction::END_ALL;
     default:
         return Instruction::SKIP;
@@ -142,31 +201,29 @@ std::vector<GenePlantStructure::Instruction> GenePlantStructure::FromString(cons
 {
     std::vector<Instruction> instructions;
     for (const char& characterInstruction : instructionsString) {
-        switch(characterInstruction) {
-        case 'N':
-            instructions.push_back(Instruction::ADD_NODE);
-            break;
-        case '+':
-            instructions.push_back(Instruction::CLIMB_NODE_TREE);
-            break;
-        case '-':
-            instructions.push_back(Instruction::DESCEND_NODE_TREE);
-            break;
-        case '^':
-            instructions.push_back(Instruction::GROW_UP);
-            break;
-        case '<':
-            instructions.push_back(Instruction::ROTATE_LEFT);
-            break;
-        case '>':
-            instructions.push_back(Instruction::ROTATE_RIGHT);
-            break;
-        case ' ':
-            instructions.push_back(Instruction::SKIP);
-            break;
-        case '|':
-            instructions.push_back(Instruction::END_ALL);
-            break;
+        switch(static_cast<Instruction>(characterInstruction)) {
+        case Instruction::ADD_NODE:
+            [[fallthrough]];
+        case Instruction::SPLIT_NODE:
+            [[fallthrough]];
+        case Instruction::CLIMB_NODE_TREE:
+            [[fallthrough]];
+        case Instruction::DESCEND_NODE_TREE:
+            [[fallthrough]];
+        case Instruction::GROW_UP:
+            [[fallthrough]];
+        case Instruction::NEXT_NODE:
+            [[fallthrough]];
+        case Instruction::PREVIOUS_NODE:
+            [[fallthrough]];
+        case Instruction::ROTATE_LEFT:
+            [[fallthrough]];
+        case Instruction::ROTATE_RIGHT:
+            [[fallthrough]];
+        case Instruction::SKIP:
+            [[fallthrough]];
+        case Instruction::END_ALL:
+            instructions.push_back(static_cast<Instruction>(characterInstruction));
         }
     }
     return instructions;

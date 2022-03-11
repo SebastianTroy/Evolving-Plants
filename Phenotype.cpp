@@ -4,20 +4,14 @@ Phenotype::Phenotype()
     : metabolism(0_j)
     , seedSize(0_j)
     , leafColour(Qt::white)
-    , leafRadius(1)
-    , stemUnitLength(5)
-    , stemRotationAngle(0.1)
-    , finalised(false)
-    , root(std::make_shared<Node>(nullptr, std::vector<std::shared_ptr<Node>>{}, 0, 0, Point{}))
+    , root(std::make_shared<Node>(nullptr, std::vector<std::shared_ptr<Node>>{}, std::map<int, double>{}, Vec2{}, 0.0, 0.0))
     , currentNode(root.get())
-    , height(0)
-    , lean(0)
 {
 }
 
-void Phenotype::AddNode()
+void Phenotype::AddNode(Vec2 stemVector, double stemThickness, double leafRadius, std::map<int, double>&& customParameters)
 {
-    currentNode->daughterNodes.push_back(std::make_shared<Node>(currentNode, std::vector<std::shared_ptr<Node>>{}, 0, 0, Point{}));
+    currentNode->daughterNodes.push_back(std::make_shared<Node>(currentNode, std::vector<std::shared_ptr<Node>>{}, std::move(customParameters), stemVector, stemThickness, leafRadius));
 }
 
 void Phenotype::AscendNodeTree()
@@ -34,71 +28,76 @@ void Phenotype::DescendNodeTree()
     }
 }
 
-void Phenotype::IncreaseCurrentNodesLength(unsigned units)
+void Phenotype::SelectNextNode()
 {
-    currentNode->additionalUnitsOfLength += units;
-}
-
-void Phenotype::RotateCurrentNode(int units)
-{
-    currentNode->rotationSteps += units;
-}
-
-void Phenotype::Finalise()
-{
-    if (!finalised) {
-        finalised = true;
-
-        ForEachNode(*root, [&](Node& n)
-        {
-            Point start = n.parentNode ? n.parentNode->location : Point{ 0, 0 };
-            n.location = ApplyOffset(start, n.rotationSteps * stemRotationAngle, (n.additionalUnitsOfLength + 1) * stemUnitLength);
-
-            bool hasLeaf = n.daughterNodes.empty();
-            height = std::max(height, n.location.y);
-            lean += (n.location.x) * (hasLeaf ? 2.0 : 1.0);
-
-            unsigned descendantCount = 0;
-            ForEachNode(n, [&descendantCount](Node&)
-            {
-                ++descendantCount;
-            });
-            // Don't count ourselves!
-            --descendantCount;
-            n.thickness += descendantCount * 0.25;
-        });
-
-        metabolism += std::pow(height, 2.0) * 0.5_j;
-    }
-}
-
-void Phenotype::ForEachStem(double xPosition, std::function<void (QLineF, double, bool)>&& action) const
-{
-    ForEachNode(*root, [&](const Node& node)
+    // Iterate all nodes and when we find the current one, set current to the next node
+    bool nodeIsNext = false;
+    ForEachNode(*currentNode, [&, this](Node& node, const Point&)
     {
-        Point base = node.parentNode ? node.parentNode->location : Point{ 0, 0 };
-        Point tip = node.location;
-        QLineF stem(base.x + xPosition, base.y, tip.x + xPosition, tip.y);
-        bool hasLeaf = node.daughterNodes.empty();
-        std::invoke(action, stem, node.thickness, hasLeaf);
+        if (nodeIsNext) {
+            currentNode = &node;
+            nodeIsNext = false;
+        }
+        if (&node == currentNode) {
+            nodeIsNext = true;
+        }
     });
 }
 
-QRectF Phenotype::GetBounds(double xPosition) const
+void Phenotype::SelectPreviousNode()
 {
-    util::MinMax<double> xRange(xPosition, xPosition);
+    // Iterate all nodes and when we find the current one, set current to the previous node
+    Node* lastNode = root.get();
+    ForEachNode(*currentNode, [&, this](Node& node, const Point&)
+    {
+        if (&node == currentNode) {
+            currentNode = lastNode;
+        }
+        lastNode = &node;
+    });
+}
+
+std::map<int, double>& Phenotype::GetCurrentNodesParameters()
+{
+    return currentNode->customParameters;
+}
+
+void Phenotype::ForEachNode(const std::function<void (std::map<int, double>&, Vec2&, double&, double&)>& action)
+{
+    ForEachNode(*root, [&](Node& node, const Point& /*nodeLocation*/)
+    {
+        std::invoke(action, node.customParameters, node.stemVector, node.thickness, node.leafRadius);
+    });
+}
+
+void Phenotype::ForEachStem(double plantX, std::function<void (QLineF, double, bool, double)>&& action) const
+{
+    ForEachNode(*root, [&](const Node& node, const Point& nodeTip)
+    {
+        Point tip = nodeTip;
+        Point base = nodeTip - node.stemVector;
+        QLineF stem(base.x + plantX, base.y, tip.x + plantX, tip.y);
+        bool hasLeaf = node.daughterNodes.empty();
+        std::invoke(action, stem, node.thickness, hasLeaf, node.leafRadius * 2);
+    });
+}
+
+QRectF Phenotype::GetBounds(double plantX) const
+{
+    util::MinMax<double> xRange(plantX, plantX);
     util::MinMax<double> yRange(0, 0);
-    ForEachNode(*root, [&](const Node& n)
+
+    ForEachNode(*root, [&](const Node& n, const Point& nodeTip)
     {
         bool hasLeaf = n.daughterNodes.empty();
         if (hasLeaf) {
-            xRange.ExpandToContain(n.location.x + leafRadius);
-            xRange.ExpandToContain(n.location.x - leafRadius);
-            yRange.ExpandToContain(n.location.y + leafRadius);
-            yRange.ExpandToContain(n.location.y - leafRadius);
+            xRange.ExpandToContain(plantX + nodeTip.x + n.leafRadius);
+            xRange.ExpandToContain(plantX + nodeTip.x - n.leafRadius);
+            yRange.ExpandToContain(nodeTip.y + n.leafRadius);
+            yRange.ExpandToContain(nodeTip.y - n.leafRadius);
         } else {
-            xRange.ExpandToContain(n.location.x);
-            yRange.ExpandToContain(n.location.y);
+            xRange.ExpandToContain(plantX + nodeTip.x);
+            yRange.ExpandToContain(nodeTip.y);
         }
     });
     return QRectF(xRange.Min(), yRange.Min(), xRange.Max() - xRange.Min(), yRange.Max() - yRange.Min());
@@ -106,21 +105,71 @@ QRectF Phenotype::GetBounds(double xPosition) const
 
 bool Phenotype::IsValid() const
 {
+    double lean = 0;
+    double height = 0;
+    ForEachNode(*root, [&](const Node& n, const Point& nodeLocation)
+    {
+        bool hasLeaf = n.daughterNodes.empty();
+        height = std::max(height, nodeLocation.y);
+        lean += (nodeLocation.x) * (hasLeaf ? 1.25 : 0.5);
+    });
     return (metabolism > 0) && (seedSize > 0) && (std::abs(lean) / height <= 0.6);
 }
 
-void Phenotype::ForEachNode(Node& node, const std::function<void (Node&)>& action)
+void Phenotype::ForEachNode(Node& node, const std::function<void (Node&, const Point&)>& action)
 {
-    std::invoke(action, node);
-    for (std::shared_ptr<Node>& child : node.daughterNodes) {
-        ForEachNode(*child, action);
+    // We want to efficiently track the node tip positions as we go along
+
+    // Find the position of the start node's parent
+    Point nodeTip = Point{ 0, 0 };
+    {
+        Node* currentNode = node.parentNode;
+        while (currentNode) {
+            nodeTip = nodeTip + currentNode->stemVector;
+            currentNode = currentNode->parentNode;
+        }
     }
+
+    // A recursive function that pushes and pops the current node location as we go up and down the tree
+    std::function<void(Node&, const std::function<void (Node&, const Point&)>&)> ForEachNodeRecursive;
+    ForEachNodeRecursive = [&](Node& node, const std::function<void (Node&, const Point&)>& action)
+    {
+        nodeTip = nodeTip + node.stemVector;
+        std::invoke(action, node, nodeTip);
+        for (std::shared_ptr<Node>& child : node.daughterNodes) {
+            ForEachNodeRecursive(*child, action);
+        }
+        nodeTip = nodeTip - node.stemVector;
+    };
+
+    ForEachNodeRecursive(node, action);
 }
 
-void Phenotype::ForEachNode(const Node& node, const std::function<void (const Node&)>& action) const
+void Phenotype::ForEachNode(const Node& node, const std::function<void (const Node&, const Point&)>& action) const
 {
-    std::invoke(action, node);
-    for (const std::shared_ptr<Node>& child : node.daughterNodes) {
-        ForEachNode(*child, action);
+    // We want to efficiently track the node tip positions as we go along
+
+    // Find the position of the start node's parent
+    Point nodeTip = Point{ 0, 0 };
+    {
+        Node* currentNode = node.parentNode;
+        while (currentNode) {
+            nodeTip = nodeTip + currentNode->stemVector;
+            currentNode = currentNode->parentNode;
+        }
     }
+
+    // A recursive function that pushes and pops the current node location as we go up and down the tree
+    std::function<void(const Node&, const std::function<void (const Node&, const Point&)>&)> ForEachNodeRecursive;
+    ForEachNodeRecursive = [&](const Node& node, const std::function<void (const Node&, const Point&)>& action)
+    {
+        nodeTip = nodeTip + node.stemVector;
+        std::invoke(action, node, nodeTip);
+        for (const std::shared_ptr<Node>& child : node.daughterNodes) {
+            ForEachNodeRecursive(*child, action);
+        }
+        nodeTip = nodeTip - node.stemVector;
+    };
+
+    ForEachNodeRecursive(node, action);
 }

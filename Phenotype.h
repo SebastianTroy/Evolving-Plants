@@ -21,33 +21,38 @@
  */
 class Phenotype {
 public:
+    Phenotype();
+
+    ///
+    /// The following is intended for use by Gene sub-classes
+    ///
     Energy metabolism;
     Energy seedSize;
     QColor leafColour;
-    double leafRadius;
-    double stemUnitLength;
-    double stemRotationAngle;
-
-    Phenotype();
 
     /**
      * To ensure the node tree is maintained in a valid state, limited access is
-     * provided via these functions
+     * provided via these functions.
+     *
+     * Nodes can have custom parameters stored on a per node basis in a map,
+     * these are entirely for the users own purposes and unless they are used
+     * here they will have no effect on the final node structure.
      */
-    void AddNode();
+    void AddNode(Vec2 stemVector, double stemThickness, double leafRadius, std::map<int, double>&& customParameters = {});
     void AscendNodeTree();
     void DescendNodeTree();
-    void IncreaseCurrentNodesLength(unsigned units);
-    void RotateCurrentNode(int units);
+    void SelectNextNode();
+    void SelectPreviousNode();
+    std::map<int, double>& GetCurrentNodesParameters();
+    // Provide access to user settable Node items, but not protected variables
+    void ForEachNode(const std::function<void(std::map<int, double>& nodeParams, Vec2& stemVector, double& nodeThickness, double& leafRadius)>& action);
 
-    /**
-     * Must be called after all genes have been expressed, but before the plant
-     * is constructed.
-     */
-    void Finalise();
+    ///
+    /// The following is intended for use by the Plant class
+    ///
 
-    void ForEachStem(double xPosition, std::function<void(QLineF stem, double thickness, bool hasLeaf)>&& action) const;
-    QRectF GetBounds(double xPosition) const;
+    void ForEachStem(double plantX, std::function<void(QLineF stem, double thickness, bool hasLeaf, double leafSize)>&& action) const;
+    QRectF GetBounds(double plantX) const;
     bool IsValid() const;
 
 private:
@@ -58,22 +63,19 @@ private:
     struct Node {
         Node* parentNode;
         std::vector<std::shared_ptr<Node>> daughterNodes;
-        int rotationSteps;
-        unsigned additionalUnitsOfLength;
 
-        // Calculated once after all gneetics have been processed
-        Point location;
+        // User settable
+        std::map<int, double> customParameters;
+        Vec2 stemVector;
         double thickness;
+        double leafRadius;
     };
 
-    void ForEachNode(Node& node, const std::function<void(Node&)>& action);
-    void ForEachNode(const Node& node, const std::function<void(const Node&)>& action) const;
+    void ForEachNode(Node& node, const std::function<void (Node& node, const Point& nodeLocation)>& action);
+    void ForEachNode(const Node& node, const std::function<void (const Node& node, const Point& nodeLocation)>& action) const;
 
-    bool finalised;
     std::shared_ptr<Node> root;
     Node* currentNode;
-    double height;
-    double lean;
 };
 
 #endif // PHENOTYPE_H

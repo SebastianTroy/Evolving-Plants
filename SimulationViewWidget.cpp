@@ -77,8 +77,7 @@ void SimulationViewWidget::paintEvent(QPaintEvent* /*event*/)
     for (const Plant* plantPtr : sortedPlants) {
         const Plant& plant = *plantPtr;
 
-        QPointF plantLocation(plant.GetPlantX(), 0);
-        plant.ForEachStem([&](const QLineF& stem, double thickness, bool hasLeaf)
+        plant.ForEachStem([&](const QLineF& stem, double thickness, bool hasLeaf, double leafSize)
         {
             QPen pen(QColor::fromRgb(73, 39, 14));
             pen.setWidthF(std::max(1.0, thickness));
@@ -88,7 +87,7 @@ void SimulationViewWidget::paintEvent(QPaintEvent* /*event*/)
             if (hasLeaf) {
                 paint.setPen(Qt::black);
                 paint.setBrush(plant.GetLeafColour());
-                double radius = (plant.GetLeafSize() / 2) * plant.GetProportionGrown();
+                double radius = (leafSize / 2) * plant.GetProportionGrown();
                 paint.drawEllipse(stem.p2(), radius, radius * 0.66);
             }
         });

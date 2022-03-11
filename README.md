@@ -10,7 +10,7 @@ TODO
 ----
  - [X] Basic port of Java simulation code to C++
  - [X] Tweaks to balance to create more than one plant niche, allowing multiple concurrent species
- - [ ] Implement genes as seperate entities with a gene factory, a plant has one of every gene, genes modify a Phenotype and a plant constructs itself from the phenotype
+ - [X] Implement genes as seperate entities with a gene factory, a plant has one of every gene, genes modify a Phenotype and a plant constructs itself from the phenotype
  - [ ] GUI
  - - [ ] Create new simulation of custom size
  - - [ ] Scroll viewport so that the entire simulation can be seen by scrolling through it

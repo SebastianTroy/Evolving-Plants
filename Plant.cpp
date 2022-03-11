@@ -15,8 +15,6 @@ std::optional<Plant> Plant::Generate(std::vector<std::shared_ptr<Gene>>&& geneti
         gene->Express(phenotype);
     }
 
-    phenotype.Finalise();
-
     if (!phenotype.IsValid()) {
         return std::nullopt;
     }
@@ -55,10 +53,10 @@ void Plant::Tick(Simulation& sim, LightMap& lightMap)
     metabolism += 0.02;
     energy -= metabolism * 0.01;
 
-    ForEachStem([this, &lightMap](const QLineF& stem, double /*thickness*/, bool hasLeaf)
+    ForEachStem([this, &lightMap](const QLineF& stem, double /*thickness*/, bool hasLeaf, double leafSize)
     {
         if (hasLeaf) {
-            energy += PhotosynthesizeAt(lightMap, stem.p2() + QPointF(Random::Number<double>(GetLeafSize() / -2, GetLeafSize() / 2), 0));
+            energy += PhotosynthesizeAt(lightMap, stem.p2() + QPointF(Random::Number<double>(leafSize / -2, leafSize / 2), 0));
         }
     });
 
@@ -97,20 +95,20 @@ const QColor& Plant::GetShadowColour() const
     return shadowColour;
 }
 
-void Plant::ForEachStem(std::function<void (QLineF, double, bool)>&& action) const
+void Plant::ForEachStem(std::function<void (QLineF, double, bool, double)>&& action) const
 {
     if (proportionGrown < 1) {
         QPointF plantLocation(plantX, 0.0);
-        for (const auto& [ stem, thickness, hasLeaf ] : nodes) {
+        for (const auto& [ stem, thickness, hasLeaf, leafSize ] : nodes) {
             QPointF scaledStemStart = ((stem.p1() - plantLocation) * proportionGrown) + plantLocation;
             QPointF scaledStemEnd = ((stem.p2() - plantLocation) * proportionGrown) + plantLocation;
             QLineF scaledStem(scaledStemStart, scaledStemEnd);
 
-            action(scaledStem, thickness * proportionGrown, hasLeaf);
+            action(scaledStem, thickness * proportionGrown, hasLeaf, leafSize * proportionGrown);
         }
     } else {
-        for (const auto& [ stem, thickness, hasLeaf ] : nodes) {
-            action(stem, thickness, hasLeaf);
+        for (const auto& [ stem, thickness, hasLeaf, leafSize ] : nodes) {
+            action(stem, thickness, hasLeaf, leafSize);
         }
     }
 }
@@ -118,18 +116,15 @@ void Plant::ForEachStem(std::function<void (QLineF, double, bool)>&& action) con
 bool Plant::Contains(const QPointF& p) const
 {
     bool collides = false;
-    ForEachStem([&collides, &p, leafSize = GetLeafSize()](const QLineF& stem, double /*thickness*/, bool hasLeaf)
-    {
-        if (hasLeaf && QLineF(p, stem.p2()).length() <= leafSize) {
-            collides = true;
-        }
-    });
+    if (bounds.contains(p)) {
+        ForEachStem([&collides, &p](const QLineF& stem, double /*thickness*/, bool hasLeaf, double leafSize)
+        {
+            if (hasLeaf && QLineF(p, stem.p2()).length() <= leafSize) {
+                collides = true;
+            }
+        });
+    }
     return collides;
-}
-
-double Plant::GetLeafSize() const
-{
-    return leafSize * proportionGrown;
 }
 
 const Energy& Plant::GetEnergy() const
@@ -153,16 +148,15 @@ Plant::Plant(std::vector<std::shared_ptr<Gene>>&& genes, const Phenotype& phenot
     , shadowColour(CalculateShadowColour(leafColour))
     , plantX(xPosition)
     , bounds(phenotype.GetBounds(plantX))
-    , leafSize(phenotype.leafRadius * 2)
     , seedSize(phenotype.seedSize)
     , energy(startingEnergy)
     , metabolism(phenotype.metabolism)
     , proportionGrown(0.0)
     , timeToNextSeed(50)
 {
-    phenotype.ForEachStem(xPosition, [this](QLineF stem, double thickness, bool hasLeaf)
+    phenotype.ForEachStem(xPosition, [this](QLineF stem, double thickness, bool hasLeaf, double leafSize)
     {
-        nodes.emplace_back(stem, thickness, hasLeaf);
+        nodes.emplace_back(stem, thickness, hasLeaf, leafSize);
     });
 }
 
@@ -177,20 +171,20 @@ QColor Plant::CalculateShadowColour(const QColor& leafColour)
 
 void Plant::AddShadows(LightMap& lightMap) const
 {
-    ForEachStem([this, &lightMap](const QLineF& stem, double /*thickness*/, bool hasLeaf)
+    ForEachStem([this, &lightMap](const QLineF& stem, double /*thickness*/, bool hasLeaf, double leafSize)
     {
         if (hasLeaf) {
-            lightMap.AddShadow(stem.p2().x() - (GetLeafSize() / 2.0), stem.p2().y(), GetLeafSize(), shadowColour);
+            lightMap.AddShadow(stem.p2().x() - (leafSize / 2.0), stem.p2().y(), leafSize, shadowColour);
         }
     });
 }
 
 void Plant::RemoveShadows(LightMap& lightMap) const
 {
-    ForEachStem([this, &lightMap](const QLineF& stem, double /*thickness*/, bool hasLeaf)
+    ForEachStem([this, &lightMap](const QLineF& stem, double /*thickness*/, bool hasLeaf, double leafSize)
     {
         if (hasLeaf) {
-            lightMap.RemoveShadow(stem.p2().x() - (GetLeafSize() / 2.0), stem.p2().y(), GetLeafSize(), shadowColour);
+            lightMap.RemoveShadow(stem.p2().x() - (leafSize / 2.0), stem.p2().y(), leafSize, shadowColour);
         }
     });
 }

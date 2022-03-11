@@ -34,9 +34,8 @@ public:
     double GetProportionGrown() const;
     const QColor& GetLeafColour() const;
     const QColor& GetShadowColour() const;
-    void ForEachStem(std::function<void(QLineF stem, double thickness, bool hasLeaf)>&& action) const;
+    void ForEachStem(std::function<void(QLineF stem, double thickness, bool hasLeaf, double leafSize)>&& action) const;
     bool Contains(const QPointF& p) const;
-    double GetLeafSize() const;
 
     const Energy& GetEnergy() const;
     const Energy& GetMetabolism() const;
@@ -50,6 +49,7 @@ private:
         QLineF stem;
         qreal thickness;
         bool hasLeaf;
+        double leafSize;
     };
 
     std::vector<std::shared_ptr<Gene>> genes;
@@ -57,7 +57,6 @@ private:
     QColor shadowColour;
     double plantX;
     QRectF bounds;
-    double leafSize;
     Energy seedSize;
     std::vector<Stem> nodes;
 

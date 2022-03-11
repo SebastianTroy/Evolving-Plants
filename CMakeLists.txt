@@ -24,8 +24,6 @@ set(PROJECT_SOURCES
     GenePlantStructure.cpp
     GeneSeedProduction.h
     GeneSeedProduction.cpp
-    GeneStemProportions.h
-    GeneStemProportions.cpp
     LightMap.h
     LightMap.cpp
     main.cpp
