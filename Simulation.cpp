@@ -40,3 +40,14 @@ void Simulation::Tick()
         return !p.IsAlive();
     });
 }
+
+void Simulation::SetBounds(int64_t width, int64_t height)
+{
+    LightMap newLightMap(width, height);
+    for (const Plant& plant : plants) {
+        if (plant.IsAlive()) {
+            plant.AddShadows(newLightMap);
+        }
+    }
+    lightMap = std::move(newLightMap);
+}

@@ -12,9 +12,9 @@ TODO
  - [X] Tweaks to balance to create more than one plant niche, allowing multiple concurrent species
  - [X] Implement genes as seperate entities with a gene factory, a plant has one of every gene, genes modify a Phenotype and a plant constructs itself from the phenotype
  - [ ] GUI
- - - [ ] Create new simulation of custom size
- - - [ ] Scroll viewport so that the entire simulation can be seen by scrolling through it
- - - [ ] Control simulation speed with fast-forward
+ - - [X] Create new simulation of custom size
+ - - [X] Scroll viewport so that the entire simulation can be seen by scrolling through it
+ - - [X] Control simulation speed with fast-forward
  - - [ ] Controlls to add/remove plants
  - - [ ] Save/load plant genetics
  - - [ ] Information panels for simulation and selected plants

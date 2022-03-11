@@ -5,32 +5,82 @@
 #include <QPainter>
 #include <QLocale>
 #include <QScrollBar>
+#include <QCoreApplication>
+#include <QWheelEvent>
 
 SimulationViewWidget::SimulationViewWidget(QWidget* parent)
     : QAbstractScrollArea(parent)
     , simulationDriver(this)
     , repaintDriver(this)
-    , sim(3000, 400)
 {
-    for (int x = 15; x < sim.GetLightMap().GetRect().width(); x += 30) {
-        sim.AddPlant(*Plant::Generate(GeneFactory::CreateDefaultGenome(), 400_j, x));
-    }
-
     verticalScrollBar()->setInvertedAppearance(true);
     setVerticalScrollBarPolicy(Qt::ScrollBarPolicy::ScrollBarAsNeeded);
     setHorizontalScrollBarPolicy(Qt::ScrollBarPolicy::ScrollBarAsNeeded);
 
-    simulationDriver.setSingleShot(false);
-    simulationDriver.setInterval(0);
-    connect(&simulationDriver, &QTimer::timeout, this, [&]()
-    {
-        sim.Tick();
-        ++tickCount;
-    });
-
     repaintDriver.setSingleShot(false);
     repaintDriver.setInterval(1000 / 60);
     connect(&repaintDriver, &QTimer::timeout, viewport(), static_cast<void(QWidget::*)()>(&QWidget::update));
+
+    simulationDriver.setSingleShot(false);
+    simulationDriver.setInterval(0);
+    connect(&simulationDriver, &QTimer::timeout, this, &SimulationViewWidget::Tick);
+}
+
+void SimulationViewWidget::SetSimulation(std::shared_ptr<Simulation> sim)
+{
+    this->sim = sim;
+    tickCount = 0; // FIXME this should live inside Simulation!
+    UpdateScrollBars();
+}
+
+void SimulationViewWidget::UpdateScrollBars()
+{
+    if (sim) {
+        QSize areaSize = viewport()->size();
+        QSize widgetSize = sim->GetLightMap().GetRect().size();
+
+        verticalScrollBar()->setPageStep(areaSize.height());
+        horizontalScrollBar()->setPageStep(areaSize.width());
+        verticalScrollBar()->setSingleStep(areaSize.height() / 100);
+        horizontalScrollBar()->setSingleStep(areaSize.width() / 100);
+        verticalScrollBar()->setRange(0, widgetSize.height() - areaSize.height());
+        horizontalScrollBar()->setRange(0, widgetSize.width() - areaSize.width());
+        viewport()->update();
+    }
+}
+
+void SimulationViewWidget::SetShowLight(bool showLight)
+{
+    viewLight = showLight;
+}
+
+void SimulationViewWidget::SetPaused(bool paused)
+{
+    if (paused) {
+        simulationDriver.stop();
+    } else {
+        simulationDriver.start();
+    }
+}
+
+void SimulationViewWidget::SetTargetFramesPerSecond(unsigned targetFps)
+{
+    repaintDriver.setInterval(1000 / std::max(1u, targetFps));
+}
+
+void SimulationViewWidget::SetTargetTicksPerSecond(unsigned targetTps)
+{
+    simulationDriver.setInterval(1000 / std::max(1u, targetTps));
+}
+
+void SimulationViewWidget::SetUnlimitedTicksPerSecond()
+{
+    simulationDriver.setInterval(0);
+}
+
+void SimulationViewWidget::wheelEvent(QWheelEvent* event)
+{
+    QCoreApplication::sendEvent(horizontalScrollBar(), event);
 }
 
 void SimulationViewWidget::paintEvent(QPaintEvent* /*event*/)
@@ -57,12 +107,12 @@ void SimulationViewWidget::paintEvent(QPaintEvent* /*event*/)
     paint.translate(-viewportArea.topLeft());
 
     if (viewLight) {
-        paint.drawImage(viewportArea.topLeft(), sim.GetLightMap().GetLightImage(viewportArea));
+        paint.drawImage(viewportArea.topLeft(), sim->GetLightMap().GetLightImage(viewportArea));
     }
 
     // Paint the plants, shortest last so they aren't hidden by taller plant's stems
     std::vector<const Plant*> sortedPlants;
-    for (const Plant& plant : sim.GetPlants()) {
+    for (const Plant& plant : sim->GetPlants()) {
         if (viewportArea.intersects(plant.GetBounds().toRect())) {
             sortedPlants.push_back(&plant);
         }
@@ -98,15 +148,18 @@ void SimulationViewWidget::showEvent(QShowEvent*)
 {
     simulationDriver.start();
     repaintDriver.start();
+    UpdateScrollBars();
 }
 
 void SimulationViewWidget::resizeEvent(QResizeEvent* /*event*/)
 {
-    QSize areaSize = viewport()->size();
-    QSize widgetSize = sim.GetLightMap().GetRect().size();
+    UpdateScrollBars();
+}
 
-    verticalScrollBar()->setPageStep(areaSize.height());
-    horizontalScrollBar()->setPageStep(areaSize.width());
-    verticalScrollBar()->setRange(0, widgetSize.height() - areaSize.height());
-    horizontalScrollBar()->setRange(0, widgetSize.width() - areaSize.width());
+void SimulationViewWidget::Tick()
+{
+    if (sim) {
+        sim->Tick();
+        ++tickCount;
+    }
 }

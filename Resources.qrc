@@ -1,5 +1,10 @@
 <RCC>
     <qresource prefix="/">
         <file alias="Logo.png">res/logo.png</file>
+        <file alias="FastFastForward.svg">res/fast-fast-forward.svg</file>
+        <file alias="FastForward.svg">res/fast-forward.svg</file>
+        <file alias="MaxSpeed.svg">res/full-forward.svg</file>
+        <file alias="Pause.svg">res/pause.svg</file>
+        <file alias="Play.svg">res/play.svg</file>
     </qresource>
 </RCC>

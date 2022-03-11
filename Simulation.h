@@ -19,6 +19,7 @@ public:
 
     void AddPlant(Plant&& plant);
     void Tick();
+    void SetBounds(int64_t width, int64_t height);
 
     Simulation& operator=(const Simulation& other) = delete;
     Simulation& operator=(Simulation&& other) = default;

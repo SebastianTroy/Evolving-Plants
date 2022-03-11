@@ -41,6 +41,9 @@ public:
     const Energy& GetMetabolism() const;
     bool IsAlive() const;
 
+    void AddShadows(LightMap& lightMap) const;
+    void RemoveShadows(LightMap& lightMap) const;
+
     Plant& operator=(const Plant& other) = delete;
     Plant& operator=(Plant&& other) = default;
 
@@ -68,9 +71,6 @@ private:
     Plant(std::vector<std::shared_ptr<Gene>>&& genes, const Phenotype& phenotype, Energy startingEnergy, double xPosition);
 
     static QColor CalculateShadowColour(const QColor& leafColour);
-
-    void AddShadows(LightMap& lightMap) const;
-    void RemoveShadows(LightMap& lightMap) const;
 
     Energy PhotosynthesizeAt(LightMap& lightMap, QPointF location) const;
 };

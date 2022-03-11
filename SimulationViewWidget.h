@@ -14,21 +14,21 @@ class SimulationViewWidget : public QAbstractScrollArea {
 public:
     explicit SimulationViewWidget(QWidget *parent = nullptr);
 
+    void SetSimulation(std::shared_ptr<Simulation> sim);
+
+    void UpdateScrollBars();
+
+    void SetShowLight(bool showLight);
+
+    void SetPaused(bool paused);
+    void SetTargetFramesPerSecond(unsigned targetFps);
+    void SetTargetTicksPerSecond(unsigned targetTps);
+    void SetUnlimitedTicksPerSecond();
+
 protected:
-    virtual void mousePressEvent(QMouseEvent* event) override
-    {
-        if (simulationDriver.isActive()) {
-            simulationDriver.stop();
-            viewLight = true;
-            viewport()->update();
-        } else {
-            simulationDriver.start();
-            viewLight = false;
-            viewport()->update();
-        }
-    }
+    virtual void mousePressEvent(QMouseEvent* event) override { /* TODO */}
     virtual void mouseMoveEvent(QMouseEvent* event) override { /* TODO */}
-    virtual void wheelEvent(QWheelEvent* event) override { /* TODO */}
+    virtual void wheelEvent(QWheelEvent* event) override;
     virtual void paintEvent(QPaintEvent* event) override;
     virtual void showEvent(QShowEvent* /*event*/) override;
     virtual void resizeEvent(QResizeEvent* event) override;
@@ -36,11 +36,14 @@ protected:
 private:
     QTimer simulationDriver;
     QTimer repaintDriver;
-    Simulation sim;
+    std::shared_ptr<Simulation> sim;
 
     bool viewLight = false;
 
     qulonglong tickCount = 0;
+
+    void Tick();
+    void Reset();
 };
 
 #endif // SIMULATIONVIEWWIDGET_H
