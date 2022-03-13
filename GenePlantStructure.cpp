@@ -111,17 +111,6 @@ void GenePlantStructure::Express(Phenotype& phenotype) const
         case Instruction::CLIMB_NODE_TREE:
             phenotype.AscendNodeTree();
             break;
-        case Instruction::SPLIT_NODE:
-            phenotype.AddNode(Vec2{ 0, 0 }, stemThickness, leafRadius);
-            phenotype.AscendNodeTree();
-            phenotype.GetCurrentNodesParameters()[LENGTH_KEY] += stemUnitLength;
-            phenotype.GetCurrentNodesParameters()[ROTATION_KEY] -= stemRotationAngle;
-            phenotype.DescendNodeTree();
-            phenotype.AddNode(Vec2{ 0, 0 }, stemThickness, leafRadius);
-            phenotype.AscendNodeTree();
-            phenotype.GetCurrentNodesParameters()[LENGTH_KEY] += stemUnitLength;
-            phenotype.GetCurrentNodesParameters()[ROTATION_KEY] += stemRotationAngle;
-            break;
         case Instruction::DESCEND_NODE_TREE:
             phenotype.DescendNodeTree();
             break;
@@ -149,7 +138,6 @@ void GenePlantStructure::Express(Phenotype& phenotype) const
         }
     }
 
-    double stemLengthSquared = 0;
     phenotype.ForEachNode([&](std::map<int, double>& parameters, Vec2& stemVector, double& nodeStemThickness, double& nodeLeafRadius)
     {
         Point relativeTip = ApplyOffset({ 0, 0 }, parameters[ROTATION_KEY], parameters[LENGTH_KEY]);
@@ -161,11 +149,10 @@ void GenePlantStructure::Express(Phenotype& phenotype) const
 
         nodeStemThickness = stemThickness;
         nodeLeafRadius = leafRadius;
-
-        stemLengthSquared += GetDistanceSquare({0, 0}, Point{0, 0} + stemVector);
     });
 
-    phenotype.metabolism += stemLengthSquared * 0.5_j;
+    auto height = phenotype.GetBounds(0).height();
+    phenotype.metabolism += std::pow(height, 2.0) * 0.5_j;
 }
 
 GenePlantStructure::Instruction GenePlantStructure::RandomInstruction()
@@ -174,22 +161,20 @@ GenePlantStructure::Instruction GenePlantStructure::RandomInstruction()
     case 0:
         return Instruction::ADD_NODE;
     case 1:
-        return Instruction::SPLIT_NODE;
-    case 2:
         return Instruction::CLIMB_NODE_TREE;
-    case 3:
+    case 2:
         return Instruction::DESCEND_NODE_TREE;
-    case 4:
+    case 3:
         return Instruction::NEXT_NODE;
-    case 5:
+    case 4:
         return Instruction::PREVIOUS_NODE;
-    case 6:
+    case 5:
         return Instruction::GROW_UP;
-    case 7:
+    case 6:
         return Instruction::ROTATE_LEFT;
-    case 8:
+    case 7:
         return Instruction::ROTATE_RIGHT;
-    case 9:
+    case 8:
         return Instruction::END_ALL;
     default:
         return Instruction::SKIP;
@@ -203,8 +188,6 @@ std::vector<GenePlantStructure::Instruction> GenePlantStructure::FromString(cons
     for (const char& characterInstruction : instructionsString) {
         switch(static_cast<Instruction>(characterInstruction)) {
         case Instruction::ADD_NODE:
-            [[fallthrough]];
-        case Instruction::SPLIT_NODE:
             [[fallthrough]];
         case Instruction::CLIMB_NODE_TREE:
             [[fallthrough]];

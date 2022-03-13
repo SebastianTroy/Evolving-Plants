@@ -11,7 +11,6 @@ class GenePlantStructure : public Gene {
 public:
     enum class Instruction : char {
         ADD_NODE = 'N',
-        SPLIT_NODE = 'S',
         CLIMB_NODE_TREE = '^',
         DESCEND_NODE_TREE = 'v',
         NEXT_NODE = '>',

@@ -15,7 +15,7 @@ TODO
  - - [X] Create new simulation of custom size
  - - [X] Scroll viewport so that the entire simulation can be seen by scrolling through it
  - - [X] Control simulation speed with fast-forward
- - - [ ] Controlls to add/remove plants
+ - - [X] Controlls to add/remove plants
  - - [ ] Save/load plant genetics
  - - [ ] Information panels for simulation and selected plants
  - - [ ] *MAYBE* graphs

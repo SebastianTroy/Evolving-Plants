@@ -11,7 +11,6 @@
 #include <QRectF>
 #include <QColor>
 
-#include <optional>
 #include <memory>
 #include <vector>
 
@@ -24,7 +23,7 @@ public:
     Plant(const Plant& other) = delete;
     Plant(Plant&& other) = default;
 
-    static std::optional<Plant> Generate(std::vector<std::shared_ptr<Gene>>&& genetics, Energy energy, double x);
+    static std::shared_ptr<Plant> Generate(std::vector<std::shared_ptr<Gene>>&& genetics, Energy energy, double x);
 
     void Tick(Simulation& sim, LightMap& lightmap);
 
@@ -44,10 +43,14 @@ public:
     void AddShadows(LightMap& lightMap) const;
     void RemoveShadows(LightMap& lightMap) const;
 
+    void Kill();
+
     Plant& operator=(const Plant& other) = delete;
     Plant& operator=(Plant&& other) = default;
 
 private:
+    friend std::shared_ptr<Plant>;
+
     struct Stem {
         QLineF stem;
         qreal thickness;

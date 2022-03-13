@@ -7,7 +7,7 @@
 
 #include <memory>
 
-std::optional<Plant> Plant::Generate(std::vector<std::shared_ptr<Gene>>&& genetics, Energy energy, double x)
+std::shared_ptr<Plant> Plant::Generate(std::vector<std::shared_ptr<Gene>>&& genetics, Energy energy, double x)
 {
     Phenotype phenotype;
 
@@ -16,10 +16,10 @@ std::optional<Plant> Plant::Generate(std::vector<std::shared_ptr<Gene>>&& geneti
     }
 
     if (!phenotype.IsValid()) {
-        return std::nullopt;
+        return nullptr;
     }
 
-    return std::optional<Plant>(std::in_place, Plant{ std::move(genetics), std::move(phenotype), energy, x });
+    return std::make_shared<Plant>(Plant(std::move(genetics), phenotype, energy, x));
 }
 
 void Plant::Tick(Simulation& sim, LightMap& lightMap)
@@ -40,9 +40,9 @@ void Plant::Tick(Simulation& sim, LightMap& lightMap)
         {
             item = item->Mutated();
         });
-        std::optional<Plant> plant = Generate(std::move(childGenes), std::sqrt(seedSize), Random::Number(bounds.left() - bounds.height(), bounds.right() + bounds.height()));
+        std::shared_ptr<Plant> plant = Generate(std::move(childGenes), std::sqrt(seedSize), Random::Number(bounds.left() - bounds.height(), bounds.right() + bounds.height()));
         if (plant) {
-            sim.AddPlant(std::move(plant.value()));
+            sim.AddPlant(plant);
         }
         energy -= seedSize;
         timeToNextSeed = 500;
@@ -160,6 +160,12 @@ void Plant::RemoveShadows(LightMap& lightMap) const
             lightMap.RemoveShadow(stem.p2().x() - (leafSize / 2.0), stem.p2().y(), leafSize, shadowColour);
         }
     });
+}
+
+void Plant::Kill()
+{
+    metabolism = std::abs(energy) * 10;
+    energy = -metabolism;
 }
 
 Plant::Plant(std::vector<std::shared_ptr<Gene>>&& genes, const Phenotype& phenotype, Energy startingEnergy, double xPosition)

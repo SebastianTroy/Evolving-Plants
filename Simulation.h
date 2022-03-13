@@ -14,10 +14,13 @@ class Simulation {
 public:
     Simulation(size_t width, size_t height);
 
-    const std::vector<Plant>& GetPlants() const;
+    std::shared_ptr<Plant> GetPlantAt(const QPointF& location) const;
+    const std::vector<std::shared_ptr<Plant>>& GetPlants() const;
+    const uint64_t& GetTickCount() const;
     const LightMap& GetLightMap() const;
 
-    void AddPlant(Plant&& plant);
+    void AddPlant(const std::shared_ptr<Plant>& plant);
+    void RemovePlantsAt(const QPointF& location);
     void Tick();
     void SetBounds(int64_t width, int64_t height);
 
@@ -26,9 +29,10 @@ public:
 
 private:
     LightMap lightMap;
+    uint64_t tickCount;
 
-    std::vector<Plant> seeds;
-    std::vector<Plant> plants;
+    std::vector<std::shared_ptr<Plant>> seeds;
+    std::vector<std::shared_ptr<Plant>> plants;
 };
 
 #endif // SIMULATION_H
