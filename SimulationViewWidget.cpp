@@ -91,6 +91,16 @@ void SimulationViewWidget::SetRightMouseButtonAction(MouseButtonAction action)
     rightMouseButtonAction = action;
 }
 
+void SimulationViewWidget::SetCurrentGenomeSaveFileName(const QString& saveFileName)
+{
+    this->saveFileName = saveFileName;
+}
+
+std::shared_ptr<Plant> SimulationViewWidget::GetSelectedPlant() const
+{
+    return selectedPlant;
+}
+
 void SimulationViewWidget::mousePressEvent(QMouseEvent* event)
 {
     if (sim) {
@@ -212,7 +222,11 @@ void SimulationViewWidget::PerformMouseButtonAction(MouseButtonAction action, co
         selectedPlant = sim->GetPlantAt(LocalToSimulation(location));
         break;
     case MouseButtonAction::AddPlantSeed:
-        sim->AddPlant(Plant::Generate(GeneFactory::CreateDefaultGenome(), 40_j, LocalToSimulation(location).x()));
+        if (saveFileName.isNull() || saveFileName == "Default") {
+            sim->AddPlant(Plant::Generate(GeneFactory::CreateDefaultGenome(), 40_j, LocalToSimulation(location).x()));
+        } else {
+            sim->AddPlant(Plant::Generate(GeneFactory::LoadGenome(saveFileName), 40_j, LocalToSimulation(location).x()));
+        }
         break;
     case MouseButtonAction::RemovePlants:
         sim->RemovePlantsAt(LocalToSimulation(location));

@@ -9,6 +9,18 @@ GeneSeedProduction::GeneSeedProduction(Energy seedSize)
 {
 }
 
+std::string GeneSeedProduction::TypeName() const
+{
+    return std::string(util::TypeName<GeneSeedProduction>());
+}
+
+void GeneSeedProduction::ConfigureJsonSerialisationHelper(util::JsonSerialisationHelper<GeneSeedProduction>& helper)
+{
+    helper.RegisterConstructor(
+                helper.CreateParameter<Energy>("Energy", &GeneSeedProduction::seedSize)
+                );
+}
+
 std::shared_ptr<Gene> GeneSeedProduction::Mutated() const
 {
     return std::make_shared<GeneSeedProduction>(seedSize + Random::Number(-10_j, 10_j));

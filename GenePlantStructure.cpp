@@ -18,6 +18,20 @@ GenePlantStructure::GenePlantStructure(const std::vector<Instruction>& instructi
 {
 }
 
+std::string GenePlantStructure::TypeName() const
+{
+    return std::string(util::TypeName<GenePlantStructure>());
+}
+
+void GenePlantStructure::ConfigureJsonSerialisationHelper(util::JsonSerialisationHelper<GenePlantStructure>& helper)
+{
+    helper.RegisterConstructor(
+                helper.CreateParameter<std::vector<Instruction>>("Instructions", &GenePlantStructure::instructions),
+                helper.CreateParameter<double>("StemLength", &GenePlantStructure::stemUnitLength),
+                helper.CreateParameter<double>("RotationAngleRadians", &GenePlantStructure::stemRotationAngle)
+                );
+}
+
 std::shared_ptr<Gene> GenePlantStructure::Mutated() const
 {
     auto copy = std::make_shared<GenePlantStructure>(instructions, stemUnitLength, stemRotationAngle);

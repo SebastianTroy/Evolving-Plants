@@ -35,6 +35,7 @@ set(PROJECT_SOURCES
     Plant.h
     Plant.cpp
     Resources.qrc
+    SavedGenomes.qrc
     Simulation.h
     Simulation.cpp
     SimulationViewWidget.h
@@ -99,6 +100,12 @@ set_target_properties(Evolving-Plants PROPERTIES
 if(QT_VERSION_MAJOR EQUAL 6)
     qt_finalize_executable(Evolving-Plants)
 endif()
+
+# Ensure our release contains our saved genomes
+add_custom_command(TARGET Evolving-Plants POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/SavedGenomes/ ${CMAKE_BINARY_DIR}/SavedGenomes/
+    COMMENT "Copying SharedGenomes directory..."
+)
 
 # Make deploying/distributing this executable much easier!
 if (WIN32)

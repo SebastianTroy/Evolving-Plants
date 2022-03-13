@@ -5,29 +5,43 @@
 #include <Random.h>
 
 GeneLeafColour::GeneLeafColour(QRgb colour)
-    : GeneLeafColour(QColor::fromRgb(colour))
+    : colour(colour)
 {
 }
 
 GeneLeafColour::GeneLeafColour(const QColor& colour)
-    : colour(colour)
+    : GeneLeafColour(colour.rgb())
 {
+}
+
+std::string GeneLeafColour::TypeName() const
+{
+    return std::string(util::TypeName<GeneLeafColour>());
+}
+
+void GeneLeafColour::ConfigureJsonSerialisationHelper(util::JsonSerialisationHelper<GeneLeafColour>& helper)
+{
+    helper.RegisterConstructor(
+                helper.CreateParameter<QRgb>("Colour", &GeneLeafColour::colour)
+                );
 }
 
 std::shared_ptr<Gene> GeneLeafColour::Mutated() const
 {
     auto copy = std::make_shared<GeneLeafColour>(colour);
+    QColor colour = QColor::fromRgb(copy->colour);
     switch (Random::Number(1, 3)) {
     case 1:
-        copy->colour.setRed(std::clamp(copy->colour.red() + Random::Number(-10, 10), 0, 255));
+        colour.setRed(std::clamp(colour.red() + Random::Number(-10, 10), 0, 255));
         break;
     case 2:
-        copy->colour.setGreen(std::clamp(copy->colour.green() + Random::Number(-10, 10), 0, 255));
+        colour.setGreen(std::clamp(colour.green() + Random::Number(-10, 10), 0, 255));
         break;
     case 3:
-        copy->colour.setBlue(std::clamp(copy->colour.blue() + Random::Number(-10, 10), 0, 255));
+        colour.setBlue(std::clamp(colour.blue() + Random::Number(-10, 10), 0, 255));
         break;
     };
+    copy->colour = colour.rgb();
     return copy;
 }
 
@@ -45,9 +59,11 @@ double GeneLeafColour::Similarity(const std::shared_ptr<Gene>& other) const
     double percentSimilarity = 0;
     std::shared_ptr<GeneLeafColour> otherLeafColourGene = std::dynamic_pointer_cast<GeneLeafColour>(other);
     if (otherLeafColourGene) {
-        double proportionRedSimilarity = 1.0 - std::abs(colour.redF() - otherLeafColourGene->colour.redF());
-        double proportionGreenSimilarity = 1.0 - std::abs(colour.greenF() - otherLeafColourGene->colour.greenF());
-        double proportionBlueSimilarity = 1.0 - std::abs(colour.blueF() - otherLeafColourGene->colour.blueF());
+        QColor colour = QColor::fromRgb(this->colour);
+        QColor otherColour = QColor::fromRgb(otherLeafColourGene->colour);
+        double proportionRedSimilarity = 1.0 - std::abs(colour.redF() - otherColour.redF());
+        double proportionGreenSimilarity = 1.0 - std::abs(colour.greenF() - otherColour.greenF());
+        double proportionBlueSimilarity = 1.0 - std::abs(colour.blueF() - otherColour.blueF());
         percentSimilarity = ((proportionRedSimilarity + proportionGreenSimilarity + proportionBlueSimilarity) / 3.0) * 100;
     }
     return percentSimilarity;
@@ -56,6 +72,7 @@ double GeneLeafColour::Similarity(const std::shared_ptr<Gene>& other) const
 void GeneLeafColour::Express(Phenotype& phenotype) const
 {
     phenotype.leafColour = colour;
+    QColor colour = QColor::fromRgb(this->colour);
     phenotype.metabolism += (std::pow(2.0 - colour.valueF(), 2.0) - 1.0) * 100_j;
 }
 

@@ -3,9 +3,13 @@
 
 #include "GeneFactory.h"
 
-MainWindow::MainWindow(QWidget *parent) :
-    QMainWindow(parent),
-    ui(new Ui::MainWindow)
+#include <QDir>
+#include <QFileDialog>
+
+MainWindow::MainWindow(QWidget *parent)
+    : QMainWindow(parent)
+    , ui(new Ui::MainWindow)
+    , saveGameMonitor(this)
 {
     ui->setupUi(this);
 
@@ -55,6 +59,22 @@ MainWindow::MainWindow(QWidget *parent) :
     });
 
     ///
+    /// Genetics Settings
+    ///
+    connect(ui->geneticsSelectionCombobox, &QComboBox::currentTextChanged, ui->simulationViewer, &SimulationViewWidget::SetCurrentGenomeSaveFileName);
+    connect(ui->saveGeneticsButton, &QPushButton::pressed, this, [&]()
+    {
+        auto plant = ui->simulationViewer->GetSelectedPlant();
+        if (plant) {
+            QString saveFileName = QFileDialog::getSaveFileName(this, "Load Genome", "./SavedGenomes/", "Genome (*.genome)");
+            GeneFactory::SaveGenome(plant->GetGenetics(), saveFileName);
+        }
+    });
+
+    saveGameMonitor.addPath("./SavedGenomes/");
+    connect(&saveGameMonitor, &QFileSystemWatcher::directoryChanged, this, &MainWindow::UpdateSavedGenomeNames);
+
+    ///
     /// Play Speed Buttons
     ///
     connect(ui->pauseButton, &QPushButton::toggled, ui->simulationViewer, &SimulationViewWidget::SetPaused);
@@ -79,18 +99,18 @@ MainWindow::MainWindow(QWidget *parent) :
         ui->simulationViewer->SetTargetFramesPerSecond(4);
     });
 
-
     ///
     /// Start
     ///
 
     ui->leftSelectPlant->setChecked(true);
     ui->rightRemovePlants->setChecked(true);
-    emit(ui->leftSelectPlant->pressed());
-    emit(ui->rightRemovePlants->pressed());
+    emit ui->leftSelectPlant->pressed();
+    emit ui->rightRemovePlants->pressed();
 
-    emit(ui->speed1Button->pressed());
+    emit ui->speed1Button->pressed();
 
+    UpdateSavedGenomeNames();
     ResetSimulation();
 }
 
@@ -109,6 +129,17 @@ void MainWindow::SetSimulationHeight(int height)
     sim->SetBounds(sim->GetLightMap().GetRect().width(), height);
 }
 
+void MainWindow::UpdateSavedGenomeNames()
+{
+    QString currentFile = ui->geneticsSelectionCombobox->currentText();
+    ui->geneticsSelectionCombobox->clear();
+    ui->geneticsSelectionCombobox->addItem("Default");
+    for (const QFileInfo& file : QDir("./SavedGenomes/").entryInfoList(QDir::Filter::Files | QDir::Filter::NoDotAndDotDot)) {
+        ui->geneticsSelectionCombobox->addItem(file.baseName());
+    }
+    ui->geneticsSelectionCombobox->setCurrentText(currentFile);
+}
+
 void MainWindow::ResetSimulation()
 {
     sim = std::make_shared<Simulation>(ui->widthSpinBox->value(), ui->heightSpinBox->value());
@@ -116,8 +147,11 @@ void MainWindow::ResetSimulation()
 
     if (ui->autoPopulateGroup->isChecked()) {
         for (int x = ui->autoPopulateSpacingSpinBox->value() / 2; x < sim->GetLightMap().GetRect().width(); x += ui->autoPopulateSpacingSpinBox->value()) {
-            // TODO allow for non-default genome to be selected
-            sim->AddPlant(Plant::Generate(GeneFactory::CreateDefaultGenome(), ui->autoPopulateEnergySpinBox->value() * 1_j, x));
+            if (ui->geneticsSelectionCombobox->currentText() == "Default") {
+                sim->AddPlant(Plant::Generate(GeneFactory::CreateDefaultGenome(), ui->autoPopulateEnergySpinBox->value() * 1_j, x));
+            } else {
+                sim->AddPlant(Plant::Generate(GeneFactory::LoadGenome(ui->geneticsSelectionCombobox->currentText()), ui->autoPopulateEnergySpinBox->value() * 1_j, x));
+            }
         }
     }
 }

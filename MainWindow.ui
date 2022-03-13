@@ -312,6 +312,31 @@
          </widget>
         </item>
         <item>
+         <widget class="QGroupBox" name="geneticsSettingsGroupbox">
+          <property name="title">
+           <string>Genetics</string>
+          </property>
+          <layout class="QVBoxLayout" name="verticalLayout_3">
+           <item>
+            <widget class="QComboBox" name="geneticsSelectionCombobox">
+             <item>
+              <property name="text">
+               <string>Default</string>
+              </property>
+             </item>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="saveGeneticsButton">
+             <property name="text">
+              <string>Save Selected Plant</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
          <widget class="QGroupBox" name="resetSettingsGroup">
           <property name="title">
            <string>Reset</string>
@@ -611,8 +636,8 @@
  </resources>
  <connections/>
  <buttongroups>
-  <buttongroup name="playSpeedButtonGroup"/>
-  <buttongroup name="leftMouseButtonActionGroup"/>
   <buttongroup name="rightMouseButtonActionGroup"/>
+  <buttongroup name="leftMouseButtonActionGroup"/>
+  <buttongroup name="playSpeedButtonGroup"/>
  </buttongroups>
 </ui>

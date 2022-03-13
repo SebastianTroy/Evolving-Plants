@@ -1,0 +1,4 @@
+<RCC>
+    <qresource prefix="/SavedGenomes"/>
+    <qresource prefix="/"/>
+</RCC>

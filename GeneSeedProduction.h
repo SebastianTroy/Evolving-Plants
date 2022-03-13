@@ -4,11 +4,15 @@
 #include "Gene.h"
 
 #include <Energy.h>
+#include <JsonSerialisationHelper.h>
 
 class GeneSeedProduction : public Gene {
 public:
     GeneSeedProduction(Energy seedSize);
     virtual ~GeneSeedProduction() {}
+
+    virtual std::string TypeName() const override;
+    static void ConfigureJsonSerialisationHelper(util::JsonSerialisationHelper<GeneSeedProduction>& helper);
 
     virtual std::shared_ptr<Gene> Mutated() const override;
     virtual std::shared_ptr<Gene> Crossed(const std::shared_ptr<Gene>& other) const override;

@@ -16,7 +16,7 @@ TODO
  - - [X] Scroll viewport so that the entire simulation can be seen by scrolling through it
  - - [X] Control simulation speed with fast-forward
  - - [X] Controlls to add/remove plants
- - - [ ] Save/load plant genetics
+ - - [X] Save/load plant genetics
  - - [ ] Information panels for simulation and selected plants
  - - [ ] *MAYBE* graphs
  - [ ] Update website, then update this TODO to link to images *(and video?)*
