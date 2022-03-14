@@ -7,6 +7,7 @@
 #include <QRect>
 #include <QColor>
 #include <QPointF>
+#include <QElapsedTimer>
 
 #include <vector>
 
@@ -17,6 +18,9 @@ public:
     std::shared_ptr<Plant> GetPlantAt(const QPointF& location) const;
     const std::vector<std::shared_ptr<Plant>>& GetPlants() const;
     const uint64_t& GetTickCount() const;
+    uint64_t GetLivingPlantCount() const;
+    const uint64_t& GetTotalPlantCount() const;
+    const QElapsedTimer& GetRuntime() const;
     const LightMap& GetLightMap() const;
 
     void AddPlant(const std::shared_ptr<Plant>& plant);
@@ -30,6 +34,8 @@ public:
 private:
     LightMap lightMap;
     uint64_t tickCount;
+    uint64_t plantCount;
+    QElapsedTimer elapsedTime;
 
     std::vector<std::shared_ptr<Plant>> seeds;
     std::vector<std::shared_ptr<Plant>> plants;

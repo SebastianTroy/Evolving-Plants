@@ -24,6 +24,8 @@ std::shared_ptr<Plant> Plant::Generate(std::vector<std::shared_ptr<Gene>>&& gene
 
 void Plant::Tick(Simulation& sim, LightMap& lightMap)
 {
+    ++age;
+
     if (proportionGrown < 1.0) {
         // Shadows will be zero width when `proportionGrown == 0` so no need to add them first
         RemoveShadows(lightMap);
@@ -83,6 +85,11 @@ const QRectF Plant::GetBounds() const
 double Plant::GetProportionGrown() const
 {
     return proportionGrown;
+}
+
+double Plant::GetAge() const
+{
+    return age;
 }
 
 const QColor& Plant::GetLeafColour() const
@@ -169,7 +176,8 @@ void Plant::Kill()
 }
 
 Plant::Plant(std::vector<std::shared_ptr<Gene>>&& genes, const Phenotype& phenotype, Energy startingEnergy, double xPosition)
-    : genes(std::move(genes))
+    : age(0)
+    , genes(std::move(genes))
     , leafColour(phenotype.leafColour)
     , shadowColour(CalculateShadowColour(leafColour))
     , plantX(xPosition)

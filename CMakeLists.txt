@@ -38,6 +38,8 @@ set(PROJECT_SOURCES
     SavedGenomes.qrc
     Simulation.h
     Simulation.cpp
+    SimulationInfoTableModel.h
+    SimulationInfoTableModel.cpp
     SimulationViewWidget.h
     SimulationViewWidget.cpp
 )

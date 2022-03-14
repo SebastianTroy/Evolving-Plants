@@ -31,6 +31,7 @@ public:
     double GetPlantX() const;
     const QRectF GetBounds() const;
     double GetProportionGrown() const;
+    double GetAge() const;
     const QColor& GetLeafColour() const;
     const QColor& GetShadowColour() const;
     void ForEachStem(std::function<void(QLineF stem, double thickness, bool hasLeaf, double leafSize)>&& action) const;
@@ -58,6 +59,7 @@ private:
         double leafSize;
     };
 
+    qulonglong age;
     std::vector<std::shared_ptr<Gene>> genes;
     QColor leafColour;
     QColor shadowColour;

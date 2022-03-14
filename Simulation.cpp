@@ -8,7 +8,9 @@
 Simulation::Simulation(size_t width, size_t height)
     : lightMap(width, height)
     , tickCount(0)
+    , plantCount(0)
 {
+    elapsedTime.start();
 }
 
 std::shared_ptr<Plant> Simulation::GetPlantAt(const QPointF& location) const
@@ -29,6 +31,21 @@ const std::vector<std::shared_ptr<Plant>>& Simulation::GetPlants() const
 const uint64_t& Simulation::GetTickCount() const
 {
     return tickCount;
+}
+
+uint64_t Simulation::GetLivingPlantCount() const
+{
+    return plants.size();
+}
+
+const uint64_t& Simulation::GetTotalPlantCount() const
+{
+    return plantCount;
+}
+
+const QElapsedTimer& Simulation::GetRuntime() const
+{
+    return elapsedTime;
 }
 
 const LightMap& Simulation::GetLightMap() const
@@ -55,6 +72,7 @@ void Simulation::RemovePlantsAt(const QPointF& location)
 
 void Simulation::Tick()
 {
+    plantCount += seeds.size();
     std::ranges::move(seeds, std::back_inserter(plants));
     seeds.clear();
 

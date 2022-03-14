@@ -2,16 +2,20 @@
 
 #include "GeneFactory.h"
 
+#include <RollingStatistics.h>
+
 #include <QPainter>
 #include <QLocale>
 #include <QScrollBar>
 #include <QCoreApplication>
 #include <QWheelEvent>
+#include <QTime>
 
 SimulationViewWidget::SimulationViewWidget(QWidget* parent)
     : QAbstractScrollArea(parent)
     , simulationDriver(this)
     , repaintDriver(this)
+    , infoModel(this)
     , viewLight(false)
     , leftMouseButtonAction(MouseButtonAction::AddPlantSeed)
     , rightMouseButtonAction(MouseButtonAction::SelectPlant)
@@ -28,6 +32,10 @@ SimulationViewWidget::SimulationViewWidget(QWidget* parent)
     simulationDriver.setSingleShot(false);
     simulationDriver.setInterval(0);
     connect(&simulationDriver, &QTimer::timeout, this, &SimulationViewWidget::Tick);
+
+    infoUpdateDriver.setSingleShot(false);
+    infoUpdateDriver.setInterval(1000 / 1);
+    connect(&infoUpdateDriver, &QTimer::timeout, this, &SimulationViewWidget::UpdateInfoModel);
 }
 
 void SimulationViewWidget::SetSimulation(std::shared_ptr<Simulation> sim)
@@ -96,6 +104,11 @@ void SimulationViewWidget::SetCurrentGenomeSaveFileName(const QString& saveFileN
     this->saveFileName = saveFileName;
 }
 
+SimulationInfoTableModel& SimulationViewWidget::GetSimulationInfoModel()
+{
+    return infoModel;
+}
+
 std::shared_ptr<Plant> SimulationViewWidget::GetSelectedPlant() const
 {
     return selectedPlant;
@@ -135,17 +148,15 @@ void SimulationViewWidget::paintEvent(QPaintEvent* /*event*/)
     // Paint the sky
     paint.fillRect(viewport()->rect(), QGradient(QGradient::SkyGlider));
 
-    paint.drawText(0, 20, QLocale::system().toString(sim->GetTickCount()));
-
     // Flip painter vertically so x=0 is at bottom of the screen
     paint.translate(0, viewport()->height());
     paint.scale(1, -1);
 
     // Paint the ground
-    paint.fillRect(QRect(0, 0, viewport()->width(), groundHeght), Qt::green);
+    paint.fillRect(QRect(0, 0, viewport()->width(), groundHeight), Qt::green);
 
     // Move the painter so x=0 is at groundHeght
-    paint.translate(0, groundHeght);
+    paint.translate(0, groundHeight);
 
     QRect viewportArea = viewport()->rect().translated(horizontalScrollBar()->value(), verticalScrollBar()->value());
     paint.translate(-viewportArea.topLeft());
@@ -182,6 +193,7 @@ void SimulationViewWidget::showEvent(QShowEvent*)
 {
     simulationDriver.start();
     repaintDriver.start();
+    infoUpdateDriver.start();
     UpdateScrollBars();
 }
 
@@ -215,6 +227,89 @@ void SimulationViewWidget::PaintPlant(QPainter& paint, const Plant& plant, bool 
     });
 }
 
+void SimulationViewWidget::UpdateInfoModel()
+{
+    QVector<SimulationInfoTableModel::TableRow> items;
+    if (sim) {
+        items.push_back({ "Simulation:",
+                          "",
+                          "",
+                        });
+        items.push_back({ "Run Time",
+                          QLocale::system().toString(QTime::fromMSecsSinceStartOfDay(sim->GetRuntime().elapsed())),
+                          "The number of times the simulation loop has been run since it was created or reset.",
+                        });
+        items.push_back({ "Tick Count",
+                          QLocale::system().toString(sim->GetTickCount()),
+                          "The number of times the simulation loop has been run since it was created or reset.",
+                        });
+        items.push_back({ "Living Plants",
+                          QLocale::system().toString(sim->GetLivingPlantCount()),
+                          "The number of living plants currently being siumlated.",
+                        });
+        items.push_back({ "Total Plants",
+                          QLocale::system().toString(sim->GetTotalPlantCount()),
+                          "The total number of plants to have lived in this simulation.",
+                        });
+
+        util::RollingStatistics ageStats;
+        util::RollingStatistics heightStats;
+        for (const auto& plant : sim->GetPlants()) {
+            ageStats.AddValue(plant->GetAge());
+            heightStats.AddValue(plant->GetBounds().height());
+        }
+
+        items.push_back({ "Average Age",
+                          QLocale::system().toString(ageStats.Mean(), 'f', 2),
+                          "The average age of all plants in the simulation, where age is counted in simulation ticks.",
+                        });
+        items.push_back({ "Average Height",
+                          QLocale::system().toString(heightStats.Mean(), 'f', 2),
+                          "The average height of all plants in the simulation.",
+                        });
+    }
+    if (selectedPlant) {
+        if (sim) {
+            items.push_back({ "",
+                              "",
+                              "",
+                            });
+        }
+        items.push_back({ "Selected Plant:",
+                          "",
+                          "",
+                        });
+        items.push_back({ "Age",
+                          QLocale::system().toString(selectedPlant->GetAge()),
+                          "The number of simulation ticks this plant has lived for.",
+                        });
+        items.push_back({ "Height",
+                          QLocale::system().toString(selectedPlant->GetBounds().height(), 'f', 2),
+                          "The height of the plant in the simulation.",
+                        });
+        items.push_back({ "Energy",
+                          QLocale::system().toString(selectedPlant->GetEnergy(), 'f', 2) + "j",
+                          "The ammount of energy the plant currently has, it will die if this falls to zero.",
+                        });
+        items.push_back({ "Metabolism",
+                          QLocale::system().toString(selectedPlant->GetMetabolism(), 'f', 2) + "j",
+                          "The ammount of energy the plant spends each tick to survive. A larger and more complex plant will have a larger metabolism when it germinates, and it will increase each tick.",
+                        });
+        items.push_back({ "Percent Grown",
+                          QLocale::system().toString(selectedPlant->GetProportionGrown() * 100, 'f', 1) + "%",
+                          "When a plant germinates it is 0% grown, and will reach its full size at 100% grown.",
+                        });
+
+        for (auto& gene : selectedPlant->GetGenetics()) {
+            items.push_back({ QString::fromStdString(gene->TypeName()),
+                              gene->ToString(),
+                              gene->Description(),
+                            });
+        }
+    }
+    infoModel.UpdateAll(std::move(items));
+}
+
 void SimulationViewWidget::PerformMouseButtonAction(MouseButtonAction action, const QPointF& location)
 {
     switch (action) {
@@ -238,6 +333,6 @@ QPointF SimulationViewWidget::LocalToSimulation(const QPointF& localPoint) const
 {
     QPointF simPoint = localPoint;
     simPoint.rx() += horizontalScrollBar()->value();
-    simPoint.setY(viewport()->height() - simPoint.y() - groundHeght);
+    simPoint.setY(viewport()->height() - simPoint.y() - groundHeight);
     return simPoint;
 }

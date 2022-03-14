@@ -103,12 +103,18 @@ MainWindow::MainWindow(QWidget *parent)
     /// Start
     ///
 
+    ui->splitter->setStretchFactor(0, 1);
+    ui->splitter->setStretchFactor(1, 9);
+    ui->splitter->setStretchFactor(2, 1);
+
     ui->leftSelectPlant->setChecked(true);
     ui->rightRemovePlants->setChecked(true);
     emit ui->leftSelectPlant->pressed();
     emit ui->rightRemovePlants->pressed();
 
     emit ui->speed1Button->pressed();
+
+    ui->simulationInformationTable->setModel(&ui->simulationViewer->GetSimulationInfoModel());
 
     UpdateSavedGenomeNames();
     ResetSimulation();

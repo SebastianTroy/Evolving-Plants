@@ -3,6 +3,8 @@
 
 #include "Simulation.h"
 
+#include "SimulationInfoTableModel.h"
+
 #include <QWidget>
 #include <QTimer>
 #include <QAbstractScrollArea>
@@ -37,6 +39,8 @@ public:
     // FIXME this feels a lil hacky, as the click to plant a seed is detected here, but the MainWindow ui has the selected filename...
     void SetCurrentGenomeSaveFileName(const QString& saveFileName);
 
+    SimulationInfoTableModel& GetSimulationInfoModel();
+
     std::shared_ptr<Plant> GetSelectedPlant() const;
 
 protected:
@@ -48,11 +52,14 @@ protected:
     virtual void resizeEvent(QResizeEvent* event) override;
 
 private:
-    static inline constexpr int groundHeght = 5;
+    static inline constexpr int groundHeight = 5;
 
     QTimer simulationDriver;
     QTimer repaintDriver;
+    QTimer infoUpdateDriver;
     std::shared_ptr<Simulation> sim;
+
+    SimulationInfoTableModel infoModel;
 
     bool viewLight;
 
@@ -65,6 +72,7 @@ private:
     void Tick();
     void Reset();
     void PaintPlant(QPainter& paint, const Plant& plant, bool selected);
+    void UpdateInfoModel();
 
     void PerformMouseButtonAction(MouseButtonAction action, const QPointF& location);
 

@@ -13,8 +13,11 @@ public:
     GeneLeafColour(const QColor& colour);
     virtual ~GeneLeafColour() {}
 
-    virtual std::string TypeName() const override;
     static void ConfigureJsonSerialisationHelper(util::JsonSerialisationHelper<GeneLeafColour>& helper);
+
+    virtual std::string TypeName() const override;
+    virtual QString ToString() const override;
+    virtual QString Description() const override;
 
     virtual std::shared_ptr<Gene> Mutated() const override;
     virtual std::shared_ptr<Gene> Crossed(const std::shared_ptr<Gene>& other) const override;

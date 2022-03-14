@@ -6,8 +6,15 @@
 #include <MathConstants.h>
 #include <Random.h>
 
+#include <QLocale>
+
 GenePlantStructure::GenePlantStructure(const std::string& instructions)
-    : GenePlantStructure(FromString(instructions), 25, util::Tau / 9)
+    : GenePlantStructure(instructions, 25, util::Tau / 9)
+{
+}
+
+GenePlantStructure::GenePlantStructure(const std::string& instructions, double stemUnitLength, double stemRotationAngle)
+    : GenePlantStructure(FromString(instructions), stemUnitLength, stemRotationAngle)
 {
 }
 
@@ -18,18 +25,55 @@ GenePlantStructure::GenePlantStructure(const std::vector<Instruction>& instructi
 {
 }
 
+void GenePlantStructure::ConfigureJsonSerialisationHelper(util::JsonSerialisationHelper<GenePlantStructure>& helper)
+{
+    helper.RegisterConstructor(
+                helper.CreateParameter<std::string>("Instructions", [](const GenePlantStructure& g){ return g.ToString().toStdString(); }),
+                helper.CreateParameter<double>("StemLength", &GenePlantStructure::stemUnitLength),
+                helper.CreateParameter<double>("RotationAngleRadians", &GenePlantStructure::stemRotationAngle)
+                );
+}
+
 std::string GenePlantStructure::TypeName() const
 {
     return std::string(util::TypeName<GenePlantStructure>());
 }
 
-void GenePlantStructure::ConfigureJsonSerialisationHelper(util::JsonSerialisationHelper<GenePlantStructure>& helper)
+QString GenePlantStructure::ToString() const
 {
-    helper.RegisterConstructor(
-                helper.CreateParameter<std::vector<Instruction>>("Instructions", &GenePlantStructure::instructions),
-                helper.CreateParameter<double>("StemLength", &GenePlantStructure::stemUnitLength),
-                helper.CreateParameter<double>("RotationAngleRadians", &GenePlantStructure::stemRotationAngle)
-                );
+    QString instructionString;
+
+    instructionString += QLocale::system().toString(stemUnitLength, 'f', 0);
+    instructionString += ", ";
+    instructionString += QLocale::system().toString(stemUnitLength, 'f', 0);
+    instructionString += "°, ";
+
+    instructionString.reserve(instructionString.size() + instructions.size());
+    for (const auto& instruction : instructions) {
+        instructionString.push_back(static_cast<std::underlying_type_t<Instruction>>(instruction));
+    }
+    return instructionString;
+}
+
+QString GenePlantStructure::Description() const
+{
+    return "<p>A Length, an angle & a series of characters.</p>"
+           "<p>A node can be different lengths, one or more of the specified value long.</p>"
+           "<p>A node can be rotated either clockwise or anti-clockwise in increments of the specified angle.</p>"
+           "<p>The series of instructions defines the shape of the plant.</p>"
+           "<p>The plant can be thought of as a tree of nodes, each plant begins as a single node and the instructons modify the structure one at a time.</p>"
+           "<ul>"
+           "<li>'N': Adds a new node to the structure, and selects it.</li>"
+           "<li>'^': If the currently selected node has any children, selects the most recently added one.</li>"
+           "<li>'v': If the currently selected node has a parent, selects the parent (only the very first  node, the root node, has no parent).</li>"
+           "<li>'>': Selects the next node in the list (as if iterating from tip to root).</li>"
+           "<li>'<': Selects the previous node in the list (as if iterating from tip to root).</li>"
+           "<li>'|': Increases the length of the current node by the first gene value.</li>"
+           "<li>'\\': Rotates the current node anti-clockwise by the second gene value.</li>"
+           "<li>'/': Rotates the current node clockwise by the second gene value.</li>"
+           "<li>' ': Does nothing, ignored.</li>"
+           "<li>'#': Causes the instructions to stop being processed, like an early stop.</li>"
+           "</ul>";
 }
 
 std::shared_ptr<Gene> GenePlantStructure::Mutated() const
@@ -148,9 +192,10 @@ void GenePlantStructure::Express(Phenotype& phenotype) const
             phenotype.metabolism += 0.5_j;
             break;
         case Instruction::END_ALL:
-            break;
+            goto exit_loop_early;
         }
     }
+    exit_loop_early:
 
     phenotype.ForEachNode([&](std::map<int, double>& parameters, Vec2& stemVector, double& nodeStemThickness, double& nodeLeafRadius)
     {

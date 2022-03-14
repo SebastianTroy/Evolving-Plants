@@ -14,16 +14,27 @@ GeneLeafColour::GeneLeafColour(const QColor& colour)
 {
 }
 
-std::string GeneLeafColour::TypeName() const
-{
-    return std::string(util::TypeName<GeneLeafColour>());
-}
-
 void GeneLeafColour::ConfigureJsonSerialisationHelper(util::JsonSerialisationHelper<GeneLeafColour>& helper)
 {
     helper.RegisterConstructor(
                 helper.CreateParameter<QRgb>("Colour", &GeneLeafColour::colour)
                 );
+}
+
+std::string GeneLeafColour::TypeName() const
+{
+    return std::string(util::TypeName<GeneLeafColour>());
+}
+
+QString GeneLeafColour::ToString() const
+{
+    QColor colour(this->colour);
+    return QString("%1, %2, %3").arg(colour.red()).arg(colour.green()).arg(colour.blue());
+}
+
+QString GeneLeafColour::Description() const
+{
+    return "R, G, B. The leaf colour represents the light NOT absorbed by the leaf, a darker leaf colour absorbs more light. Each of the Red, Green and Blue channels is a value between 0 and 255.";
 }
 
 std::shared_ptr<Gene> GeneLeafColour::Mutated() const

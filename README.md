@@ -17,8 +17,8 @@ TODO
  - - [X] Control simulation speed with fast-forward
  - - [X] Controlls to add/remove plants
  - - [X] Save/load plant genetics
- - - [ ] Information panels for simulation and selected plants
- - - [ ] *MAYBE* graphs
- - [ ] Update website, then update this TODO to link to images *(and video?)*
+ - - [X] Information panels for simulation and selected plants
+ - [ ] Update website, then update this TODO to link to images
+ - - [ ] Add a video walkthrough
  - [ ] Modding! It should be possible to make a custom Gene, and to enable/disable genes individually (including non-modded ones)
  - [ ] Implement all actual genes as modded genes and test performance difference, go full modded route if negligable

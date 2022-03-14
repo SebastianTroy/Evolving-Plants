@@ -25,11 +25,15 @@ public:
     };
 
     GenePlantStructure(const std::string& instructions);
+    GenePlantStructure(const std::string& instructions, double stemUnitLength, double stemRotationAngle);
     GenePlantStructure(const std::vector<Instruction>& instructions, double stemUnitLength, double stemRotationAngle);
     virtual ~GenePlantStructure() {}
 
-    virtual std::string TypeName() const override;
     static void ConfigureJsonSerialisationHelper(util::JsonSerialisationHelper<GenePlantStructure>& helper);
+
+    virtual std::string TypeName() const override;
+    virtual QString ToString() const override;
+    virtual QString Description() const override;
 
     virtual std::shared_ptr<Gene> Mutated() const override;
     virtual std::shared_ptr<Gene> Crossed(const std::shared_ptr<Gene>& other) const override;

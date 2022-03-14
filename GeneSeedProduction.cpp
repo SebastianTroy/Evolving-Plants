@@ -4,14 +4,11 @@
 
 #include <Random.h>
 
+#include <QLocale>
+
 GeneSeedProduction::GeneSeedProduction(Energy seedSize)
     : seedSize(seedSize)
 {
-}
-
-std::string GeneSeedProduction::TypeName() const
-{
-    return std::string(util::TypeName<GeneSeedProduction>());
 }
 
 void GeneSeedProduction::ConfigureJsonSerialisationHelper(util::JsonSerialisationHelper<GeneSeedProduction>& helper)
@@ -19,6 +16,21 @@ void GeneSeedProduction::ConfigureJsonSerialisationHelper(util::JsonSerialisatio
     helper.RegisterConstructor(
                 helper.CreateParameter<Energy>("Energy", &GeneSeedProduction::seedSize)
                 );
+}
+
+std::string GeneSeedProduction::TypeName() const
+{
+    return std::string(util::TypeName<GeneSeedProduction>());
+}
+
+QString GeneSeedProduction::ToString() const
+{
+    return QLocale::system().toString(seedSize, 'f', 2) + "j";
+}
+
+QString GeneSeedProduction::Description() const
+{
+    return "Defines the quantity of energy required to produce a single seed.";
 }
 
 std::shared_ptr<Gene> GeneSeedProduction::Mutated() const
