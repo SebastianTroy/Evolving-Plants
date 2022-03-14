@@ -1,5 +1,7 @@
 Evolving Plants Version 4.0
 ===========================
+![SimulationExample](https://img1.wsimg.com/isteam/ip/961afd39-a6a6-4a34-aeab-9ebf830fefd8/EvolvingPlants-0002.png)
+
 Developed with Qt 6.3.0 & MinGW 9.0.0
 
 Built with CMake and Ninja in QtCreator
