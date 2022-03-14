@@ -36,12 +36,12 @@ public:
     void SetLeftMouseButtonAction(MouseButtonAction action);
     void SetRightMouseButtonAction(MouseButtonAction action);
 
-    // FIXME this feels a lil hacky, as the click to plant a seed is detected here, but the MainWindow ui has the selected filename...
-    void SetCurrentGenomeSaveFileName(const QString& saveFileName);
-
     SimulationInfoTableModel& GetSimulationInfoModel();
 
     std::shared_ptr<Plant> GetSelectedPlant() const;
+
+signals:
+    void onPlacePlantSeedRequested(double x);
 
 protected:
     virtual void mousePressEvent(QMouseEvent* event) override;
@@ -62,8 +62,6 @@ private:
     SimulationInfoTableModel infoModel;
 
     bool viewLight;
-
-    QString saveFileName;
 
     MouseButtonAction leftMouseButtonAction;
     MouseButtonAction rightMouseButtonAction;

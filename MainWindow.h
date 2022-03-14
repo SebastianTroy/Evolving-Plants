@@ -30,6 +30,8 @@ private:
     void SetSimulationHeight(int height);
     void UpdateSavedGenomeNames();
     void ResetSimulation();
+
+    void AddPlant(double x);
 };
 
 #endif // MAINWINDOW_H

@@ -1,0 +1,16 @@
+[
+    {
+        "Instructions": "25, 25°,   |  ",
+        "RotationAngleRadians": 0.6981317007977318,
+        "StemLength": 25.0,
+        "__typename": "GenePlantStructure"
+    },
+    {
+        "Colour": 4283826022,
+        "__typename": "GeneLeafColour"
+    },
+    {
+        "Energy": 40.0,
+        "__typename": "GeneSeedProduction"
+    }
+]

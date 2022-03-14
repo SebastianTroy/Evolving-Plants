@@ -12,13 +12,13 @@
 
 #include <Random.h>
 
-std::vector<std::shared_ptr<Gene>> GeneFactory::CreateDefaultGenome()
+void GeneFactory::CreateDefaultGenome()
 {
-    return {
+    SaveGenome({
         std::make_shared<GenePlantStructure>("  |  "),
-        std::make_shared<GeneLeafColour>(Random::Number(0xFF000000, 0xFFFFFFFF)),
+        std::make_shared<GeneLeafColour>(0xFF55FF66),
         std::make_shared<GeneSeedProduction>(40_j),
-    };
+    }, "./SavedGenomes/Default.genome");
 }
 
 void GeneFactory::SaveGenome(const std::vector<std::shared_ptr<Gene> >& genes, const QString& saveName)

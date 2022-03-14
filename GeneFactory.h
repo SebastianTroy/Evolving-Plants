@@ -10,7 +10,7 @@
 
 class GeneFactory {
 public:
-    static std::vector<std::shared_ptr<Gene>> CreateDefaultGenome();
+    static void CreateDefaultGenome();
     static void SaveGenome(const std::vector<std::shared_ptr<Gene>>& genes, const QString& saveName);
     static std::vector<std::shared_ptr<Gene>> LoadGenome(const QString& saveName);
     static std::vector<std::string> GetSavedGenomes();

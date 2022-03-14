@@ -340,6 +340,16 @@
              </widget>
             </item>
             <item>
+             <widget class="QCheckBox" name="geneticsRandomiseLeafColourCheckbox">
+              <property name="text">
+               <string>Randomise Leaf Colour</string>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item>
              <widget class="QPushButton" name="saveGeneticsButton">
               <property name="text">
                <string>Save Selected Plant</string>

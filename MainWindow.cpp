@@ -2,6 +2,9 @@
 #include "ui_MainWindow.h"
 
 #include "GeneFactory.h"
+#include "GeneLeafColour.h"
+
+#include <Random.h>
 
 #include <QDir>
 #include <QFileDialog>
@@ -61,7 +64,6 @@ MainWindow::MainWindow(QWidget *parent)
     ///
     /// Genetics Settings
     ///
-    connect(ui->geneticsSelectionCombobox, &QComboBox::currentTextChanged, ui->simulationViewer, &SimulationViewWidget::SetCurrentGenomeSaveFileName);
     connect(ui->saveGeneticsButton, &QPushButton::pressed, this, [&]()
     {
         auto plant = ui->simulationViewer->GetSelectedPlant();
@@ -114,7 +116,11 @@ MainWindow::MainWindow(QWidget *parent)
 
     emit ui->speed1Button->pressed();
 
+    connect(ui->simulationViewer, &SimulationViewWidget::onPlacePlantSeedRequested, this, &MainWindow::AddPlant);
+
     ui->simulationInformationTable->setModel(&ui->simulationViewer->GetSimulationInfoModel());
+
+    GeneFactory::CreateDefaultGenome();
 
     UpdateSavedGenomeNames();
     ResetSimulation();
@@ -139,7 +145,6 @@ void MainWindow::UpdateSavedGenomeNames()
 {
     QString currentFile = ui->geneticsSelectionCombobox->currentText();
     ui->geneticsSelectionCombobox->clear();
-    ui->geneticsSelectionCombobox->addItem("Default");
     for (const QFileInfo& file : QDir("./SavedGenomes/").entryInfoList(QDir::Filter::Files | QDir::Filter::NoDotAndDotDot)) {
         ui->geneticsSelectionCombobox->addItem(file.baseName());
     }
@@ -153,11 +158,20 @@ void MainWindow::ResetSimulation()
 
     if (ui->autoPopulateGroup->isChecked()) {
         for (int x = ui->autoPopulateSpacingSpinBox->value() / 2; x < sim->GetLightMap().GetRect().width(); x += ui->autoPopulateSpacingSpinBox->value()) {
-            if (ui->geneticsSelectionCombobox->currentText() == "Default") {
-                sim->AddPlant(Plant::Generate(GeneFactory::CreateDefaultGenome(), ui->autoPopulateEnergySpinBox->value() * 1_j, x));
-            } else {
-                sim->AddPlant(Plant::Generate(GeneFactory::LoadGenome(ui->geneticsSelectionCombobox->currentText()), ui->autoPopulateEnergySpinBox->value() * 1_j, x));
+            AddPlant(x);
+        }
+    }
+}
+
+void MainWindow::AddPlant(double x)
+{
+    auto genome = GeneFactory::LoadGenome(ui->geneticsSelectionCombobox->currentText());
+    if (ui->geneticsRandomiseLeafColourCheckbox->isChecked()) {
+        for (auto& gene : genome) {
+            if (auto colourGene = dynamic_pointer_cast<GeneLeafColour>(gene)) {
+                gene.reset(new GeneLeafColour(Random::Number<QRgb>(0xFF000000, 0xFFFFFFFF)));
             }
         }
     }
+    sim->AddPlant(Plant::Generate(std::move(genome), ui->autoPopulateEnergySpinBox->value() * 1_j, x));
 }

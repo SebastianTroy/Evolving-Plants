@@ -1,0 +1,16 @@
+[
+    {
+        "Instructions": "N|  / <N NvN<Nvv  N|<N",
+        "RotationAngleRadians": 0.12605832335962333,
+        "StemLength": 118.4597188657471,
+        "__typename": "GenePlantStructure"
+    },
+    {
+        "Colour": 4294967143,
+        "__typename": "GeneLeafColour"
+    },
+    {
+        "Energy": 70.60595474681551,
+        "__typename": "GeneSeedProduction"
+    }
+]
