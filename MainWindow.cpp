@@ -1,6 +1,7 @@
 #include "MainWindow.h"
 #include "ui_MainWindow.h"
 
+#include "BuildVersion.h"
 #include "GeneFactory.h"
 #include "GeneLeafColour.h"
 
@@ -18,7 +19,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
 
     setWindowIcon(QIcon(":/Logo.png"));
-    setWindowTitle("Evolving Plants v4.0");
+    setWindowTitle(QString("Evolving Plants v%1.%2").arg(VERSION_MAJOR).arg(VERSION_MINOR));
 
     ///
     /// Simulation Settings
