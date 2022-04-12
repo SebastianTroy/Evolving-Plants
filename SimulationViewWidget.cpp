@@ -197,6 +197,20 @@ void SimulationViewWidget::resizeEvent(QResizeEvent* /*event*/)
     UpdateScrollBars();
 }
 
+QString SimulationViewWidget::ElapsedTimeString(qint64 elapsedMsecs)
+{
+    constexpr qint64 milliSecondsInDay = 1000 * 60 * 60 * 24;
+    qint64 elapsedDays = elapsedMsecs / milliSecondsInDay;
+    QTime elapsedTime = QTime::fromMSecsSinceStartOfDay(elapsedMsecs % milliSecondsInDay);
+    if (elapsedDays > 1) {
+        return QString("%1 days, %2:%3:%4").arg(elapsedDays).arg(elapsedTime.hour(), 2, 10, QLatin1Char('0')).arg(elapsedTime.minute(), 2, 10, QLatin1Char('0')).arg(elapsedTime.second(), 2, 10, QLatin1Char('0'));
+    } else if (elapsedDays == 1) {
+        return QString("%1 day, %2:%3:%4").arg(elapsedDays).arg(elapsedTime.hour(), 2, 10, QLatin1Char('0')).arg(elapsedTime.minute(), 2, 10, QLatin1Char('0')).arg(elapsedTime.second(), 2, 10, QLatin1Char('0'));
+    } else {
+        return QString("%1:%2:%3").arg(elapsedTime.hour(), 2, 10, QLatin1Char('0')).arg(elapsedTime.minute(), 2, 10, QLatin1Char('0')).arg(elapsedTime.second(), 2, 10, QLatin1Char('0'));
+    }
+}
+
 void SimulationViewWidget::Tick()
 {
     if (sim) {
@@ -231,7 +245,7 @@ void SimulationViewWidget::UpdateInfoModel()
                           "",
                         });
         items.push_back({ "Run Time",
-                          QLocale::system().toString(QTime::fromMSecsSinceStartOfDay(sim->GetRuntime().elapsed())),
+                          ElapsedTimeString(sim->GetRuntime().elapsed()),
                           "The number of times the simulation loop has been run since it was created or reset.",
                         });
         items.push_back({ "Tick Count",

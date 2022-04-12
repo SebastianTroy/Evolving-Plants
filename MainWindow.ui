@@ -455,6 +455,13 @@
            </property>
           </spacer>
          </item>
+         <item>
+          <widget class="QPushButton" name="moreByTroyDevButton">
+           <property name="text">
+            <string>More by TroyDev</string>
+           </property>
+          </widget>
+         </item>
         </layout>
        </widget>
       </widget>

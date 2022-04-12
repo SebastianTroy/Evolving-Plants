@@ -67,6 +67,8 @@ private:
     MouseButtonAction rightMouseButtonAction;
     std::shared_ptr<Plant> selectedPlant;
 
+    static QString ElapsedTimeString(qint64 elapsedMsecs);
+
     void Tick();
     void Reset();
     void PaintPlant(QPainter& paint, const Plant& plant, bool selected);

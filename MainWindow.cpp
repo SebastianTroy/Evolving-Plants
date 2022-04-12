@@ -8,6 +8,7 @@
 
 #include <QDir>
 #include <QFileDialog>
+#include <QDesktopServices>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -87,18 +88,24 @@ MainWindow::MainWindow(QWidget *parent)
     });
     connect(ui->speed2Button, &QPushButton::pressed, ui->simulationViewer, [&]()
     {
-        ui->simulationViewer->SetTargetTicksPerSecond(50);
+        ui->simulationViewer->SetTargetTicksPerSecond(250);
         ui->simulationViewer->SetTargetFramesPerSecond(60);
     });
     connect(ui->speed3Button, &QPushButton::pressed, ui->simulationViewer, [&]()
     {
-        ui->simulationViewer->SetTargetTicksPerSecond(200);
+        ui->simulationViewer->SetTargetTicksPerSecond(1000);
         ui->simulationViewer->SetTargetFramesPerSecond(40);
     });
     connect(ui->speedMaxButton, &QPushButton::pressed, ui->simulationViewer, &SimulationViewWidget::SetUnlimitedTicksPerSecond);
     connect(ui->speedMaxButton, &QPushButton::pressed, ui->simulationViewer, [&]()
     {
         ui->simulationViewer->SetTargetFramesPerSecond(4);
+    });
+
+    // Link to website
+    connect(ui->moreByTroyDevButton, &QPushButton::pressed, this, []()
+    {
+        QDesktopServices::openUrl(QUrl("http://www.TroyDev.co.uk"));
     });
 
     ///

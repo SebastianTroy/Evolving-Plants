@@ -45,7 +45,7 @@ QString GenePlantStructure::ToString() const
 
     instructionString += QLocale::system().toString(stemUnitLength, 'f', 0);
     instructionString += ", ";
-    instructionString += QLocale::system().toString(stemUnitLength, 'f', 0);
+    instructionString += QLocale::system().toString(stemRotationAngle, 'f', 0);
     instructionString += "°, ";
 
     instructionString.reserve(instructionString.size() + instructions.size());

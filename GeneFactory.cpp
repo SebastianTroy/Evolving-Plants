@@ -16,7 +16,7 @@ void GeneFactory::CreateDefaultGenome()
 {
     SaveGenome({
         std::make_shared<GenePlantStructure>("  |  "),
-        std::make_shared<GeneLeafColour>(0xFF55FF66),
+        std::make_shared<GeneLeafColour>(0xFF20DC11),
         std::make_shared<GeneSeedProduction>(40_j),
     }, "./SavedGenomes/Default.genome");
 }
